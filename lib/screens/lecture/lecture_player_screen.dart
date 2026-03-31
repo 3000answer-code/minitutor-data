@@ -31,8 +31,8 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   bool _showControls = true;
   double _userRating = 0;
 
-  // YouTube
-  bool _isYouTubeVideo = false;
+  // Google Drive
+  bool _isDriveVideo = false;
 
   // 노트 텍스트 관련
   final TextEditingController _noteController = TextEditingController();
@@ -76,18 +76,28 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     return '';
   }
 
-  // YouTube URL에서 영상 ID 추출
-  String? _extractYouTubeId(String url) {
+  // Google Drive URL에서 파일 ID 추출
+  String? _extractDriveId(String url) {
     final regexps = [
-      RegExp(r'youtube\.com/shorts/([a-zA-Z0-9_-]{11})'),
-      RegExp(r'youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
-      RegExp(r'youtu\.be/([a-zA-Z0-9_-]{11})'),
+      RegExp(r'/file/d/([a-zA-Z0-9_-]+)'),
+      RegExp(r'id=([a-zA-Z0-9_-]+)'),
+      RegExp(r'/d/([a-zA-Z0-9_-]+)'),
     ];
     for (final re in regexps) {
       final match = re.firstMatch(url);
       if (match != null) return match.group(1);
     }
     return null;
+  }
+
+  // Google Drive → 임베드 URL
+  String _driveToEmbedUrl(String url) {
+    // API에서 이미 변환된 driveEmbedUrl이 있으면 우선 사용
+    final fileId = _extractDriveId(url);
+    if (fileId != null) {
+      return 'https://drive.google.com/file/d/$fileId/preview';
+    }
+    return url;
   }
 
   @override
@@ -97,16 +107,16 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     _tabController = TabController(length: 4, vsync: this);
     _strokes = _pageStrokes[_currentNotePageIndex] ?? [];
 
-    // YouTube 영상 감지
+    // Google Drive 영상 감지
     final videoUrl = widget.lecture.videoUrl;
-    final ytId = videoUrl.isNotEmpty ? _extractYouTubeId(videoUrl) : null;
-    if (ytId != null) {
-      _isYouTubeVideo = true;
+    // API에서 제공한 driveEmbedUrl 또는 직접 변환
+    if (videoUrl.isNotEmpty && videoUrl.contains('drive.google.com')) {
+      _isDriveVideo = true;
       _isPlaying = false;
-      // YouTube 앱으로 바로 실행
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _launchYouTube();
-      });
+    } else if (videoUrl.isNotEmpty) {
+      // 다른 URL (향후 확장)
+      _isDriveVideo = false;
+      _simulatePlayback();
     } else {
       _simulatePlayback();
     }
@@ -129,54 +139,28 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     });
   }
 
-  Future<void> _launchYouTube() async {
+  // Google Drive 영상 외부 브라우저로 열기
+  Future<void> _openDriveInBrowser() async {
     final url = widget.lecture.videoUrl;
-    final ytId = _extractYouTubeId(url);
-
-    // YouTube ID가 없으면 원본 URL 그대로 열기
-    final bool isShorts = url.contains('/shorts/');
-
-    // 시도할 URL 목록 (우선순위 순)
-    final List<Uri> candidates = [];
-
-    if (ytId != null) {
-      if (isShorts) {
-        // Shorts: YouTube 앱 스킴 → 웹 URL 순서
-        candidates.add(Uri.parse('vnd.youtube://shorts/$ytId'));
-        candidates.add(Uri.parse('https://www.youtube.com/shorts/$ytId'));
-      } else {
-        // 일반 영상
-        candidates.add(Uri.parse('vnd.youtube://$ytId'));
-        candidates.add(Uri.parse('https://youtu.be/$ytId'));
-        candidates.add(Uri.parse('https://www.youtube.com/watch?v=$ytId'));
-      }
-    }
-    // 원본 URL 항상 마지막 fallback으로 추가
-    candidates.add(Uri.parse(url));
-
-    // canLaunchUrl 체크 없이 순서대로 시도 (Android 11+ 호환)
-    for (final uri in candidates) {
-      try {
-        final launched = await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
-        if (launched) return; // 성공하면 종료
-      } catch (_) {
-        // 실패 시 다음 URL 시도
-        continue;
-      }
-    }
-
-    // 모두 실패 시 사용자에게 알림
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('YouTube 앱 또는 브라우저를 열 수 없습니다.\n아래 "직접 열기" 버튼을 사용해주세요.'),
-          backgroundColor: Colors.red.shade700,
-          duration: const Duration(seconds: 4),
-        ),
+    final fileId = _extractDriveId(url);
+    // 외부 브라우저용 URL (preview 페이지)
+    final viewUrl = fileId != null
+        ? 'https://drive.google.com/file/d/$fileId/view'
+        : url;
+    try {
+      await launchUrl(
+        Uri.parse(viewUrl),
+        mode: LaunchMode.externalApplication,
       );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('브라우저를 열 수 없습니다.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -497,64 +481,60 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     );
   }
 
-  // 플레이어 내용 (전체화면/가로모드 공용)
+  // 플레이어 내용 (전체화면/가로모드 공용) - Google Drive 전용
   Widget _buildPlayerContent(bool isFav, AppState appState) {
     return Stack(
       alignment: Alignment.center,
       children: [
-        // YouTube 모드: 썸네일 + 재생 안내
-        if (_isYouTubeVideo)
+        // Google Drive 모드: 썸네일 + 재생 안내
+        if (_isDriveVideo)
           Positioned.fill(
             child: Builder(builder: (context) {
-              final lang = context.read<AppState>().selectedLanguage;
-              final T = (String key) => AppTranslations.tLang(lang, key);
-              final ytId = _extractYouTubeId(widget.lecture.videoUrl);
-              // 썸네일 URL 목록 (순서대로 시도)
-              final thumbUrls = <String>[];
-              if (ytId != null) {
-                thumbUrls.addAll([
-                  'https://i.ytimg.com/vi/$ytId/hqdefault.jpg',
-                  'https://i.ytimg.com/vi/$ytId/mqdefault.jpg',
-                  'https://i.ytimg.com/vi/$ytId/sddefault.jpg',
-                  'https://i.ytimg.com/vi/$ytId/default.jpg',
-                ]);
-              }
-              if (widget.lecture.thumbnailUrl.isNotEmpty) {
-                thumbUrls.add(widget.lecture.thumbnailUrl);
-              }
+              // 썸네일 배경
+              final thumbUrl = widget.lecture.thumbnailUrl;
               return Stack(children: [
-                // 썸네일 배경
                 Positioned.fill(
-                  child: _PlayerThumbWidget(
-                    urls: thumbUrls,
-                    subject: widget.lecture.subject,
-                  ),
+                  child: thumbUrl.isNotEmpty
+                    ? Image.network(
+                        thumbUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: _subjectColor(widget.lecture.subject).withValues(alpha: 0.3),
+                          child: Icon(Icons.folder_rounded, size: 80,
+                              color: _subjectColor(widget.lecture.subject)),
+                        ),
+                      )
+                    : Container(
+                        color: _subjectColor(widget.lecture.subject).withValues(alpha: 0.3),
+                        child: Icon(Icons.folder_rounded, size: 80,
+                            color: _subjectColor(widget.lecture.subject)),
+                      ),
                 ),
-                Container(color: Colors.black.withValues(alpha: 0.50)),
+                Container(color: Colors.black.withValues(alpha: 0.55)),
                 // 중앙 재생 버튼
                 Center(
                   child: Column(mainAxisSize: MainAxisSize.min, children: [
                     // 큼직한 재생 버튼
                     ElevatedButton(
-                      onPressed: _launchYouTube,
+                      onPressed: _openDriveInBrowser,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
+                        backgroundColor: const Color(0xFF1a73e8),
                         shape: const CircleBorder(),
                         padding: const EdgeInsets.all(22),
                         elevation: 8,
-                        shadowColor: Colors.red.withValues(alpha: 0.6),
+                        shadowColor: const Color(0xFF1a73e8).withValues(alpha: 0.6),
                       ),
                       child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 52),
                     ),
                     const SizedBox(height: 18),
-                    // YouTube로 열기 버튼
+                    // Google Drive로 열기 버튼
                     ElevatedButton.icon(
-                      onPressed: _launchYouTube,
+                      onPressed: _openDriveInBrowser,
                       icon: const Icon(Icons.open_in_new_rounded, size: 16),
-                      label: const Text('YouTube에서 보기',
+                      label: const Text('Google Drive에서 보기',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red.shade700,
+                        backgroundColor: const Color(0xFF1a73e8),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -562,7 +542,7 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Text('터치하면 YouTube 앱이 열립니다',
+                    Text('터치하면 브라우저에서 영상이 열립니다',
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
                   ]),
                 ),
@@ -570,32 +550,21 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
             }),
           )
         else ...[
-          Image.network(
-            widget.lecture.thumbnailUrl,
-            width: double.infinity, height: double.infinity,
-            fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => Container(
-              color: _subjectColor(widget.lecture.subject).withValues(alpha: 0.3),
-              child: Icon(Icons.play_circle_outline, size: 80,
-                  color: _subjectColor(widget.lecture.subject)),
+          // videoUrl이 없는 경우 빈 화면
+          Container(
+            color: _subjectColor(widget.lecture.subject).withValues(alpha: 0.3),
+            child: Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.video_library_rounded, size: 64,
+                    color: _subjectColor(widget.lecture.subject)),
+                const SizedBox(height: 12),
+                const Text('영상 URL이 등록되지 않았습니다',
+                    style: TextStyle(color: Colors.white70, fontSize: 14)),
+              ]),
             ),
           ),
-          Container(color: Colors.black.withValues(alpha: 0.4)),
-          if (_showControls)
-            GestureDetector(
-              onTap: () => setState(() => _isPlaying = !_isPlaying),
-              child: Container(
-                width: 60, height: 60,
-                decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle),
-                child: Icon(
-                    _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: Colors.white, size: 36),
-              ),
-            ),
         ],
-        if (!_isYouTubeVideo && _showSubtitle && _currentSubtitle.isNotEmpty)
+        if (!_isDriveVideo && _showSubtitle && _currentSubtitle.isNotEmpty)
           Positioned(
             bottom: 36, left: 16, right: 16,
             child: Container(
@@ -609,85 +578,75 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
                 style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4)),
             ),
           ),
-        // YouTube 모드: 상단에 뒤로가기 + YouTube 앱 열기 + 전체화면 버튼
-        if (_isYouTubeVideo)
+        // Google Drive 모드: 상단 제목바 + 브라우저 열기 버튼
+        if (_isDriveVideo)
           Positioned(
             top: 0, left: 0, right: 0,
-            child: Builder(builder: (ctx) {
-              final lang = ctx.read<AppState>().selectedLanguage;
-              final T = (String key) => AppTranslations.tLang(lang, key);
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                    colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent]),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                  colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent]),
+              ),
+              child: Row(children: [
+                IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                child: Row(children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Expanded(child: Text(widget.lecture.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
-                    maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  // YouTube 앱으로 직접 열기
-                  GestureDetector(
-                    onTap: _launchYouTube,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      margin: const EdgeInsets.only(right: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 14),
-                        const SizedBox(width: 3),
-                        Text(T('player_open_youtube'),
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
-                      ]),
+                Expanded(child: Text(widget.lecture.title,
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                  maxLines: 1, overflow: TextOverflow.ellipsis)),
+                // 브라우저로 열기 버튼
+                GestureDetector(
+                  onTap: _openDriveInBrowser,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    margin: const EdgeInsets.only(right: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1a73e8),
+                      borderRadius: BorderRadius.circular(6),
                     ),
+                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.play_arrow_rounded, color: Colors.white, size: 14),
+                      SizedBox(width: 3),
+                      Text('재생', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                    ]),
                   ),
-                  IconButton(
-                    icon: Icon(_isFullScreen
-                        ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
-                        color: Colors.white, size: 20),
-                    tooltip: _isFullScreen ? T('player_exit_fullscreen') : T('player_fullscreen'),
-                    onPressed: () => setState(() => _isFullScreen = !_isFullScreen),
-                  ),
-                ]),
-              );
-            }),
+                ),
+                IconButton(
+                  icon: Icon(_isFullScreen
+                      ? Icons.fullscreen_exit_rounded : Icons.fullscreen_rounded,
+                      color: Colors.white, size: 20),
+                  onPressed: () => setState(() => _isFullScreen = !_isFullScreen),
+                ),
+              ]),
+            ),
           ),
-        // YouTube 하단 열기 버튼 (다국어)
-        if (_isYouTubeVideo)
+        // Drive 하단 열기 버튼
+        if (_isDriveVideo)
           Positioned(
             bottom: 16, left: 0, right: 0,
             child: Center(
-              child: Builder(builder: (ctx) {
-                final lang = ctx.read<AppState>().selectedLanguage;
-                final T = (String key) => AppTranslations.tLang(lang, key);
-                return GestureDetector(
-                  onTap: _launchYouTube,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
-                      const SizedBox(width: 6),
-                      Text(T('player_tap_hint'),
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                    ]),
+              child: GestureDetector(
+                onTap: _openDriveInBrowser,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1a73e8).withValues(alpha: 0.9),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                );
-              }),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
+                    SizedBox(width: 6),
+                    Text('브라우저에서 영상 열기',
+                        style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+              ),
             ),
           ),
-        if (!_isYouTubeVideo && _showControls)
+        if (!_isDriveVideo && _showControls)
           Positioned(
             top: 0, left: 0, right: 0,
             child: Container(
@@ -723,7 +682,7 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
               ]),
             ),
           ),
-        if (!_isYouTubeVideo && _showControls)
+        if (!_isDriveVideo && _showControls)
           Positioned(
             bottom: 0, left: 0, right: 0,
             child: Container(
@@ -1266,18 +1225,15 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   Widget _buildLectureInfoTab(bool isFav, AppState appState) {
     final lang = appState.selectedLanguage;
     final T = (String key) => AppTranslations.tLang(lang, key);
-    // 썸네일 URL 구성 (YouTube 강의는 ytimg, 일반은 thumbnailUrl)
-    final ytId = _extractYouTubeId(widget.lecture.videoUrl);
+    // 썸네일 URL 구성 (Google Drive 썸네일)
     final thumbUrls = <String>[];
-    if (ytId != null) {
-      thumbUrls.addAll([
-        'https://i.ytimg.com/vi/$ytId/hqdefault.jpg',
-        'https://i.ytimg.com/vi/$ytId/mqdefault.jpg',
-        'https://i.ytimg.com/vi/$ytId/default.jpg',
-      ]);
-    }
     if (widget.lecture.thumbnailUrl.isNotEmpty) {
       thumbUrls.add(widget.lecture.thumbnailUrl);
+    }
+    // Drive 파일 썸네일 자동 추가
+    final driveId = _extractDriveId(widget.lecture.videoUrl);
+    if (driveId != null) {
+      thumbUrls.add('https://drive.google.com/thumbnail?id=$driveId&sz=w480');
     }
 
     return SingleChildScrollView(
@@ -1297,29 +1253,29 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
                 Positioned.fill(child: Container(color: Colors.black.withValues(alpha: 0.2))),
                 Center(
                   child: GestureDetector(
-                    onTap: _isYouTubeVideo ? _launchYouTube : () => setState(() => _isPlaying = !_isPlaying),
+                    onTap: _isDriveVideo ? _openDriveInBrowser : () => setState(() => _isPlaying = !_isPlaying),
                     child: Container(
                       width: 60, height: 60,
                       decoration: BoxDecoration(
-                        color: (_isYouTubeVideo ? Colors.red : AppColors.primary).withValues(alpha: 0.9),
+                        color: (_isDriveVideo ? const Color(0xFF1a73e8) : AppColors.primary).withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 36),
                     ),
                   ),
                 ),
-                if (_isYouTubeVideo)
+                if (_isDriveVideo)
                   Positioned(
                     top: 8, right: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
-                        color: Colors.red,
+                        color: const Color(0xFF1a73e8),
                         borderRadius: BorderRadius.circular(4)),
                       child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.play_circle_filled, color: Colors.white, size: 10),
+                        Icon(Icons.folder_rounded, color: Colors.white, size: 10),
                         SizedBox(width: 3),
-                        Text('YouTube', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                        Text('Drive', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
                       ]),
                     ),
                   ),

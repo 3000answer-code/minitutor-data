@@ -588,62 +588,14 @@ class _HomeScreenState extends State<HomeScreen>
 
   void _openLecture(lecture) {
     context.read<AppState>().addRecentView(lecture.id);
-    final videoUrl = lecture.videoUrl as String;
-    // YouTube URL이면 바로 외부 앱으로 열기
-    if (videoUrl.contains('youtube') || videoUrl.contains('youtu.be')) {
-      _launchYouTubeDirectly(videoUrl);
-    } else {
-      Navigator.push(context,
-          MaterialPageRoute(
-              builder: (_) => LecturePlayerScreen(lecture: lecture)));
-    }
-  }
-
-  Future<void> _launchYouTubeDirectly(String url) async {
-    String? ytId;
-    final regexps = [
-      RegExp(r'youtube\.com/shorts/([a-zA-Z0-9_-]{11})'),
-      RegExp(r'youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})'),
-      RegExp(r'youtu\.be/([a-zA-Z0-9_-]{11})'),
-    ];
-    for (final re in regexps) {
-      final m = re.firstMatch(url);
-      if (m != null) { ytId = m.group(1); break; }
-    }
-
-    final bool isShorts = url.contains('/shorts/');
-
-    final List<Uri> candidates = [];
-    if (ytId != null) {
-      if (isShorts) {
-        candidates.add(Uri.parse('vnd.youtube://shorts/$ytId'));
-        candidates.add(Uri.parse('https://www.youtube.com/shorts/$ytId'));
-      } else {
-        candidates.add(Uri.parse('vnd.youtube://$ytId'));
-        candidates.add(Uri.parse('https://youtu.be/$ytId'));
-        candidates.add(Uri.parse('https://www.youtube.com/watch?v=$ytId'));
-      }
-    }
-    candidates.add(Uri.parse(url));
-
-    for (final uri in candidates) {
-      try {
-        final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (ok) return;
-      } catch (_) {
-        continue;
-      }
-    }
-    // 모두 실패 시 플레이어 화면으로 fallback
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('YouTube를 열 수 없습니다. 강의 화면에서 다시 시도해주세요.')),
-      );
-    }
+    // Google Drive URL이면 플레이어 화면으로 이동 (플레이어에서 브라우저 열기 버튼 제공)
+    Navigator.push(context,
+        MaterialPageRoute(
+            builder: (_) => LecturePlayerScreen(lecture: lecture)));
   }
 }
 
-// ─── YouTube 썸네일: 여러 URL을 순서대로 시도하는 위젯 ───
+// ─── 썸네일: 여러 URL을 순서대로 시도하는 위젯 ───
 class _ThumbWithFallback extends StatefulWidget {
   final List<String> urls;
   final double width;
@@ -685,10 +637,6 @@ class _ThumbWithFallbackState extends State<_ThumbWithFallback> {
       widget.urls[_urlIndex],
       width: widget.width, height: widget.height,
       fit: BoxFit.cover,
-      headers: const {
-        'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://www.youtube.com/',
-      },
       loadingBuilder: (_, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(

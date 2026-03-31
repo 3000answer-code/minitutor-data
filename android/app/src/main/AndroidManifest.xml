@@ -26,19 +26,14 @@
             android:value="2" />
     </application>
 
-    <!-- Android 11+ 패키지 가시성: YouTube 앱 및 브라우저 열기 허용 -->
+    <!-- Android 11+ 패키지 가시성: Google Drive 및 브라우저 열기 허용 -->
     <queries>
         <!-- 텍스트 처리 (Flutter 엔진 필요) -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- YouTube 앱 직접 실행 -->
-        <intent>
-            <action android:name="android.intent.action.VIEW"/>
-            <data android:scheme="vnd.youtube"/>
-        </intent>
-        <!-- https URL 열기 (브라우저, YouTube 웹 등) -->
+        <!-- https URL 열기 (브라우저, Google Drive 등) -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
