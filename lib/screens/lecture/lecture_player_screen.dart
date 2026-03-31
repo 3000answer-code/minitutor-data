@@ -132,41 +132,51 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   Future<void> _launchYouTube() async {
     final url = widget.lecture.videoUrl;
     final ytId = _extractYouTubeId(url);
-    if (ytId == null) return;
 
-    // 관련 영상 완전 차단: rel=0 파라미터 사용
-    // Shorts URL 여부 판단
-    final isShorts = url.contains('/shorts/');
+    // YouTube ID가 없으면 원본 URL 그대로 열기
+    final bool isShorts = url.contains('/shorts/');
 
-    Uri ytAppUrl;
-    Uri ytWebUrl;
+    // 시도할 URL 목록 (우선순위 순)
+    final List<Uri> candidates = [];
 
-    if (isShorts) {
-      // Shorts: 앱은 shorts 스킴, 웹은 shorts URL
-      ytAppUrl = Uri.parse('vnd.youtube://shorts/$ytId');
-      ytWebUrl = Uri.parse('https://www.youtube.com/shorts/$ytId');
-    } else {
-      // 일반 영상: rel=0으로 관련 영상 차단, 앱 스킴도 동일
-      ytAppUrl = Uri.parse('vnd.youtube://$ytId?rel=0');
-      ytWebUrl = Uri.parse('https://www.youtube.com/watch?v=$ytId&rel=0&playsinline=1');
+    if (ytId != null) {
+      if (isShorts) {
+        // Shorts: YouTube 앱 스킴 → 웹 URL 순서
+        candidates.add(Uri.parse('vnd.youtube://shorts/$ytId'));
+        candidates.add(Uri.parse('https://www.youtube.com/shorts/$ytId'));
+      } else {
+        // 일반 영상
+        candidates.add(Uri.parse('vnd.youtube://$ytId'));
+        candidates.add(Uri.parse('https://youtu.be/$ytId'));
+        candidates.add(Uri.parse('https://www.youtube.com/watch?v=$ytId'));
+      }
+    }
+    // 원본 URL 항상 마지막 fallback으로 추가
+    candidates.add(Uri.parse(url));
+
+    // canLaunchUrl 체크 없이 순서대로 시도 (Android 11+ 호환)
+    for (final uri in candidates) {
+      try {
+        final launched = await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+        if (launched) return; // 성공하면 종료
+      } catch (_) {
+        // 실패 시 다음 URL 시도
+        continue;
+      }
     }
 
-    try {
-      if (await canLaunchUrl(ytAppUrl)) {
-        await launchUrl(ytAppUrl);
-      } else {
-        await launchUrl(ytWebUrl, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      // 최후 fallback: rel=0 붙여서 열기
-      try {
-        final fallback = isShorts
-            ? Uri.parse('https://www.youtube.com/shorts/$ytId')
-            : Uri.parse('https://www.youtube.com/watch?v=$ytId&rel=0');
-        await launchUrl(fallback, mode: LaunchMode.externalApplication);
-      } catch (_) {
-        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-      }
+    // 모두 실패 시 사용자에게 알림
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('YouTube 앱 또는 브라우저를 열 수 없습니다.\n아래 "직접 열기" 버튼을 사용해주세요.'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 4),
+        ),
+      );
     }
   }
 
@@ -523,37 +533,38 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
                 Container(color: Colors.black.withValues(alpha: 0.50)),
                 // 중앙 재생 버튼
                 Center(
-                  child: GestureDetector(
-                    onTap: _launchYouTube,
-                    child: Column(mainAxisSize: MainAxisSize.min, children: [
-                      Container(
-                        width: 80, height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: Colors.red.withValues(alpha: 0.5), blurRadius: 20)],
-                        ),
-                        child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 48),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    // 큼직한 재생 버튼
+                    ElevatedButton(
+                      onPressed: _launchYouTube,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.all(22),
+                        elevation: 8,
+                        shadowColor: Colors.red.withValues(alpha: 0.6),
                       ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.open_in_new_rounded, color: Colors.white, size: 16),
-                          const SizedBox(width: 6),
-                          Text(T('player_play_on_youtube'),
-                            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
-                        ]),
+                      child: const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 52),
+                    ),
+                    const SizedBox(height: 18),
+                    // YouTube로 열기 버튼
+                    ElevatedButton.icon(
+                      onPressed: _launchYouTube,
+                      icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                      label: const Text('YouTube에서 보기',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade700,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        elevation: 4,
                       ),
-                      const SizedBox(height: 8),
-                      Text(T('player_tap_hint'),
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 12)),
-                    ]),
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text('터치하면 YouTube 앱이 열립니다',
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.75), fontSize: 12)),
+                  ]),
                 ),
               ]);
             }),

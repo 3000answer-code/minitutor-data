@@ -2,10 +2,40 @@ import 'package:flutter/foundation.dart';
 import '../models/lecture.dart';
 import '../models/consultation.dart';
 import 'data_service.dart';
+import 'api_service.dart';
 import 'translations.dart';
 
 class AppState extends ChangeNotifier {
   final DataService _dataService = DataService();
+  final ApiService _apiService = ApiService();
+
+  // ─── API 강의 캐시 ───
+  List<Lecture> _apiLectures = [];
+  bool _apiLoaded = false;
+
+  List<Lecture> get apiLectures => _apiLectures;
+  bool get apiLoaded => _apiLoaded;
+
+  /// 앱 시작 시 API 강의 로드
+  Future<void> loadApiLectures() async {
+    try {
+      final lectures = await _apiService.fetchLectures();
+      _apiLectures = lectures;
+      _apiLoaded = true;
+      notifyListeners();
+      if (kDebugMode) debugPrint('[AppState] API 강의 ${lectures.length}개 로드');
+    } catch (e) {
+      if (kDebugMode) debugPrint('[AppState] API 로드 실패: $e');
+      _apiLoaded = true;
+      notifyListeners();
+    }
+  }
+
+  /// API 강의 새로고침
+  Future<void> refreshApiLectures() async {
+    _apiService.clearCache();
+    await loadApiLectures();
+  }
 
   // ─── 사용자 정보 ───
   String _nickname = '공부왕';
@@ -70,10 +100,25 @@ class AppState extends ChangeNotifier {
   List<String> get favoriteIds => _favoriteIds;
   List<String> get recentViewedIds => _recentViewedIds;
 
-  // ─── 강의 데이터 Getters ───
-  List<Lecture> get allLectures => _dataService.getAllLectures();
-  List<Lecture> get recommendedLectures => _dataService.getRecommendedLectures();
-  List<Lecture> get popularLectures => _dataService.getPopularLectures();
+  // ─── 강의 데이터 Getters (API 우선, 없으면 로컬) ───
+  List<Lecture> get allLectures =>
+      _apiLectures.isNotEmpty ? _apiLectures : _dataService.getAllLectures();
+  List<Lecture> get recommendedLectures {
+    final all = allLectures;
+    if (_apiLectures.isNotEmpty) {
+      final sorted = List<Lecture>.from(all)..sort((a, b) => b.rating.compareTo(a.rating));
+      return sorted.take(8).toList();
+    }
+    return _dataService.getRecommendedLectures();
+  }
+  List<Lecture> get popularLectures {
+    final all = allLectures;
+    if (_apiLectures.isNotEmpty) {
+      final sorted = List<Lecture>.from(all)..sort((a, b) => b.viewCount.compareTo(a.viewCount));
+      return sorted.take(10).toList();
+    }
+    return _dataService.getPopularLectures();
+  }
   List<Lecture> get favoriteLectures =>
       allLectures.where((l) => _favoriteIds.contains(l.id)).toList();
   List<Lecture> get recentViewedLectures =>

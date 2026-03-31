@@ -2,11 +2,42 @@ import '../models/lecture.dart';
 import '../models/instructor.dart';
 import '../models/consultation.dart';
 import '../models/study_progress.dart';
+import 'api_service.dart';
 
 class DataService {
   static final DataService _instance = DataService._internal();
   factory DataService() => _instance;
   DataService._internal();
+
+  final _api = ApiService();
+
+  // ─── API에서 강의 로드 (어드민 등록 콘텐츠 우선) ───
+  Future<List<Lecture>> getLecturesFromApi() async {
+    final apiLectures = await _api.fetchLectures();
+    if (apiLectures.isNotEmpty) return apiLectures;
+    // API 실패 시 로컬 샘플 반환
+    return getYoutubeLectures();
+  }
+
+  Future<List<Lecture>> getRecommendedFromApi() async {
+    final all = await getLecturesFromApi();
+    final recommended = all.where((l) => true).toList();
+    recommended.sort((a, b) => b.rating.compareTo(a.rating));
+    return recommended.take(8).toList();
+  }
+
+  Future<List<Lecture>> getPopularFromApi() async {
+    final all = await getLecturesFromApi();
+    all.sort((a, b) => b.viewCount.compareTo(a.viewCount));
+    return all.take(10).toList();
+  }
+
+  // YouTube 강의만 (로컬 폴백)
+  List<Lecture> getYoutubeLectures() {
+    return getAllLectures()
+        .where((l) => l.videoUrl.contains('youtube'))
+        .toList();
+  }
 
   // ─── 샘플 강의 데이터 ───
   List<Lecture> getAllLectures() {

@@ -31,7 +31,7 @@ class App2Gong extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => AppState(),
+      create: (_) => AppState()..loadApiLectures(),
       child: Consumer<AppState>(
         builder: (context, appState, _) => MaterialApp(
           title: '이공 - 2분공부',
@@ -131,6 +131,24 @@ class MainShell extends StatelessWidget {
       ]),
       // ── actions: MainShell Scaffold 직속이라 endDrawer 정상 접근 ──
       actions: [
+        // 강의 새로고침 버튼 (어드민 등록 콘텐츠 즉시 반영)
+        IconButton(
+          icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+          tooltip: '강의 새로고침',
+          onPressed: () async {
+            final appState = context.read<AppState>();
+            await appState.refreshApiLectures();
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ 최신 강의 목록을 불러왔습니다'),
+                  duration: Duration(seconds: 2),
+                  backgroundColor: Color(0xFF059669),
+                ),
+              );
+            }
+          },
+        ),
         IconButton(
           icon: const Icon(Icons.slideshow_rounded, color: AppColors.primary),
           tooltip: T('storyboard_tooltip'),
