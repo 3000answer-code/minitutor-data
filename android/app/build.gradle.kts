@@ -28,11 +28,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.minitutor.study"
+        applicationId = "com.asometutor.study.build004"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 4
+        versionName = "1.0.0-build004"
     }
 
     signingConfigs {

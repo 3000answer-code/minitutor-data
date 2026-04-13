@@ -150,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen>
         slivers: [
           if (tab == 'recommend' || tab == 'popular') ...[
             SliverToBoxAdapter(child: _buildBanner()),
+            SliverToBoxAdapter(child: _buildMathScienceCards()),
             SliverToBoxAdapter(child: _buildStudyStats(appState)),
           ],
 
@@ -401,12 +402,12 @@ class _HomeScreenState extends State<HomeScreen>
         allLecs.where((l) => l.subject.contains(sub) || l.description.contains(sub)).length;
 
     final categories = [
-      {'title': '과학', 'sub': '중등 과학', 'icon': '🔬', 'color': const Color(0xFF5E35B1), 'count': scienceLecCount('과학')},
-      {'title': '공통과학', 'sub': '고등 공통과학', 'icon': '🧪', 'color': const Color(0xFF1976D2), 'count': scienceLecCount('공통과학')},
-      {'title': '물리', 'sub': '고등 물리학', 'icon': '⚡', 'color': const Color(0xFF1565C0), 'count': scienceLecCount('물리')},
-      {'title': '화학', 'sub': '고등 화학', 'icon': '🧬', 'color': const Color(0xFFE65100), 'count': scienceLecCount('화학')},
-      {'title': '생명과학', 'sub': '고등 생명과학', 'icon': '🌿', 'color': const Color(0xFF2E7D32), 'count': scienceLecCount('생명과학')},
-      {'title': '지구과학', 'sub': '고등 지구과학', 'icon': '🌍', 'color': const Color(0xFF00838F), 'count': scienceLecCount('지구과학')},
+      {'title': '과학', 'sub': '중등 과학', 'icon': '🔬', 'color': const Color(0xFF5E35B1), 'count': scienceLecCount('과학'), 'image': 'assets/images/subjects/science_card.jpg'},
+      {'title': '공통과학', 'sub': '고등 공통과학', 'icon': '🧪', 'color': const Color(0xFF1976D2), 'count': scienceLecCount('공통과학'), 'image': 'assets/images/subjects/common_science_card.jpg'},
+      {'title': '물리', 'sub': '고등 물리학', 'icon': '⚡', 'color': const Color(0xFF1565C0), 'count': scienceLecCount('물리'), 'image': 'assets/images/subjects/physics_card.jpg'},
+      {'title': '화학', 'sub': '고등 화학', 'icon': '🧬', 'color': const Color(0xFFE65100), 'count': scienceLecCount('화학'), 'image': 'assets/images/subjects/chemistry_card.jpg'},
+      {'title': '생명과학', 'sub': '고등 생명과학', 'icon': '🌿', 'color': const Color(0xFF2E7D32), 'count': scienceLecCount('생명과학'), 'image': 'assets/images/subjects/biology_card.jpg'},
+      {'title': '지구과학', 'sub': '고등 지구과학', 'icon': '🌍', 'color': const Color(0xFF00838F), 'count': scienceLecCount('지구과학'), 'image': 'assets/images/subjects/earth_card.jpg'},
     ];
 
     final totalCount = allLecs.where((l) =>
@@ -485,21 +486,34 @@ class _HomeScreenState extends State<HomeScreen>
             final cat = categories[idx];
             final Color catColor = cat['color'] as Color;
             final int count = cat['count'] as int;
+            final String? catImage = cat['image'] as String?;
             return GestureDetector(
               onTap: () {
                 // 해당 과목 강의 목록으로 이동 가능
               },
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [catColor, catColor.withValues(alpha: 0.7)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(color: catColor.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4)),
                   ],
+                  image: catImage != null
+                      ? DecorationImage(
+                          image: AssetImage(catImage),
+                          fit: BoxFit.cover,
+                          colorFilter: ColorFilter.mode(
+                            catColor.withValues(alpha: 0.5),
+                            BlendMode.multiply,
+                          ),
+                        )
+                      : null,
+                  gradient: catImage == null
+                      ? LinearGradient(
+                          colors: [catColor, catColor.withValues(alpha: 0.7)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
                 ),
                 child: Stack(children: [
                   // 배경 원
@@ -1040,12 +1054,132 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  Widget _buildMathScienceCards() {
+    final appState = context.watch<AppState>();
+    final allLecs = appState.allLectures;
+    final mathCount = allLecs.where((l) => l.subject.contains('수학')).length;
+    final scienceCount = allLecs.where((l) =>
+        l.subject.contains('과학') || l.subject.contains('물리') ||
+        l.subject.contains('화학') || l.subject.contains('생명') ||
+        l.subject.contains('지구')).length;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      child: Row(children: [
+        // 수학 카드
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              final idx = _tabKeys.indexOf('수학');
+              if (idx >= 0) _tabController.animateTo(idx);
+            },
+            child: Container(
+              height: 90,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 3))],
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/banners/banner_math.png'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(Color(0x661A5C2A), BlendMode.multiply),
+                ),
+              ),
+              child: Stack(children: [
+                // 어두운 그라디언트 오버레이
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                      colors: [Colors.black.withValues(alpha: 0.35), Colors.transparent],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.calculate_rounded, color: Colors.white, size: 18),
+                        const SizedBox(width: 4),
+                        const Text('수학', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+                        const Spacer(),
+                        const Icon(Icons.chevron_right, color: Colors.white, size: 18),
+                      ]),
+                      Text('${mathCount > 0 ? mathCount : 17}개 강의',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        // 과학 카드
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              final idx = _tabKeys.indexOf('과학');
+              if (idx >= 0) _tabController.animateTo(idx);
+            },
+            child: Container(
+              height: 90,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 3))],
+                image: const DecorationImage(
+                  image: AssetImage('assets/images/banners/banner_science_new.jpg'),
+                  fit: BoxFit.cover,
+                  colorFilter: ColorFilter.mode(Color(0x662C0654), BlendMode.multiply),
+                ),
+              ),
+              child: Stack(children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                      colors: [Colors.black.withValues(alpha: 0.35), Colors.transparent],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(children: [
+                        const Icon(Icons.science_rounded, color: Colors.white, size: 18),
+                        const SizedBox(width: 4),
+                        const Text('과학', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+                        const Spacer(),
+                        const Icon(Icons.chevron_right, color: Colors.white, size: 18),
+                      ]),
+                      Text('${scienceCount > 0 ? scienceCount : 11}개 강의',
+                          style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ),
+      ]),
+    );
+  }
+
   Widget _buildStudyStats(AppState appState) {
     final lang = appState.selectedLanguage;
     final T = (String key) => AppTranslations.tLang(lang, key);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -1056,13 +1190,59 @@ class _HomeScreenState extends State<HomeScreen>
               offset: const Offset(0, 2))
         ],
       ),
-      child: Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-        _buildStatItem('🔥', '${appState.streakDays}${T('unit_day')}', T('stat_streak')),
-        _buildStatDivider(),
-        _buildStatItem('⏱️', '${appState.todayStudyMinutes}${T('unit_min')}', T('stat_today')),
-        _buildStatDivider(),
-        _buildStatItem('✅', '${appState.completedLectures}${T('unit_count')}', T('stat_completed')),
-      ]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildStatItem2(Icons.whatshot_rounded,    '${appState.streakDays}${T('unit_day')}',             '연속 학습',  const Color(0xFFFF6B35)),
+          const SizedBox(width: 4),
+          _buildStatItem2(Icons.ondemand_video_rounded, '${appState.todayViewedCount}강',                   '오늘 학습',  const Color(0xFF667EEA)),
+          const SizedBox(width: 4),
+          _buildStatItem2(Icons.task_alt_rounded,    '${appState.completedLectures}${T('unit_count')}',    '완료 강의',  const Color(0xFF11998E)),
+          const SizedBox(width: 4),
+          _buildStatItem2(Icons.manage_search_rounded,'${appState.searchCount}${T('unit_count')}',          '검색수',     const Color(0xFFF59E0B)),
+          const SizedBox(width: 4),
+          _buildStatItem2(Icons.smart_display_rounded,'${appState.totalWatchMinutes}${T('unit_min')}',      '시청 시간',  const Color(0xFF8B5CF6)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem2(IconData icon, String value, String label, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color.withValues(alpha: 0.08), color.withValues(alpha: 0.04)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withValues(alpha: 0.12), width: 1),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(7),
+                boxShadow: [BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 4)],
+              ),
+              child: Icon(icon, color: Colors.white, size: 14),
+            ),
+            const SizedBox(height: 4),
+            Text(value,
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: color),
+                overflow: TextOverflow.ellipsis),
+            Text(label,
+                style: const TextStyle(fontSize: 9, color: AppColors.textSecondary),
+                overflow: TextOverflow.ellipsis),
+          ],
+        ),
+      ),
     );
   }
 

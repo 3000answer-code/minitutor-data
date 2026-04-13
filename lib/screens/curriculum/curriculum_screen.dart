@@ -183,9 +183,9 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     final subjects = _subjectsByCategory[_selectedCategory] ?? [];
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: SizedBox(
-        height: 36,
+        height: 34,
         child: ListView(
           scrollDirection: Axis.horizontal,
           children: subjects.map((s) {
@@ -230,7 +230,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
       child: Row(
         children: [
           // 학년 선택 버튼
@@ -382,11 +382,11 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     final palette = _cardPalette;
     final cardColor = palette[idx % palette.length];
 
-    // 번갈아 배경 색상: 짝수 → 흰색, 홀수 → 아주 연한 컬러 틴트
+    // 번갈아 배경 색상: 짝수 → 아주 연한 틴트, 홀수 → 더 진한 틴트
     final isOdd = idx % 2 == 1;
     final bgColor = isOdd
-        ? cardColor.withValues(alpha: 0.06)
-        : Colors.white;
+        ? cardColor.withValues(alpha: 0.13)
+        : cardColor.withValues(alpha: 0.04);
 
     return GestureDetector(
       onTap: () => _openUnitDetail(unit),
