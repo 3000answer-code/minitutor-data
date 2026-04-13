@@ -192,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
 
-          // ── 강의 세로 리스트 (추천/인기 동일 내용, 어드민에서 조절) ──
+          // ── 강의 세로 리스트 (추천/인기 동일 내용, LectureCard 공통 위젯 사용) ──
           if (tab == 'recommend' || tab == 'popular')
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
@@ -200,11 +200,9 @@ class _HomeScreenState extends State<HomeScreen>
                 delegate: SliverChildBuilderDelegate(
                   (context, i) {
                     final lec = allLecs[i];
-                    return _LectureListCard(
+                    return LectureCard(
                       lecture: lec,
                       onTap: () => _openLecture(lec),
-                      thumbnailWidget: _buildYtThumbnail(lec, 110, 80),
-                      isPopular: tab == 'popular',
                     );
                   },
                   childCount: allLecs.length,
@@ -616,22 +614,10 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           )
         else
-          ...displayLecs.take(10).map((lec) {
-            final subjectColor = lec.subject == '수학'
-                ? AppColors.math
-                : lec.subject == '과학' || lec.subject == '물리' ||
-                      lec.subject == '화학' || lec.subject == '생명과학' ||
-                      lec.subject == '지구과학'
-                    ? const Color(0xFF7C3AED)
-                    : const Color(0xFF059669);
-            return _buildLectureInfoCard(
-              lec: lec,
-              subjectColor: subjectColor,
-              onTap: () => _openLecture(lec),
-              thumbnailWidget: _buildYtThumbnail(lec, 110, 80),  // ClipRRect는 내부에서 처리
-              isPopular: false,
-            );
-          }).toList(),
+          ...displayLecs.take(10).map((lec) => LectureCard(
+            lecture: lec,
+            onTap: () => _openLecture(lec),
+          )).toList(),
       ]),
     );
   }
