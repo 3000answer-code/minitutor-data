@@ -4,7 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
-        android:label="Asome Tutor"
+        android:label="Mini Tutor"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
@@ -47,6 +47,7 @@
         </intent>
     </queries>
 </manifest>
+
 
 
 

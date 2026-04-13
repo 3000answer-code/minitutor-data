@@ -62,13 +62,12 @@ class _MyActivityScreenState extends State<MyActivityScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+          isScrollable: false,
           tabs: [
-            Tab(text: T('tab_recent')),
-            Tab(text: T('tab_notes')),
-            Tab(text: T('tab_my_qa')),
-            Tab(text: T('tab_expert')),
+            Tab(child: Text(T('tab_recent'), style: const TextStyle(fontSize: 13))),
+            Tab(child: Text(T('tab_notes'), style: const TextStyle(fontSize: 13))),
+            Tab(child: Text(T('tab_my_qa'), style: const TextStyle(fontSize: 13))),
+            Tab(child: Text(T('tab_expert'), style: const TextStyle(fontSize: 13))),
           ],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
@@ -76,8 +75,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           dividerColor: AppColors.divider,
           labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
-          labelPadding: const EdgeInsets.symmetric(horizontal: 14),
-          padding: const EdgeInsets.symmetric(horizontal: 4),
+          labelPadding: EdgeInsets.zero,
         ),
       ),
       body: TabBarView(
