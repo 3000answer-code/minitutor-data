@@ -521,10 +521,8 @@ class _HomeScreenState extends State<HomeScreen>
     final allLecs = appState.allLectures;
     final apiLecs = appState.apiLectures;
 
-    // 두번설명 태그가 있는 강의 우선, 없으면 전체
-    final twiceLecs = allLecs.where((l) =>
-        l.hashtags.any((t) => t.contains('두번') || t.contains('twice')) ||
-        l.description.contains('두번') || l.title.contains('두번')).toList();
+    // lectureType == 'twice' 인 강의만 표시 (정확한 필터)
+    final twiceLecs = allLecs.where((l) => l.lectureType == 'twice').toList();
     final displayLecs = twiceLecs.isNotEmpty ? twiceLecs : (apiLecs.isNotEmpty ? apiLecs : allLecs);
     final totalCount = displayLecs.length;
 
@@ -672,8 +670,9 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _buildHashtagArea(List<String> tags, Color color) {
     if (tags.isEmpty) return const SizedBox.shrink();
 
-    if (tags.length <= 5) {
-      // 1줄 가로스크롤
+    // 태그가 4개 이하면 1줄
+    // 5개 이상이면 자연스럽게 2줄: 첫 줄에 ceil(n/2)개, 둘째 줄에 나머지
+    if (tags.length <= 4) {
       return SizedBox(
         height: 26,
         child: SingleChildScrollView(
@@ -684,16 +683,10 @@ class _HomeScreenState extends State<HomeScreen>
         ),
       );
     } else {
-      // 2줄 가로스크롤 (홀수 인덱스→1행, 짝수 인덱스→2행)
-      final row1 = <Widget>[];
-      final row2 = <Widget>[];
-      for (int i = 0; i < tags.length; i++) {
-        if (i % 2 == 0) {
-          row1.add(_hashtagChip(tags[i], color));
-        } else {
-          row2.add(_hashtagChip(tags[i], color));
-        }
-      }
+      // 자연스러운 2줄 분배: 앞쪽 ceil(n/2)개 → 1행, 나머지 → 2행
+      final splitIdx = (tags.length / 2).ceil();
+      final row1 = tags.sublist(0, splitIdx);
+      final row2 = tags.sublist(splitIdx);
       return SizedBox(
         height: 56,
         child: SingleChildScrollView(
@@ -701,9 +694,9 @@ class _HomeScreenState extends State<HomeScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(children: row1),
+              Row(children: row1.map((t) => _hashtagChip(t, color)).toList()),
               const SizedBox(height: 4),
-              Row(children: row2),
+              Row(children: row2.map((t) => _hashtagChip(t, color)).toList()),
             ],
           ),
         ),
@@ -725,11 +718,9 @@ class _HomeScreenState extends State<HomeScreen>
   }) {
     final tags = (lec.hashtags as List).cast<String>();
     final gradeLabel = lec.grade.isNotEmpty ? lec.gradeText as String : '전체';
-    final yearLabel = (lec.gradeYear != null &&
-            (lec.gradeYear as String).isNotEmpty &&
-            lec.gradeYear != 'All')
-        ? ' ${lec.gradeYear}학년'
-        : '';
+    // gradeYear: 'All' → 'All' 표시, '1'/'2'/'3' → '1학년' 표시, 빈값 → 없음
+    final gy = (lec.gradeYear as String?) ?? '';
+    final yearLabel = gy == 'All' ? ' All' : (gy.isNotEmpty ? ' ${gy}학년' : '');
     final metaText = '$gradeLabel$yearLabel · ${lec.subject} · ${lec.instructor} 강사';
 
     return GestureDetector(
