@@ -154,161 +154,61 @@ class _HomeScreenState extends State<HomeScreen>
             SliverToBoxAdapter(child: _buildStudyStats(appState)),
           ],
 
-          // ── 🆕 신규강의 섹션 (추천 탭 전용) ──
-          if (tab == 'recommend' && apiLectures.isNotEmpty) ...[
+          // ── 강의 목록 섹션 헤더 (추천: NEW 강의 목록 / 인기: HOT 인기 강의) ──
+          if (tab == 'recommend' || tab == 'popular')
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                 child: Row(children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [Color(0xFFFF6B35), Color(0xFFFF3D00)]),
-                      borderRadius: BorderRadius.circular(6),
+                  if (tab == 'recommend') ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFF2ECC71), Color(0xFF27AE60)]),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
                     ),
-                    child: const Text('NEW', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('신규 강의 업데이트',
-                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                    const SizedBox(width: 8),
+                    const Text('강의 목록',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFE74C3C), Color(0xFFC0392B)]),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text('HOT', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('🔥 인기 강의',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                  ],
                   const Spacer(),
-                  Text('총 ${apiLectures.length}개',
+                  Text('총 ${allLecs.length}개',
                       style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                 ]),
               ),
             ),
+
+          // ── 강의 세로 리스트 (추천/인기 동일 내용, 어드민에서 조절) ──
+          if (tab == 'recommend' || tab == 'popular')
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, i) {
-                    final lec = apiLectures[i];
-                    return _NewLectureCard(
+                    final lec = allLecs[i];
+                    return _LectureListCard(
                       lecture: lec,
                       onTap: () => _openLecture(lec),
                       thumbnailWidget: _buildYtThumbnail(lec, 110, 76),
+                      isPopular: tab == 'popular',
                     );
                   },
-                  childCount: apiLectures.length,
+                  childCount: allLecs.length,
                 ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 4)),
-          ],
-
-          // ── YouTube 실제 강의 섹션 (인기/수학 탭) ──
-          if ((tab == 'popular' || tab == '수학') && ytLectures.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-                child: Row(children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(6)),
-                    child: const Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(T('section_live_lecture'),
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                ]),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, i) {
-                    final lec = ytLectures[i];
-                    return GestureDetector(
-                      onTap: () => _openLecture(lec),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4))],
-                        ),
-                        child: Row(children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
-                            child: _buildYtThumbnail(lec, 120, 80),
-                          ),
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                Row(children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(color: AppColors.math.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(4)),
-                                    child: Text(lec.subject, style: const TextStyle(fontSize: 10, color: AppColors.math, fontWeight: FontWeight.w700)),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                                    child: const Row(children: [
-                                      Icon(Icons.play_circle_filled, size: 10, color: Colors.red),
-                                      SizedBox(width: 3),
-                                      Text('YouTube', style: TextStyle(fontSize: 10, color: Colors.red, fontWeight: FontWeight.w700)),
-                                    ]),
-                                  ),
-                                ]),
-                                const SizedBox(height: 6),
-                                Text(lec.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                                const SizedBox(height: 4),
-                                Text(lec.instructor, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                              ]),
-                            ),
-                          ),
-                          const Padding(padding: EdgeInsets.only(right: 12), child: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary)),
-                        ]),
-                      ),
-                    );
-                  },
-                  childCount: ytLectures.length,
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 8)),
-          ],
-
-          // ── 추천/인기 강의 가로 스크롤 ──
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: Row(children: [
-                Text(
-                  tab == 'recommend'
-                      ? '⭐ ${T('section_recommend')}'
-                      : tab == 'popular'
-                          ? '🔥 ${T('section_popular')}'
-                          : '📚 ${T('section_subject_lecture')}',
-                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-                ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(T('btn_view_all'), style: const TextStyle(fontSize: 13, color: AppColors.primary)),
-                ),
-              ]),
-            ),
-          ),
-          if (tab == 'recommend' || tab == 'popular')
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 260,
-                child: lectures.isEmpty
-                    ? const Center(child: Text('강의를 불러오는 중...', style: TextStyle(color: AppColors.textSecondary)))
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: lectures.length,
-                        itemBuilder: (context, i) => LectureCard(
-                          lecture: lectures[i],
-                          onTap: () => _openLecture(lectures[i]),
-                        ),
-                      ),
               ),
             )
           else
@@ -325,8 +225,6 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
-          if (tab == 'recommend')
-            SliverToBoxAdapter(child: _buildRecentLectures(appState)),
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
       ),
@@ -1470,6 +1368,175 @@ class _NewLectureCard extends StatelessWidget {
               ),
             ]),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 강의 목록 카드 (추천/인기 탭 세로 리스트용)
+class _LectureListCard extends StatelessWidget {
+  final dynamic lecture;
+  final VoidCallback onTap;
+  final Widget thumbnailWidget;
+  final bool isPopular;
+
+  const _LectureListCard({
+    required this.lecture,
+    required this.onTap,
+    required this.thumbnailWidget,
+    this.isPopular = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final subjectColor = lecture.subject == '수학'
+        ? const Color(0xFF2563EB)
+        : lecture.subject == '과학' || lecture.subject == '물리' ||
+              lecture.subject == '화학' || lecture.subject == '생명과학' ||
+              lecture.subject == '지구과학'
+            ? const Color(0xFF7C3AED)
+            : const Color(0xFF059669);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 썸네일 + 기본 정보 Row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 썸네일
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
+                  ),
+                  child: thumbnailWidget,
+                ),
+                // 강의 정보
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 과목 + 학년 + 인기 뱃지
+                        Row(children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: subjectColor.withValues(alpha: 0.10),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(lecture.subject as String,
+                                style: TextStyle(fontSize: 10, color: subjectColor, fontWeight: FontWeight.w700)),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              lecture.gradeText as String,
+                              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                          if (lecture.gradeYear != null && lecture.gradeYear != 'All' && (lecture.gradeYear as String).isNotEmpty) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF1F5F9),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                '${lecture.gradeYear}학년',
+                                style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ],
+                        ]),
+                        const SizedBox(height: 6),
+                        // 강의 제목
+                        Text(
+                          lecture.title as String,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1E293B),
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        // 강사명
+                        Row(children: [
+                          const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFF94A3B8)),
+                          const SizedBox(width: 3),
+                          Text(
+                            '${lecture.instructor} 강사',
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
+                          ),
+                          const Spacer(),
+                          // 재생 버튼
+                          Icon(
+                            Icons.play_circle_fill_rounded,
+                            color: isPopular ? const Color(0xFFE74C3C) : const Color(0xFF2ECC71),
+                            size: 28,
+                          ),
+                        ]),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // 해시태그 행
+            if ((lecture.hashtags as List).isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                child: Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: (lecture.hashtags as List<String>)
+                      .take(4)
+                      .map((tag) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: subjectColor.withValues(alpha: 0.07),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '#$tag',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: subjectColor.withValues(alpha: 0.85),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ))
+                      .toList(),
+                ),
+              ),
+          ],
         ),
       ),
     );
