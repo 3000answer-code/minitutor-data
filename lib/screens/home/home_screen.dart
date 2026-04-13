@@ -203,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen>
                     return _LectureListCard(
                       lecture: lec,
                       onTap: () => _openLecture(lec),
-                      thumbnailWidget: _buildYtThumbnail(lec, 110, 76),
+                      thumbnailWidget: _buildYtThumbnail(lec, 110, 80),
                       isPopular: tab == 'popular',
                     );
                   },
@@ -626,88 +626,14 @@ class _HomeScreenState extends State<HomeScreen>
                       lec.subject == '지구과학'
                     ? const Color(0xFF7C3AED)
                     : const Color(0xFF059669);
-            return GestureDetector(
-            onTap: () => _openLecture(lec),
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.07), blurRadius: 10, offset: const Offset(0, 3))],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 상단: 썸네일 + 기본 정보
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(children: [
-                      // 썸네일
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: _buildYtThumbnail(lec, 110, 76),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          // 태그들
-                          Row(children: [
-                            _miniTag(lec.grade.isNotEmpty ? lec.gradeText : '전체', AppColors.accent),
-                            const SizedBox(width: 4),
-                            _miniTag(lec.subject.isNotEmpty ? lec.subject : '수학', subjectColor),
-                          ]),
-                          const SizedBox(height: 6),
-                          // 제목
-                          Text(lec.title,
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.textPrimary),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 3),
-                          // 강사
-                          Row(children: [
-                            const Icon(Icons.person_outline_rounded, size: 12, color: AppColors.textSecondary),
-                            const SizedBox(width: 2),
-                            Expanded(
-                              child: Text(lec.instructor,
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: subjectColor.withValues(alpha: 0.12),
-                              ),
-                              child: Icon(Icons.play_arrow_rounded, color: subjectColor, size: 18),
-                            ),
-                          ]),
-                        ]),
-                      ),
-                    ]),
-                  ),
-                  // 해시태그 2줄 가로스크롤
-                  if ((lec.hashtags as List).isNotEmpty)
-                    Container(
-                      height: 56,
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: _buildHashtagRows(
-                            (lec.hashtags as List).cast<String>(),
-                            subjectColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          );}).toList(),
+            return _buildLectureInfoCard(
+              lec: lec,
+              subjectColor: subjectColor,
+              onTap: () => _openLecture(lec),
+              thumbnailWidget: _buildYtThumbnail(lec, 110, 80),  // ClipRRect는 내부에서 처리
+              isPopular: false,
+            );
+          }).toList(),
       ]),
     );
   }
@@ -723,46 +649,195 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  /// 해시태그 목록을 2줄로 나눠서 Row 위젯 리스트로 반환
-  /// 4~5개씩 두 줄로 나누며, 초과분은 가로 스크롤로 처리
-  List<Widget> _buildHashtagRows(List<String> tags, Color color) {
-    if (tags.isEmpty) return [];
-    Widget _tagChip(String tag) => Container(
-      margin: const EdgeInsets.only(right: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.20), width: 0.8),
+  /// 해시태그 칩 위젯
+  Widget _hashtagChip(String tag, Color color) => Container(
+    margin: const EdgeInsets.only(right: 6),
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
+    ),
+    child: Text(
+      '#$tag',
+      style: TextStyle(
+        fontSize: 10,
+        color: color.withValues(alpha: 0.9),
+        fontWeight: FontWeight.w600,
       ),
-      child: Text(
-        '#$tag',
-        style: TextStyle(
-          fontSize: 10,
-          color: color.withValues(alpha: 0.9),
-          fontWeight: FontWeight.w600,
+    ),
+  );
+
+  /// 해시태그 영역: 태그 5개 이하면 1줄, 6개 이상이면 2줄 (가로스크롤)
+  Widget _buildHashtagArea(List<String> tags, Color color) {
+    if (tags.isEmpty) return const SizedBox.shrink();
+
+    if (tags.length <= 5) {
+      // 1줄 가로스크롤
+      return SizedBox(
+        height: 26,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: tags.map((t) => _hashtagChip(t, color)).toList(),
+          ),
+        ),
+      );
+    } else {
+      // 2줄 가로스크롤 (홀수 인덱스→1행, 짝수 인덱스→2행)
+      final row1 = <Widget>[];
+      final row2 = <Widget>[];
+      for (int i = 0; i < tags.length; i++) {
+        if (i % 2 == 0) {
+          row1.add(_hashtagChip(tags[i], color));
+        } else {
+          row2.add(_hashtagChip(tags[i], color));
+        }
+      }
+      return SizedBox(
+        height: 56,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: row1),
+              const SizedBox(height: 4),
+              Row(children: row2),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  /// 공통 강의 카드 (모든 탭에서 동일한 레이아웃)
+  /// 1줄: 강의 제목
+  /// 2줄: 시리즈명
+  /// 3줄: 학제 · 학년 · 과목 · 강사명
+  /// 4줄: 해시태그 (5개 이하 1줄, 6개 이상 2줄, 초과 가로스크롤)
+  Widget _buildLectureInfoCard({
+    required dynamic lec,
+    required Color subjectColor,
+    required VoidCallback onTap,
+    required Widget thumbnailWidget,
+    bool isPopular = false,
+  }) {
+    final tags = (lec.hashtags as List).cast<String>();
+    final gradeLabel = lec.grade.isNotEmpty ? lec.gradeText as String : '전체';
+    final yearLabel = (lec.gradeYear != null &&
+            (lec.gradeYear as String).isNotEmpty &&
+            lec.gradeYear != 'All')
+        ? ' ${lec.gradeYear}학년'
+        : '';
+    final metaText = '$gradeLabel$yearLabel · ${lec.subject} · ${lec.instructor} 강사';
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            )
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 상단: 썸네일 + 텍스트 정보
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 썸네일 (왼쪽 모서리 라운드)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(14),
+                    bottomLeft: Radius.circular(14),
+                  ),
+                  child: thumbnailWidget,
+                ),
+                // 오른쪽 텍스트 영역
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 1줄: 강의 제목
+                        Text(
+                          lec.title as String,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF1E293B),
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        // 2줄: 시리즈명
+                        if ((lec.series as String).isNotEmpty)
+                          Text(
+                            lec.series as String,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: subjectColor.withValues(alpha: 0.85),
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        if ((lec.series as String).isNotEmpty)
+                          const SizedBox(height: 3),
+                        // 3줄: 학제·학년·과목·강사
+                        Text(
+                          metaText,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF64748B),
+                            height: 1.4,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // 재생 버튼
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, right: 10),
+                  child: Icon(
+                    Icons.play_circle_fill_rounded,
+                    color: isPopular ? const Color(0xFFE74C3C) : subjectColor,
+                    size: 28,
+                  ),
+                ),
+              ],
+            ),
+            // 4줄: 해시태그 (태그 있을 때만)
+            if (tags.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                child: _buildHashtagArea(tags, subjectColor),
+              ),
+          ],
         ),
       ),
     );
+  }
 
-    // 홀수 인덱스(0,2,4...) → 1행, 짝수(1,3,5...) → 2행
-    final row1 = <Widget>[];
-    final row2 = <Widget>[];
-    for (int i = 0; i < tags.length; i++) {
-      if (i % 2 == 0) {
-        row1.add(_tagChip(tags[i]));
-      } else {
-        row2.add(_tagChip(tags[i]));
-      }
-    }
-
-    return [
-      Row(children: row1),
-      if (row2.isNotEmpty) ...[
-        const SizedBox(height: 4),
-        Row(children: row2),
-      ],
-    ];
+  /// 해시태그 목록을 2줄로 나눠서 Row 위젯 리스트로 반환 (구형 호환용)
+  List<Widget> _buildHashtagRows(List<String> tags, Color color) {
+    if (tags.isEmpty) return [];
+    return [_buildHashtagArea(tags, color)];
   }
 
   Widget _buildBanner() {
@@ -1440,6 +1515,7 @@ class _NewLectureCard extends StatelessWidget {
 }
 
 /// 강의 목록 카드 (추천/인기 탭 세로 리스트용)
+/// _HomeScreenState._buildLectureInfoCard 를 호출해 동일한 레이아웃 사용
 class _LectureListCard extends StatelessWidget {
   final dynamic lecture;
   final VoidCallback onTap;
@@ -1455,184 +1531,25 @@ class _LectureListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // _HomeScreenState 접근을 위해 context.findAncestorStateOfType 사용
+    final homeState = context.findAncestorStateOfType<_HomeScreenState>();
+    if (homeState == null) return const SizedBox.shrink();
+
     final subjectColor = lecture.subject == '수학'
-        ? const Color(0xFF2563EB)
+        ? AppColors.math
         : lecture.subject == '과학' || lecture.subject == '물리' ||
               lecture.subject == '화학' || lecture.subject == '생명과학' ||
               lecture.subject == '지구과학'
             ? const Color(0xFF7C3AED)
             : const Color(0xFF059669);
 
-    return GestureDetector(
+    return homeState._buildLectureInfoCard(
+      lec: lecture,
+      subjectColor: subjectColor,
       onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.07),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
-            )
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 썸네일 + 기본 정보 Row
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 썸네일
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(14),
-                    bottomLeft: Radius.circular(14),
-                  ),
-                  child: thumbnailWidget,
-                ),
-                // 강의 정보
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 10, 10, 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // 과목 + 학년 + 인기 뱃지
-                        Row(children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: subjectColor.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(lecture.subject as String,
-                                style: TextStyle(fontSize: 10, color: subjectColor, fontWeight: FontWeight.w700)),
-                          ),
-                          const SizedBox(width: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              lecture.gradeText as String,
-                              style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                          if (lecture.gradeYear != null && lecture.gradeYear != 'All' && (lecture.gradeYear as String).isNotEmpty) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${lecture.gradeYear}학년',
-                                style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
-                              ),
-                            ),
-                          ],
-                        ]),
-                        const SizedBox(height: 6),
-                        // 강의 제목
-                        Text(
-                          lecture.title as String,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1E293B),
-                            height: 1.3,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        // 강사명
-                        Row(children: [
-                          const Icon(Icons.person_outline_rounded, size: 12, color: Color(0xFF94A3B8)),
-                          const SizedBox(width: 3),
-                          Text(
-                            '${lecture.instructor} 강사',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-                          ),
-                          const Spacer(),
-                          // 재생 버튼
-                          Icon(
-                            Icons.play_circle_fill_rounded,
-                            color: isPopular ? const Color(0xFFE74C3C) : const Color(0xFF2ECC71),
-                            size: 28,
-                          ),
-                        ]),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            // 해시태그 2줄 가로스크롤
-            if ((lecture.hashtags as List).isNotEmpty)
-              Container(
-                height: 56,
-                padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: _buildHashtagRowsStatic(
-                      (lecture.hashtags as List).cast<String>(),
-                      subjectColor,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
+      thumbnailWidget: thumbnailWidget,   // 그대로 전달 (내부에서 ClipRRect 처리)
+      isPopular: isPopular,
     );
-  }
-
-  static List<Widget> _buildHashtagRowsStatic(List<String> tags, Color color) {
-    if (tags.isEmpty) return [];
-    Widget tagChip(String tag) => Container(
-      margin: const EdgeInsets.only(right: 6),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.20), width: 0.8),
-      ),
-      child: Text(
-        '#$tag',
-        style: TextStyle(
-          fontSize: 10,
-          color: color.withValues(alpha: 0.9),
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-
-    final row1 = <Widget>[];
-    final row2 = <Widget>[];
-    for (int i = 0; i < tags.length; i++) {
-      if (i % 2 == 0) {
-        row1.add(tagChip(tags[i]));
-      } else {
-        row2.add(tagChip(tags[i]));
-      }
-    }
-
-    return [
-      Row(children: row1),
-      if (row2.isNotEmpty) ...[
-        const SizedBox(height: 4),
-        Row(children: row2),
-      ],
-    ];
   }
 }
 
