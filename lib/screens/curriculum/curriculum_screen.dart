@@ -318,112 +318,68 @@ class _CurriculumScreenState extends State<CurriculumScreen>
       itemCount: units.length,
       itemBuilder: (context, i) {
         final unit = units[i];
-        return _buildUnitCard(unit);
+        return _buildUnitCard(unit, i);
       },
     );
   }
 
-  // 번갈아 사용할 컬러 팔레트 — 각 과목마다 다채롭고 구분감 있는 색상
-  List<Color> get _cardPalette {
-    if (_selectedSubject == '수학') {
-      return const [
-        Color(0xFF3B82F6), // 파란색
-        Color(0xFF8B5CF6), // 보라색
-        Color(0xFF06B6D4), // 청록색
-        Color(0xFF6366F1), // 인디고
-        Color(0xFF0EA5E9), // 하늘색
-        Color(0xFF7C3AED), // 진보라
-        Color(0xFF2563EB), // 진파랑
-        Color(0xFF0891B2), // 딥시안
-      ];
-    } else if (_selectedSubject == '과학') {
-      return const [
-        Color(0xFF10B981), // 에메랄드
-        Color(0xFF8B5CF6), // 보라
-        Color(0xFF0D9488), // 틸
-        Color(0xFFF97316), // 오렌지
-        Color(0xFF06B6D4), // 시안
-        Color(0xFF6366F1), // 인디고
-      ];
-    } else if (_selectedSubject == '물리') {
-      return const [
-        Color(0xFF6366F1), // 인디고
-        Color(0xFF3B82F6), // 블루
-        Color(0xFF8B5CF6), // 퍼플
-      ];
-    } else if (_selectedSubject == '화학') {
-      return const [
-        Color(0xFFF97316), // 오렌지
-        Color(0xFFEF4444), // 레드
-        Color(0xFFEC4899), // 핑크
-      ];
-    } else if (_selectedSubject == '생명과학') {
-      return const [
-        Color(0xFF10B981), // 에메랄드
-        Color(0xFF059669), // 그린
-        Color(0xFF16A34A), // 다크그린
-      ];
-    } else if (_selectedSubject == '지구과학') {
-      return const [
-        Color(0xFF0EA5E9), // 스카이
-        Color(0xFF0284C7), // 블루
-        Color(0xFF0D9488), // 틸
-      ];
-    }
-    // 공통과학 등 기타
-    return const [
-      Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF0D9488),
-    ];
-  }
+  // 모든 과목 공통 — 파스텔톤 8가지 색 순환
+  // [파스텔 배경색, 텍스트/포인트용 진한색]
+  static const List<List<Color>> _universalPalette = [
+    [Color(0xFFDCEEFB), Color(0xFF2563A8)], // 1 파스텔 블루
+    [Color(0xFFFFE0E3), Color(0xFFA8303E)], // 2 파스텔 로즈
+    [Color(0xFFD6F5E8), Color(0xFF1F7A55)], // 3 파스텔 민트
+    [Color(0xFFFFEBD6), Color(0xFFA85C20)], // 4 파스텔 피치
+    [Color(0xFFEADDF8), Color(0xFF6B3FAD)], // 5 파스텔 라벤더
+    [Color(0xFFFFDDEE), Color(0xFFAD3070)], // 6 파스텔 핑크
+    [Color(0xFFFFF8CC), Color(0xFF8A7010)], // 7 파스텔 옐로우
+    [Color(0xFFCCF2EC), Color(0xFF1A7A72)], // 8 파스텔 틸
+  ];
 
-  Widget _buildUnitCard(Map<String, dynamic> unit) {
-    final units = _filteredUnits;
-    final idx = units.indexOf(unit);
-    final palette = _cardPalette;
-    final cardColor = palette[idx % palette.length];
+  List<List<Color>> get _cardGradientPalette => _universalPalette;
 
-    // 번갈아 배경 색상: 짝수 → 아주 연한 틴트, 홀수 → 더 진한 틴트
-    final isOdd = idx % 2 == 1;
-    final bgColor = isOdd
-        ? cardColor.withValues(alpha: 0.13)
-        : cardColor.withValues(alpha: 0.04);
+  Widget _buildUnitCard(Map<String, dynamic> unit, int idx) {
+    final gradients = _cardGradientPalette;
+    final gradientColors = gradients[idx % gradients.length];
+
+    final bgColor   = gradientColors[0]; // 연한 파스텔 배경
+    final textColor  = gradientColors[1]; // 진한 텍스트/포인트
 
     return GestureDetector(
       onTap: () => _openUnitDetail(unit),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
+        margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: bgColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border(
-            left: BorderSide(color: cardColor, width: 4),
-          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: textColor.withValues(alpha: 0.18), width: 1),
           boxShadow: [BoxShadow(
-            color: cardColor.withValues(alpha: 0.08),
-            blurRadius: 4, offset: const Offset(0, 1))],
+            color: textColor.withValues(alpha: 0.10),
+            blurRadius: 5, offset: const Offset(0, 2))],
         ),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
+          padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // ── 번호 배지
               Container(
-                width: 24, height: 24,
+                width: 28, height: 28,
                 decoration: BoxDecoration(
-                  color: cardColor,
+                  color: textColor.withValues(alpha: 0.15),
                   shape: BoxShape.circle,
+                  border: Border.all(color: textColor.withValues(alpha: 0.4), width: 1.5),
                 ),
                 child: Center(
                   child: Text('${idx + 1}',
-                    style: const TextStyle(
-                      fontSize: 10,
+                    style: TextStyle(
+                      fontSize: 11,
                       fontWeight: FontWeight.w900,
-                      color: Colors.white,
+                      color: textColor,
                     )),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               // ── 본문
               Expanded(
                 child: Column(
@@ -433,47 +389,47 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                     // 배지 행
                     Row(children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: cardColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
+                          color: textColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(_selectedSubject,
                           style: TextStyle(
                             fontSize: 10,
-                            color: cardColor,
+                            color: textColor,
                             fontWeight: FontWeight.w700,
                           )),
                       ),
                       const SizedBox(width: 5),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(4),
+                          color: textColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(5),
                         ),
                         child: Text(unit['grade'] as String,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
-                            color: AppColors.textSecondary,
+                            color: textColor.withValues(alpha: 0.8),
                             fontWeight: FontWeight.w600,
                           )),
                       ),
                     ]),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 5),
                     // 단원명
                     Text(unit['name'] as String,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: textColor,
                         height: 1.2,
                       )),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 4),
                     // 강의 수
                     Row(children: [
                       Icon(Icons.play_circle_outline,
-                        size: 11, color: cardColor.withValues(alpha: 0.7)),
+                        size: 12, color: textColor.withValues(alpha: 0.65)),
                       const SizedBox(width: 3),
                       Builder(builder: (ctx) {
                         final l = ctx.read<AppState>().selectedLanguage;
@@ -482,7 +438,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                           Tk('lecture_count_unit').replaceAll('{n}', '${unit['lectureCount']}'),
                           style: TextStyle(
                             fontSize: 11,
-                            color: cardColor.withValues(alpha: 0.65),
+                            color: textColor.withValues(alpha: 0.65),
                             fontWeight: FontWeight.w600,
                           ));
                       }),
@@ -492,7 +448,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
               ),
               // ── 오른쪽 화살표
               Icon(Icons.chevron_right_rounded,
-                color: cardColor.withValues(alpha: 0.5), size: 18),
+                color: textColor.withValues(alpha: 0.5), size: 22),
             ],
           ),
         ),
