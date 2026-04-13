@@ -4,7 +4,9 @@ import '../../services/app_state.dart';
 import '../../services/data_service.dart';
 import '../../services/translations.dart';
 import '../../theme/app_theme.dart';
+import '../../screens/profile/profile_drawer.dart';
 import '../lecture/lecture_player_screen.dart';
+import '../../widgets/lecture_card.dart';
 
 class CurriculumScreen extends StatefulWidget {
   const CurriculumScreen({super.key});
@@ -18,26 +20,22 @@ class _CurriculumScreenState extends State<CurriculumScreen>
   late TabController _tabController;
   final DataService _dataService = DataService();
 
-  // 탭 카테고리
-  final List<String> _categories = ['국영수', '과학', '사회', '기타과목'];
+  // 탭 카테고리 (수학·과학만 서비스)
+  final List<String> _categories = ['수학', '과학'];
   final Map<String, List<String>> _subjectsByCategory = {
-    '국영수': ['국어', '영어', '수학'],
-    '과학': ['물리', '화학', '생명과학', '지구과학'],
-    '사회': ['사회', '역사', '지리', '도덕'],
-    '기타과목': ['음악', '미술', '체육', '정보'],
+    '수학': ['수학'],
+    '과학': ['과학', '공통과학', '물리', '화학', '생명과학', '지구과학'],
   };
 
   String? _selectedGrade;
   String? _selectedUnit;
-  String _selectedCategory = '국영수';
+  String _selectedCategory = '수학';
   String _selectedSubject = '수학';
 
-  // 학년 목록
+  // 학년 목록 — 예비중(초등 전체)은 학년 구분 없이 하나로 표시
   final List<Map<String, String>> _grades = [
     {'key': 'all', 'label': '모든 학년'},
-    {'key': 'elem1', 'label': '초등 1학년'}, {'key': 'elem2', 'label': '초등 2학년'},
-    {'key': 'elem3', 'label': '초등 3학년'}, {'key': 'elem4', 'label': '초등 4학년'},
-    {'key': 'elem5', 'label': '초등 5학년'}, {'key': 'elem6', 'label': '초등 6학년'},
+    {'key': 'elementary', 'label': '예비중'},
     {'key': 'mid1', 'label': '중학교 1학년'}, {'key': 'mid2', 'label': '중학교 2학년'},
     {'key': 'mid3', 'label': '중학교 3학년'},
     {'key': 'high1', 'label': '고등학교 1학년'}, {'key': 'high2', 'label': '고등학교 2학년'},
@@ -56,19 +54,19 @@ class _CurriculumScreenState extends State<CurriculumScreen>
       {'id': 'u_math_7', 'name': '수열과 극한', 'lectureCount': 14, 'grade': '고등학교 2학년'},
       {'id': 'u_math_8', 'name': '적분', 'lectureCount': 13, 'grade': '고등학교 2학년'},
     ],
-    '국어': [
-      {'id': 'u_kor_1', 'name': '소설의 이해', 'lectureCount': 7, 'grade': '중학교 1학년'},
-      {'id': 'u_kor_2', 'name': '시의 표현기법', 'lectureCount': 6, 'grade': '중학교 2학년'},
-      {'id': 'u_kor_3', 'name': '논설문 쓰기', 'lectureCount': 8, 'grade': '중학교 3학년'},
-      {'id': 'u_kor_4', 'name': '고전문학의 이해', 'lectureCount': 10, 'grade': '고등학교 1학년'},
-      {'id': 'u_kor_5', 'name': '현대문학과 사회', 'lectureCount': 9, 'grade': '고등학교 2학년'},
+    '과학': [
+      {'id': 'u_sci_1', 'name': '물질의 구성', 'lectureCount': 7, 'grade': '중학교 1학년'},
+      {'id': 'u_sci_2', 'name': '힘과 운동', 'lectureCount': 8, 'grade': '중학교 1학년'},
+      {'id': 'u_sci_3', 'name': '생물의 구조와 기능', 'lectureCount': 9, 'grade': '중학교 2학년'},
+      {'id': 'u_sci_4', 'name': '전기와 자기', 'lectureCount': 8, 'grade': '중학교 2학년'},
+      {'id': 'u_sci_5', 'name': '화학 반응', 'lectureCount': 7, 'grade': '중학교 3학년'},
+      {'id': 'u_sci_6', 'name': '에너지 전환', 'lectureCount': 6, 'grade': '중학교 3학년'},
     ],
-    '영어': [
-      {'id': 'u_eng_1', 'name': '기초 문법', 'lectureCount': 10, 'grade': '중학교 1학년'},
-      {'id': 'u_eng_2', 'name': '현재완료 vs 과거', 'lectureCount': 6, 'grade': '중학교 2학년'},
-      {'id': 'u_eng_3', 'name': '관계대명사', 'lectureCount': 7, 'grade': '중학교 3학년'},
-      {'id': 'u_eng_4', 'name': '가정법', 'lectureCount': 8, 'grade': '고등학교 1학년'},
-      {'id': 'u_eng_5', 'name': '독해 전략', 'lectureCount': 12, 'grade': '고등학교 2학년'},
+    '공통과학': [
+      {'id': 'u_csci_1', 'name': '물질과 규칙성', 'lectureCount': 9, 'grade': '고등학교 1학년'},
+      {'id': 'u_csci_2', 'name': '시스템과 상호작용', 'lectureCount': 10, 'grade': '고등학교 1학년'},
+      {'id': 'u_csci_3', 'name': '변화와 다양성', 'lectureCount': 8, 'grade': '고등학교 1학년'},
+      {'id': 'u_csci_4', 'name': '환경과 에너지', 'lectureCount': 7, 'grade': '고등학교 1학년'},
     ],
     '물리': [
       {'id': 'u_phy_1', 'name': '역학의 기초', 'lectureCount': 9, 'grade': '고등학교 1학년'},
@@ -85,33 +83,6 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     '지구과학': [
       {'id': 'u_earth_1', 'name': '지구의 구조', 'lectureCount': 6, 'grade': '중학교 2학년'},
       {'id': 'u_earth_2', 'name': '기상과 기후', 'lectureCount': 8, 'grade': '중학교 3학년'},
-    ],
-    '사회': [
-      {'id': 'u_soc_1', 'name': '민주주의와 정치', 'lectureCount': 8, 'grade': '중학교 1학년'},
-      {'id': 'u_soc_2', 'name': '시장경제의 이해', 'lectureCount': 7, 'grade': '중학교 2학년'},
-    ],
-    '역사': [
-      {'id': 'u_his_1', 'name': '한국사 근대', 'lectureCount': 12, 'grade': '중학교 2학년'},
-      {'id': 'u_his_2', 'name': '세계사 현대', 'lectureCount': 10, 'grade': '고등학교 1학년'},
-    ],
-    '지리': [
-      {'id': 'u_geo_1', 'name': '세계 지리', 'lectureCount': 8, 'grade': '중학교 1학년'},
-    ],
-    '도덕': [
-      {'id': 'u_mor_1', 'name': '인성과 도덕', 'lectureCount': 6, 'grade': '중학교 1학년'},
-    ],
-    '음악': [
-      {'id': 'u_mus_1', 'name': '음악 이론 기초', 'lectureCount': 5, 'grade': '중학교 1학년'},
-    ],
-    '미술': [
-      {'id': 'u_art_1', 'name': '미술사 이해', 'lectureCount': 5, 'grade': '중학교 2학년'},
-    ],
-    '체육': [
-      {'id': 'u_pe_1', 'name': '스포츠 이론', 'lectureCount': 4, 'grade': '중학교 1학년'},
-    ],
-    '정보': [
-      {'id': 'u_info_1', 'name': '코딩 기초', 'lectureCount': 8, 'grade': '중학교 1학년'},
-      {'id': 'u_info_2', 'name': '알고리즘', 'lectureCount': 10, 'grade': '고등학교 1학년'},
     ],
   };
 
@@ -140,6 +111,10 @@ class _CurriculumScreenState extends State<CurriculumScreen>
   List<Map<String, dynamic>> get _filteredUnits {
     final units = _unitsBySubject[_selectedSubject] ?? [];
     if (_selectedGrade == null || _selectedGrade == 'all') return units;
+    // '예비중' 선택 시 → grade가 '예비중'으로 시작하는 모든 단원 표시
+    if (_selectedGrade == 'elementary') {
+      return units.where((u) => (u['grade'] as String).startsWith('예비중')).toList();
+    }
     final gradeLabel = _grades.firstWhere(
       (g) => g['key'] == _selectedGrade,
       orElse: () => {'label': ''},
@@ -149,11 +124,8 @@ class _CurriculumScreenState extends State<CurriculumScreen>
 
   Color _subjectColor(String subject) {
     switch (subject) {
-      case '국어': return AppColors.korean;
-      case '영어': return AppColors.english;
       case '수학': return AppColors.math;
-      case '물리': case '화학': case '생명과학': case '지구과학': return AppColors.science;
-      case '사회': case '역사': case '지리': case '도덕': return AppColors.social;
+      case '과학': case '공통과학': case '물리': case '화학': case '생명과학': case '지구과학': return AppColors.science;
       default: return AppColors.other;
     }
   }
@@ -165,10 +137,22 @@ class _CurriculumScreenState extends State<CurriculumScreen>
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      endDrawer: const ProfileDrawer(),
       appBar: AppBar(
         title: Text(T('curriculum_title'), style: const TextStyle(fontWeight: FontWeight.w800)),
         backgroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              icon: const Icon(Icons.menu_rounded,
+                  color: AppColors.textPrimary, size: 24),
+              tooltip: '메뉴',
+              onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+            ),
+          ),
+          const SizedBox(width: 4),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
@@ -330,7 +314,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
       itemCount: units.length,
       itemBuilder: (context, i) {
         final unit = units[i];
@@ -339,162 +323,364 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     );
   }
 
+  // 번갈아 사용할 컬러 팔레트 — 각 과목마다 다채롭고 구분감 있는 색상
+  List<Color> get _cardPalette {
+    if (_selectedSubject == '수학') {
+      return const [
+        Color(0xFF3B82F6), // 파란색
+        Color(0xFF8B5CF6), // 보라색
+        Color(0xFF06B6D4), // 청록색
+        Color(0xFF6366F1), // 인디고
+        Color(0xFF0EA5E9), // 하늘색
+        Color(0xFF7C3AED), // 진보라
+        Color(0xFF2563EB), // 진파랑
+        Color(0xFF0891B2), // 딥시안
+      ];
+    } else if (_selectedSubject == '과학') {
+      return const [
+        Color(0xFF10B981), // 에메랄드
+        Color(0xFF8B5CF6), // 보라
+        Color(0xFF0D9488), // 틸
+        Color(0xFFF97316), // 오렌지
+        Color(0xFF06B6D4), // 시안
+        Color(0xFF6366F1), // 인디고
+      ];
+    } else if (_selectedSubject == '물리') {
+      return const [
+        Color(0xFF6366F1), // 인디고
+        Color(0xFF3B82F6), // 블루
+        Color(0xFF8B5CF6), // 퍼플
+      ];
+    } else if (_selectedSubject == '화학') {
+      return const [
+        Color(0xFFF97316), // 오렌지
+        Color(0xFFEF4444), // 레드
+        Color(0xFFEC4899), // 핑크
+      ];
+    } else if (_selectedSubject == '생명과학') {
+      return const [
+        Color(0xFF10B981), // 에메랄드
+        Color(0xFF059669), // 그린
+        Color(0xFF16A34A), // 다크그린
+      ];
+    } else if (_selectedSubject == '지구과학') {
+      return const [
+        Color(0xFF0EA5E9), // 스카이
+        Color(0xFF0284C7), // 블루
+        Color(0xFF0D9488), // 틸
+      ];
+    }
+    // 공통과학 등 기타
+    return const [
+      Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF0D9488),
+    ];
+  }
+
   Widget _buildUnitCard(Map<String, dynamic> unit) {
-    final color = _subjectColor(_selectedSubject);
+    final units = _filteredUnits;
+    final idx = units.indexOf(unit);
+    final palette = _cardPalette;
+    final cardColor = palette[idx % palette.length];
+
+    // 번갈아 배경 색상: 짝수 → 흰색, 홀수 → 아주 연한 컬러 틴트
+    final isOdd = idx % 2 == 1;
+    final bgColor = isOdd
+        ? cardColor.withValues(alpha: 0.06)
+        : Colors.white;
+
     return GestureDetector(
       onTap: () => _openUnitDetail(unit),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8, offset: const Offset(0, 2))],
+          color: bgColor,
+          borderRadius: BorderRadius.circular(10),
+          border: Border(
+            left: BorderSide(color: cardColor, width: 4),
+          ),
+          boxShadow: [BoxShadow(
+            color: cardColor.withValues(alpha: 0.08),
+            blurRadius: 4, offset: const Offset(0, 1))],
         ),
-        child: Row(children: [
-          // 색상 바
-          Container(width: 4, height: 56,
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(width: 14),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(children: [
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ── 번호 배지
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                width: 24, height: 24,
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(6)),
-                child: Text(_selectedSubject,
-                  style: TextStyle(fontSize: 11, color: color, fontWeight: FontWeight.w700)),
+                  color: cardColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text('${idx + 1}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    )),
+                ),
               ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.divider,
-                  borderRadius: BorderRadius.circular(6)),
-                child: Text(unit['grade'] as String,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+              const SizedBox(width: 10),
+              // ── 본문
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 배지 행
+                    Row(children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: cardColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(_selectedSubject,
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: cardColor,
+                            fontWeight: FontWeight.w700,
+                          )),
+                      ),
+                      const SizedBox(width: 5),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(unit['grade'] as String,
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          )),
+                      ),
+                    ]),
+                    const SizedBox(height: 4),
+                    // 단원명
+                    Text(unit['name'] as String,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                      )),
+                    const SizedBox(height: 3),
+                    // 강의 수
+                    Row(children: [
+                      Icon(Icons.play_circle_outline,
+                        size: 11, color: cardColor.withValues(alpha: 0.7)),
+                      const SizedBox(width: 3),
+                      Builder(builder: (ctx) {
+                        final l = ctx.read<AppState>().selectedLanguage;
+                        final Tk = (String key) => AppTranslations.tLang(l, key);
+                        return Text(
+                          Tk('lecture_count_unit').replaceAll('{n}', '${unit['lectureCount']}'),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: cardColor.withValues(alpha: 0.65),
+                            fontWeight: FontWeight.w600,
+                          ));
+                      }),
+                    ]),
+                  ],
+                ),
               ),
-            ]),
-            const SizedBox(height: 8),
-            Text(unit['name'] as String,
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-            const SizedBox(height: 4),
-            Row(children: [
-              Icon(Icons.play_circle_outline, size: 14, color: AppColors.textHint),
-              const SizedBox(width: 4),
-              Builder(builder: (ctx) {
-                final l = ctx.read<AppState>().selectedLanguage;
-                final Tk = (String key) => AppTranslations.tLang(l, key);
-                return Text(Tk('lecture_count_unit').replaceAll('{n}', '${unit['lectureCount']}'),
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary));
-              }),
-            ]),
-          ])),
-          Icon(Icons.chevron_right_rounded, color: AppColors.textHint),
-        ]),
+              // ── 오른쪽 화살표
+              Icon(Icons.chevron_right_rounded,
+                color: cardColor.withValues(alpha: 0.5), size: 18),
+            ],
+          ),
+        ),
       ),
     );
   }
 
+  // ── 공통 바텀시트 핸들 & 타이틀 ───────────────────
+  Widget _sheetHandle() => Center(
+        child: Container(
+          width: 36, height: 4,
+          margin: const EdgeInsets.only(top: 12, bottom: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFFDDE1E7),
+            borderRadius: BorderRadius.circular(2)),
+        ),
+      );
+
+  Widget _sheetTitle(String text) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+        child: Text(text,
+            style: const TextStyle(
+                fontSize: 16, fontWeight: FontWeight.w700,
+                color: Color(0xFF1A1A2E))),
+      );
+
+  // ── 학년 선택 ─────────────────────────────────────
   void _showGradePicker() {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 16),
-          Builder(builder: (ctx) {
-            final l = ctx.read<AppState>().selectedLanguage;
-            return Text(AppTranslations.tLang(l, 'select_grade'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800));
-          }),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 320,
-            child: ListView(
-              children: _grades.map((g) => ListTile(
-                title: Text(g['label']!,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: _selectedGrade == g['key'] ? FontWeight.w700 : FontWeight.w400,
-                    color: _selectedGrade == g['key'] ? AppColors.primary : AppColors.textPrimary,
-                  )),
-                trailing: _selectedGrade == g['key']
-                    ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
-                onTap: () {
-                  setState(() {
-                    _selectedGrade = g['key'];
-                    _selectedUnit = null;
-                  });
-                  Navigator.pop(context);
-                },
-              )).toList(),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        final lang = ctx.read<AppState>().selectedLanguage;
+        return SafeArea(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            _sheetHandle(),
+            _sheetTitle(AppTranslations.tLang(lang, 'select_grade')),
+            const Divider(height: 1, color: Color(0xFFF0F1F3)),
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _grades.length,
+              separatorBuilder: (_, __) => const Divider(
+                  height: 1, indent: 20, endIndent: 20,
+                  color: Color(0xFFF0F1F3)),
+              itemBuilder: (_, i) {
+                final g = _grades[i];
+                final selected = _selectedGrade == g['key'];
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      _selectedGrade = g['key'];
+                      _selectedUnit = null;
+                    });
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    color: selected
+                        ? AppColors.primary.withValues(alpha: 0.05)
+                        : Colors.transparent,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    child: Row(children: [
+                      Expanded(
+                        child: Text(g['label']!,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: selected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: selected
+                                    ? AppColors.primary
+                                    : const Color(0xFF3A3A4A))),
+                      ),
+                      if (selected)
+                        Icon(Icons.check_rounded,
+                            size: 18, color: AppColors.primary),
+                    ]),
+                  ),
+                );
+              },
             ),
-          ),
-        ]),
-      ),
+            const SizedBox(height: 8),
+          ]),
+        );
+      },
     );
   }
 
+  // ── 단원 선택 ─────────────────────────────────────
   void _showUnitPicker() {
-    final gradeLabel = _grades.firstWhere((g) => g['key'] == _selectedGrade,
-      orElse: () => {'label': ''})['label']!;
+    final gradeLabel = _grades.firstWhere(
+        (g) => g['key'] == _selectedGrade,
+        orElse: () => {'label': ''})['label']!;
     final units = (_unitsBySubject[_selectedSubject] ?? [])
         .where((u) => _selectedGrade == 'all' || u['grade'] == gradeLabel)
         .toList();
 
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 16),
-          Builder(builder: (ctx) {
-            final l = ctx.read<AppState>().selectedLanguage;
-            return Text(AppTranslations.tLang(l, 'select_unit'),
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800));
-          }),
-          const SizedBox(height: 16),
-          SizedBox(
-            height: 280,
-            child: units.isEmpty
-                ? Center(child: Builder(builder: (ctx) {
-                    final l = ctx.read<AppState>().selectedLanguage;
-                    return Text(AppTranslations.tLang(l, 'no_unit_for_grade'));
-                  }))
-                : ListView(
-                    children: units.map((u) => ListTile(
-                      title: Text(u['name'] as String,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: _selectedUnit == u['name'] ? FontWeight.w700 : FontWeight.w400,
-                          color: _selectedUnit == u['name'] ? AppColors.primary : AppColors.textPrimary,
-                        )),
-                      subtitle: Builder(builder: (ctx) {
-                        final l = ctx.read<AppState>().selectedLanguage;
-                        return Text(AppTranslations.tLang(l, 'lecture_count_unit').replaceAll('{n}', '${u['lectureCount']}'));
-                      }),
-                      trailing: _selectedUnit == u['name']
-                          ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        final lang = ctx.read<AppState>().selectedLanguage;
+        return SafeArea(
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            _sheetHandle(),
+            _sheetTitle(AppTranslations.tLang(lang, 'select_unit')),
+            const Divider(height: 1, color: Color(0xFFF0F1F3)),
+            if (units.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 32),
+                child: Text(
+                    AppTranslations.tLang(lang, 'no_unit_for_grade'),
+                    style: const TextStyle(
+                        color: AppColors.textHint, fontSize: 14)),
+              )
+            else
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                    maxHeight:
+                        MediaQuery.of(context).size.height * 0.55),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: units.length,
+                  separatorBuilder: (_, __) => const Divider(
+                      height: 1, indent: 20, endIndent: 20,
+                      color: Color(0xFFF0F1F3)),
+                  itemBuilder: (_, i) {
+                    final u = units[i];
+                    final selected = _selectedUnit == u['name'];
+                    final count = u['lectureCount'] as int;
+                    return InkWell(
                       onTap: () {
-                        setState(() => _selectedUnit = u['name'] as String);
+                        setState(() =>
+                            _selectedUnit = u['name'] as String);
                         Navigator.pop(context);
                       },
-                    )).toList(),
-                  ),
-          ),
-        ]),
-      ),
+                      child: Container(
+                        color: selected
+                            ? AppColors.primary.withValues(alpha: 0.05)
+                            : Colors.transparent,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 11),
+                        child: Row(children: [
+                          Expanded(
+                            child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(u['name'] as String,
+                                      style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: selected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                          color: selected
+                                              ? AppColors.primary
+                                              : const Color(0xFF3A3A4A))),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                      AppTranslations.tLang(lang,
+                                              'lecture_count_unit')
+                                          .replaceAll('{n}', '$count'),
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.textHint)),
+                                ]),
+                          ),
+                          if (selected)
+                            Icon(Icons.check_rounded,
+                                size: 18, color: AppColors.primary),
+                        ]),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 8),
+          ]),
+        );
+      },
     );
   }
 
@@ -528,16 +714,43 @@ class _UnitDetailScreen extends StatefulWidget {
 class _UnitDetailScreenState extends State<_UnitDetailScreen> {
   bool _autoPlay = false;
 
-  Color get _color {
+  // 과목별 그래디언트 색상 쌍
+  List<Color> get _gradientColors {
     switch (widget.subject) {
-      case '국어': return AppColors.korean;
-      case '영어': return AppColors.english;
-      case '수학': return AppColors.math;
-      case '물리': case '화학': case '생명과학': case '지구과학': return AppColors.science;
-      case '사회': case '역사': case '지리': case '도덕': return AppColors.social;
-      default: return AppColors.other;
+      case '수학':
+        return [const Color(0xFF1565C0), const Color(0xFF42A5F5)]; // 딥블루→스카이블루
+      case '과학':
+        return [const Color(0xFF00695C), const Color(0xFF26C6A0)]; // 딥틸→민트
+      case '공통과학':
+        return [const Color(0xFF1B5E20), const Color(0xFF66BB6A)]; // 딥그린→라이트그린
+      case '물리':
+        return [const Color(0xFF4A148C), const Color(0xFFAB47BC)]; // 딥퍼플→라일락
+      case '화학':
+        return [const Color(0xFFB71C1C), const Color(0xFFEF5350)]; // 딥레드→코랄
+      case '생명과학':
+        return [const Color(0xFF1B5E20), const Color(0xFF43A047)]; // 포레스트→그린
+      case '지구과학':
+        return [const Color(0xFF0D47A1), const Color(0xFF1E88E5)]; // 네이비→블루
+      default:
+        return [const Color(0xFF37474F), const Color(0xFF78909C)]; // 슬레이트
     }
   }
+
+  // 과목별 아이콘
+  IconData get _subjectIcon {
+    switch (widget.subject) {
+      case '수학':       return Icons.functions_rounded;
+      case '과학':       return Icons.science_outlined;
+      case '공통과학':   return Icons.biotech_outlined;
+      case '물리':       return Icons.electric_bolt_rounded;
+      case '화학':       return Icons.colorize_rounded;
+      case '생명과학':   return Icons.eco_rounded;
+      case '지구과학':   return Icons.public_rounded;
+      default:           return Icons.school_rounded;
+    }
+  }
+
+  Color get _color => _gradientColors[0];
 
   @override
   Widget build(BuildContext context) {
@@ -552,43 +765,114 @@ class _UnitDetailScreenState extends State<_UnitDetailScreen> {
         slivers: [
           // 헤더
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: 160,
             pinned: true,
-            backgroundColor: _color,
+            backgroundColor: _gradientColors[0],
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [_color, _color.withValues(alpha: 0.7)],
-                    begin: Alignment.topLeft, end: Alignment.bottomRight,
+              collapseMode: CollapseMode.pin,
+              background: Stack(children: [
+                // ── 그래디언트 배경 ──────────────────────
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _gradientColors,
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                   ),
                 ),
-                padding: const EdgeInsets.fromLTRB(20, 80, 20, 20),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(8)),
-                      child: Text(widget.subject,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                // ── 장식 원형 (우상단) ───────────────────
+                Positioned(
+                  top: -30, right: -20,
+                  child: Container(
+                    width: 160, height: 160,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.07),
                     ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(8)),
-                      child: Text(widget.unit['grade'] as String,
-                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+                Positioned(
+                  top: 30, right: 30,
+                  child: Container(
+                    width: 90, height: 90,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.08),
                     ),
-                  ]),
-                  const SizedBox(height: 8),
-                  Text(widget.unit['name'] as String,
-                    style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-                ]),
-              ),
+                  ),
+                ),
+                // ── 과목 대형 아이콘 (우하단 장식) ───────
+                Positioned(
+                  bottom: -10, right: 16,
+                  child: Icon(
+                    _subjectIcon,
+                    size: 100,
+                    color: Colors.white.withValues(alpha: 0.12),
+                  ),
+                ),
+                // ── 콘텐츠 ──────────────────────────────
+                Positioned(
+                  left: 20, right: 20,
+                  bottom: 20,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.22),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.3)),
+                          ),
+                          child: Row(mainAxisSize: MainAxisSize.min, children: [
+                            Icon(_subjectIcon,
+                                size: 11,
+                                color: Colors.white.withValues(alpha: 0.9)),
+                            const SizedBox(width: 4),
+                            Text(widget.subject,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    letterSpacing: 0.3)),
+                          ]),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.25)),
+                          ),
+                          child: Text(widget.unit['grade'] as String,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.2)),
+                        ),
+                      ]),
+                      const SizedBox(height: 10),
+                      Text(widget.unit['name'] as String,
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.3,
+                              height: 1.2)),
+                    ],
+                  ),
+                ),
+              ]),
             ),
           ),
           // 강의 수 + 자동재생 토글
@@ -619,63 +903,40 @@ class _UnitDetailScreenState extends State<_UnitDetailScreen> {
             delegate: SliverChildBuilderDelegate(
               (context, i) {
                 final lec = lectures[i];
-                return GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => LecturePlayerScreen(lecture: lec),
-                  )),
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 6, offset: const Offset(0, 2))],
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => LecturePlayerScreen(
+                        lecture: lec,
+                        autoPlayList: _autoPlay ? lectures : null,
+                        autoPlayIndex: _autoPlay ? i : 0,
+                      ),
+                    )),
+                    child: Stack(
+                      children: [
+                        LectureCard(lecture: lec),
+                        // 번호 배지 오버레이
+                        Positioned(
+                          top: 8, left: 8,
+                          child: Container(
+                            width: 26, height: 26,
+                            decoration: BoxDecoration(
+                              color: _color,
+                              shape: BoxShape.circle,
+                              boxShadow: [BoxShadow(
+                                color: _color.withValues(alpha: 0.4),
+                                blurRadius: 4, offset: const Offset(0, 1),
+                              )],
+                            ),
+                            child: Center(
+                              child: Text('${i + 1}',
+                                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w900, color: Colors.white)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    child: Row(children: [
-                      // 번호
-                      Container(
-                        width: 32, height: 32,
-                        decoration: BoxDecoration(
-                          color: _color.withValues(alpha: 0.1),
-                          shape: BoxShape.circle),
-                        child: Center(
-                          child: Text('${i + 1}',
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: _color)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // 썸네일
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: Image.network(
-                          lec.thumbnailUrl,
-                          width: 72, height: 48, fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            width: 72, height: 48,
-                            color: _color.withValues(alpha: 0.2),
-                            child: Icon(Icons.play_arrow, color: _color)),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // 정보
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text(lec.title,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary),
-                          maxLines: 2, overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 4),
-                        Row(children: [
-                          Text(lec.instructor,
-                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                          const SizedBox(width: 8),
-                          Icon(Icons.star_rounded, size: 12, color: Colors.amber[600]),
-                          Text(' ${lec.rating}',
-                            style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                        ]),
-                      ])),
-                      Icon(Icons.play_circle_filled_rounded, color: _color, size: 28),
-                    ]),
                   ),
                 );
               },

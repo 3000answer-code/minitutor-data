@@ -1,6 +1,6 @@
 {
-    "name": "app2gong",
-    "short_name": "app2gong",
+    "name": "miniTutor",
+    "short_name": "miniTutor",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

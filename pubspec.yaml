@@ -1,7 +1,7 @@
-name: app2gong
-description: 2공 - 2분 공부 앱. 짧은 강의로 효율적인 학습을 제공하는 교육 플랫폼.
+name: minitutor
+description: miniTutor - 미니튜터. 매일 2분, 쌓이는 실력. 짧고 강한 강의 플랫폼.
 publish_to: 'none'
-version: 1.0.0+1
+version: 3.60.0+1
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -35,6 +35,7 @@ dependencies:
   video_player: 2.9.5
   chewie: 1.8.5
   webview_flutter: 4.13.0
+  webview_flutter_android: 4.10.15
 
   # Icons
   cupertino_icons: ^1.0.8
@@ -57,5 +58,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/banners/
+    - assets/images/subjects/
     - assets/icons/
-    - assets/lottie/
+    - assets/handouts/

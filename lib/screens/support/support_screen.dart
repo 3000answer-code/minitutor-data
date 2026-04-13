@@ -224,6 +224,34 @@ class _SupportScreenState extends State<SupportScreen>
     ]);
   }
 
+  // ── 문의 삭제 ───────────────────────────────────
+  void _deleteInquiry(Inquiry inquiry) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('문의 삭제', style: TextStyle(fontWeight: FontWeight.w800)),
+        content: const Text('이 문의를 삭제하시겠습니까?\n삭제된 문의는 복구할 수 없습니다.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() => _inquiries.removeWhere((q) => q.id == inquiry.id));
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('문의가 삭제되었습니다.')));
+            },
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInquiryCard(Inquiry inquiry) {
     return GestureDetector(
       onTap: () => _showInquiryDetail(inquiry),
@@ -260,6 +288,21 @@ class _SupportScreenState extends State<SupportScreen>
                     fontWeight: FontWeight.w700)),
               ]),
             ),
+            // 답변대기 상태만 삭제 버튼 표시
+            if (!inquiry.isAnswered) ...[
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => _deleteInquiry(inquiry),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
+                ),
+              ),
+            ],
           ]),
           const SizedBox(height: 8),
           Text(inquiry.title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
@@ -328,7 +371,7 @@ class _SupportScreenState extends State<SupportScreen>
                   Row(children: [
                     const Icon(Icons.support_agent_rounded, color: AppColors.success, size: 18),
                     const SizedBox(width: 6),
-                    const Text('2공 고객센터 답변', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.success)),
+                    const Text('miniTutor 고객센터 답변', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.success)),
                   ]),
                   const SizedBox(height: 10),
                   Text(inquiry.answer!, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.7)),
@@ -349,73 +392,139 @@ class _SupportScreenState extends State<SupportScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) => Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
-          child: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
-              const SizedBox(height: 16),
-              const Text('1:1 문의 작성', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-              const SizedBox(height: 16),
-              // 카테고리
-              const Text('문의 유형', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8, runSpacing: 8,
-                children: _inquiryCategories.map((cat) => ChoiceChip(
-                  label: Text(cat, style: TextStyle(
-                    fontSize: 12,
-                    color: selectedCategory == cat ? AppColors.primary : AppColors.textSecondary,
-                    fontWeight: selectedCategory == cat ? FontWeight.w700 : FontWeight.w400)),
-                  selected: selectedCategory == cat,
-                  onSelected: (_) => setModalState(() => selectedCategory = cat),
-                  selectedColor: AppColors.primary.withValues(alpha: 0.12),
-                  backgroundColor: AppColors.background,
-                  side: BorderSide(color: selectedCategory == cat ? AppColors.primary : AppColors.divider),
-                )).toList(),
+        builder: (ctx, setModalState) {
+          final bottomPad = MediaQuery.of(ctx).viewInsets.bottom;
+          return DraggableScrollableSheet(
+            initialChildSize: 0.6,
+            minChildSize: 0.5,
+            maxChildSize: 0.92,
+            expand: false,
+            builder: (_, scrollCtrl) => Padding(
+              padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPad + 16),
+              child: ListView(
+                controller: scrollCtrl,
+                shrinkWrap: true,
+                children: [
+                  // 핸들바
+                  Center(
+                    child: Container(
+                      width: 40, height: 4,
+                      decoration: BoxDecoration(
+                          color: AppColors.divider,
+                          borderRadius: BorderRadius.circular(2)),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  const Text('1:1 문의 작성',
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 12),
+                  // 문의 유형 라벨
+                  const Text('문의 유형',
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary)),
+                  const SizedBox(height: 6),
+                  // ── Chip 간격 타이트하게 ──
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    children: _inquiryCategories.map((cat) => ChoiceChip(
+                      label: Text(cat,
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: selectedCategory == cat
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary,
+                              fontWeight: selectedCategory == cat
+                                  ? FontWeight.w700
+                                  : FontWeight.w400)),
+                      selected: selectedCategory == cat,
+                      onSelected: (_) =>
+                          setModalState(() => selectedCategory = cat),
+                      selectedColor: AppColors.primary.withValues(alpha: 0.12),
+                      backgroundColor: AppColors.background,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 0),
+                      visualDensity: VisualDensity.compact,
+                      side: BorderSide(
+                          color: selectedCategory == cat
+                              ? AppColors.primary
+                              : AppColors.divider),
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  // 제목
+                  TextField(
+                    controller: titleCtrl,
+                    decoration: const InputDecoration(
+                        labelText: '제목 *',
+                        hintText: '문의 제목을 입력하세요',
+                        isDense: true,
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 14, vertical: 12)),
+                  ),
+                  const SizedBox(height: 8),
+                  // 내용
+                  TextField(
+                    controller: contentCtrl,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      labelText: '내용 *',
+                      hintText: '문의 내용을 자세히 작성해주세요.',
+                      isDense: true,
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text('* 이미지 첨부는 앱에서 지원됩니다',
+                      style: TextStyle(fontSize: 11, color: AppColors.textHint)),
+                  const SizedBox(height: 14),
+                  // 등록 버튼
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (titleCtrl.text.isEmpty || contentCtrl.text.isEmpty) {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(
+                              content: Text('제목과 내용을 입력해주세요'),
+                              duration: Duration(seconds: 2),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                          return;
+                        }
+                        final newInquiry = Inquiry(
+                          id: 'inq_${DateTime.now().millisecondsSinceEpoch}',
+                          category: selectedCategory,
+                          title: titleCtrl.text,
+                          content: contentCtrl.text,
+                          createdAt: DateTime.now(),
+                          isAnswered: false,
+                        );
+                        setState(() => _inquiries.insert(0, newInquiry));
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('문의가 접수되었습니다. 1~2일 내 답변드릴게요.'),
+                            duration: Duration(seconds: 3),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      child: const Text('문의 등록'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 14),
-              TextField(controller: titleCtrl,
-                decoration: const InputDecoration(labelText: '제목 *', hintText: '문의 제목을 입력하세요')),
-              const SizedBox(height: 10),
-              TextField(controller: contentCtrl, maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: '내용 *',
-                  hintText: '문의 내용을 자세히 작성해주세요.\n(스크린샷이나 오류 메시지를 포함하면 빠른 답변이 가능합니다)')),
-              const SizedBox(height: 6),
-              const Text('* 이미지 첨부는 앱에서 지원됩니다',
-                style: TextStyle(fontSize: 11, color: AppColors.textHint)),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    if (titleCtrl.text.isEmpty || contentCtrl.text.isEmpty) {
-                      ScaffoldMessenger.of(ctx).showSnackBar(
-                        const SnackBar(content: Text('제목과 내용을 입력해주세요')));
-                      return;
-                    }
-                    final newInquiry = Inquiry(
-                      id: 'inq_${DateTime.now().millisecondsSinceEpoch}',
-                      category: selectedCategory,
-                      title: titleCtrl.text,
-                      content: contentCtrl.text,
-                      createdAt: DateTime.now(),
-                      isAnswered: false,
-                    );
-                    setState(() => _inquiries.insert(0, newInquiry));
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('문의가 접수되었습니다. 영업일 기준 1~2일 내 답변드릴게요!')));
-                  },
-                  child: const Text('문의 등록'),
-                ),
-              ),
-            ]),
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }

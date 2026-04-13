@@ -113,6 +113,13 @@ class AppTranslations {
       'zh': '科学',
       'es': 'Ciencias',
     },
+    'tab_twice': {
+      'ko': '두번설명',
+      'en': 'Twice',
+      'ja': '二度説明',
+      'zh': '双重讲解',
+      'es': 'Doble',
+    },
     'tab_social': {
       'ko': '사회',
       'en': 'Social',
@@ -782,7 +789,7 @@ class AppTranslations {
     // 상담 화면
     // ────────────────────────────────────────────
     'consultation_expert': {
-      'ko': '전문가 상담', 'en': 'Expert Q&A', 'ja': '専門家相談', 'zh': '专家咨询', 'es': 'Q&A Experto',
+      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
     },
     'sort_latest': {
       'ko': '최신순', 'en': 'Latest', 'ja': '最新順', 'zh': '最新', 'es': 'Reciente',
@@ -853,7 +860,10 @@ class AppTranslations {
       'ko': '나의 Q&A', 'en': 'My Q&A', 'ja': 'Q&A', 'zh': '我的Q&A', 'es': 'Mi Q&A',
     },
     'expert_consult': {
-      'ko': '전문가 상담', 'en': 'Expert Q&A', 'ja': '専門家相談', 'zh': '专家咨询', 'es': 'Consulta',
+      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+    },
+    'my_consult': {
+      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
     },
     'favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',
@@ -1078,7 +1088,7 @@ class AppTranslations {
       'ko': '강의 Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
     },
     'tab_expert': {
-      'ko': '전문가 상담', 'en': 'Expert Q&A', 'ja': '専門相談', 'zh': '专家咨询', 'es': 'Experto',
+      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
     },
     'tab_favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',
@@ -1120,7 +1130,7 @@ class AppTranslations {
       'ko': '작성한 상담이 없어요', 'en': 'No consultations', 'ja': '相談がありません', 'zh': '暂无咨询', 'es': 'Sin consultas',
     },
     'empty_consult_sub': {
-      'ko': '전문가 상담 탭에서 질문을 등록해보세요', 'en': 'Go to Expert Q&A to ask', 'ja': '専門家相談タブで質問してみましょう', 'zh': '在专家咨询标签提问', 'es': 'Ve a Experto para preguntar',
+      'ko': '내 상담 탭에서 질문을 등록해보세요', 'en': 'Go to My Q&A to ask', 'ja': '相談タブで質問してみましょう', 'zh': '在我的咨询标签提问', 'es': 'Ve a Mi Consulta para preguntar',
     },
     'empty_favorites': {
       'ko': '즐겨찾기한 강의가 없어요', 'en': 'No favorites', 'ja': 'お気に入りがありません', 'zh': '暂无收藏', 'es': 'Sin favoritos',

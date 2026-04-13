@@ -1,213 +1,431 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/lecture.dart';
 import '../services/app_state.dart';
 import '../theme/app_theme.dart';
 
+/// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+///  통합 강의 카드 — 모든 화면에서 동일한 형태 유지
+///
+///  핵심 설계 원칙
+///  ① CachedNetworkImage 사용 → ModalBottomSheet 포함 어디서나 썸네일 안정 표시
+///  ② effectiveThumbnailUrl 로 URL 자동 처리 (Drive/YouTube/NAS)
+///  ③ AppState 의존성 최소화 — onTagTap 콜백 우선 사용
+/// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 class LectureCard extends StatelessWidget {
   final Lecture lecture;
   final VoidCallback? onTap;
-  final bool isHorizontal;
+  final void Function(String tag)? onTagTap;
+  final bool isHorizontal; // 하위 호환성용 (무시됨)
 
   const LectureCard({
     super.key,
     required this.lecture,
     this.onTap,
+    this.onTagTap,
     this.isHorizontal = false,
   });
 
-  Color _subjectColor(String subject) {
-    switch (subject) {
-      case '국어': return AppColors.korean;
-      case '영어': return AppColors.english;
-      case '수학': return AppColors.math;
-      case '과학': return AppColors.science;
-      case '사회': return AppColors.social;
-      default: return AppColors.other;
+  // ── 색상 헬퍼 ─────────────────────────────────────────
+  Color _subjectColor() {
+    switch (lecture.subject) {
+      case '수학':     return AppColors.math;
+      case '과학':     return AppColors.science;
+      case '공통과학': return AppColors.commonScience;
+      case '물리':     return AppColors.physics;
+      case '화학':     return AppColors.chemistry;
+      case '생명과학': return AppColors.biology;
+      case '지구과학': return AppColors.earth;
+      case '국어':     return AppColors.korean;
+      case '영어':     return AppColors.english;
+      default:         return AppColors.other;
     }
   }
 
-  Color _gradeColor(String grade) {
-    switch (grade) {
+  Color _gradeColor() {
+    switch (lecture.grade) {
       case 'elementary': return AppColors.elementary;
-      case 'middle': return AppColors.middle;
-      default: return AppColors.high;
+      case 'middle':     return AppColors.middle;
+      default:           return AppColors.high;
     }
   }
 
+  // ── 기본 썸네일 asset ─────────────────────────────────
+  String _defaultThumbAsset() {
+    switch (lecture.subject) {
+      case '과학':
+      case '공통과학':
+      case '물리':
+      case '화학':
+      case '생명과학':
+      case '지구과학':
+        return 'assets/images/thumb_science_default.jpg';
+      default:
+        return 'assets/images/thumb_math_default.jpg';
+    }
+  }
+
+  // ── 빌드 ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
-    final isFav = appState.isFavorite(lecture.id);
+    final subjectColor = _subjectColor();
 
-    if (isHorizontal) return _buildHorizontalCard(context, isFav, appState);
-    return _buildVerticalCard(context, isFav, appState);
-  }
+    // AppState: 태그 탭 처리에만 선택적 사용 (ModalBottomSheet 등 별도 Route에서도 동작)
+    AppState? appState;
+    try {
+      appState = context.read<AppState>();
+    } catch (_) {
+      appState = null;
+    }
 
-  Widget _buildVerticalCard(BuildContext context, bool isFav, AppState appState) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 200,
-        margin: const EdgeInsets.only(right: 12),
+        margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
           ],
+          border: Border.all(
+            color: subjectColor.withValues(alpha: 0.12),
+            width: 1,
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Thumbnail
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              child: Stack(
-                children: [
-                  Image.network(lecture.thumbnailUrl, width: 200, height: 112,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 200, height: 112,
-                      color: _subjectColor(lecture.subject).withValues(alpha: 0.2),
-                      child: Icon(Icons.play_circle_outline, size: 40, color: _subjectColor(lecture.subject)),
-                    )),
-                  Positioned(bottom: 6, right: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(6)),
-                      child: Text(lecture.durationText, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
-                    )),
-                  Positioned(top: 6, left: 6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(color: _subjectColor(lecture.subject), borderRadius: BorderRadius.circular(6)),
-                      child: Text(lecture.subject, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
-                    )),
-                  if (lecture.lectureType != 'concept')
-                    Positioned(top: 6, right: 6,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(6)),
-                        child: Text(lecture.lectureTypeText, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
-                      )),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(lecture.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                    maxLines: 2, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    Container(padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: _gradeColor(lecture.grade).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(13),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ─── 상단: 썸네일 + 강의 정보 + 재생버튼 ──
+              IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // 썸네일 — CachedNetworkImage로 안정적 표시
+                    _buildThumbnail(105, 78, subjectColor),
+
+                    // 강의 정보
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 8, 6, 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              lecture.title,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                height: 1.3,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            _buildSeriesRow(),
+                            const SizedBox(height: 4),
+                            _buildMetaRow(),
+                          ],
+                        ),
                       ),
-                      child: Text(lecture.gradeText, style: TextStyle(fontSize: 10, color: _gradeColor(lecture.grade), fontWeight: FontWeight.w600))),
-                    const SizedBox(width: 4),
-                    Text(lecture.instructor, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                  ]),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    const Icon(Icons.star_rounded, size: 13, color: Color(0xFFFBBF24)),
-                    const SizedBox(width: 2),
-                    Text(lecture.rating.toString(), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.visibility_outlined, size: 13, color: AppColors.textHint),
-                    const SizedBox(width: 2),
-                    Text(lecture.viewCountText, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () => appState.toggleFavorite(lecture.id),
-                      child: Icon(isFav ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                        size: 18, color: isFav ? AppColors.primary : AppColors.textHint),
                     ),
-                  ]),
-                ],
+
+                    // 재생 버튼
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 10, 10, 0),
+                      child: Container(
+                        width: 34, height: 34,
+                        decoration: BoxDecoration(
+                          color: subjectColor.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.play_arrow_rounded,
+                          color: subjectColor, size: 22,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // ─── 해시태그 영역 ───────────────────────
+              if (lecture.hashtags.isNotEmpty)
+                _HashtagArea(
+                  tags: lecture.hashtags,
+                  color: subjectColor,
+                  onTagTap: (tag) {
+                    if (onTagTap != null) {
+                      onTagTap!(tag);
+                    } else if (appState != null) {
+                      appState.setSearchQuery(tag);
+                      appState.setNavIndex(3);
+                    }
+                  },
+                ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHorizontalCard(BuildContext context, bool isFav, AppState appState) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+  // ── 시리즈명 행 ─────────────────────────────────────
+  Widget _buildSeriesRow() {
+    if (lecture.series.isEmpty) return const SizedBox.shrink();
+    return Row(
+      children: [
+        const Icon(Icons.playlist_play_rounded, size: 12, color: AppColors.textSecondary),
+        const SizedBox(width: 3),
+        Expanded(
+          child: Text(
+            lecture.series,
+            style: const TextStyle(
+              fontSize: 11,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── 메타 정보 행 ────────────────────────────────────
+  Widget _buildMetaRow() {
+    final gc = _gradeColor();
+    final sc = _subjectColor();
+    final gradeLabel = lecture.gradeText;
+    final yearLabel = lecture.gradeYear.isEmpty || lecture.gradeYear == 'All'
+        ? 'All'
+        : '${lecture.gradeYear}학년';
+    const Color allBadgeColor = Color(0xFFF97316);
+
+    return Row(
+      children: [
+        _badge(gradeLabel, gc),
+        const SizedBox(width: 3),
+        _badge(yearLabel, yearLabel == 'All' ? allBadgeColor : gc.withValues(alpha: 0.65)),
+        const SizedBox(width: 3),
+        _badge(lecture.subject, sc),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            lecture.instructor,
+            style: const TextStyle(
+              fontSize: 11, color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _badge(String label, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.13),
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: color.withValues(alpha: 0.25), width: 0.8),
+    ),
+    child: Text(label,
+      style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w700)),
+  );
+
+  // ── 썸네일 빌더 — CachedNetworkImage 사용 ──────────
+  Widget _buildThumbnail(double w, double h, Color c) {
+    final url = lecture.effectiveThumbnailUrl;
+    final fallbackUrl = lecture.fallbackThumbnailUrl;
+
+    Widget placeholder() => Container(
+      width: w, height: h,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [c.withValues(alpha: 0.15), c.withValues(alpha: 0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Center(
+        child: SizedBox(
+          width: 20, height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2, color: c),
+        ),
+      ),
+    );
+
+    Widget fallbackWidget() => Image.asset(
+      _defaultThumbAsset(),
+      width: w, height: h, fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => Container(
+        width: w, height: h,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2)),
-          ],
+          gradient: LinearGradient(
+            colors: [c.withValues(alpha: 0.25), c.withValues(alpha: 0.10)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
-              child: Stack(
-                children: [
-                  Image.network(lecture.thumbnailUrl, width: 120, height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 120, height: 80,
-                      color: _subjectColor(lecture.subject).withValues(alpha: 0.2),
-                      child: Icon(Icons.play_circle_outline, color: _subjectColor(lecture.subject)),
-                    )),
-                  Positioned(bottom: 4, right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.75), borderRadius: BorderRadius.circular(4)),
-                      child: Text(lecture.durationText, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600)),
-                    )),
-                  Positioned(top: 4, left: 4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(color: _subjectColor(lecture.subject), borderRadius: BorderRadius.circular(4)),
-                      child: Text(lecture.subject, style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700)),
-                    )),
-                ],
+        child: Icon(Icons.play_circle_outline_rounded,
+            size: h * 0.42, color: c.withValues(alpha: 0.8)),
+      ),
+    );
+
+    Widget thumb;
+
+    if (url.isEmpty || url == 'nas_default' || url.contains('trycloudflare.com')) {
+      thumb = fallbackWidget();
+    } else {
+      // CachedNetworkImage: 캐시 + 에러 폴백 자동 처리
+      thumb = CachedNetworkImage(
+        imageUrl: url,
+        width: w, height: h,
+        fit: BoxFit.cover,
+        placeholder: (_, __) => placeholder(),
+        errorWidget: (_, __, ___) {
+          // 1차 실패 → fallbackUrl 시도
+          if (fallbackUrl.isNotEmpty && fallbackUrl != url) {
+            return CachedNetworkImage(
+              imageUrl: fallbackUrl,
+              width: w, height: h, fit: BoxFit.cover,
+              errorWidget: (_, __, ___) => fallbackWidget(),
+              placeholder: (_, __) => placeholder(),
+            );
+          }
+          return fallbackWidget();
+        },
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(13),
+        bottomLeft: Radius.circular(13),
+      ),
+      child: Stack(
+        children: [
+          SizedBox(width: w, height: h, child: thumb),
+          // 재생시간 배지
+          Positioned(
+            top: 5, right: 5,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                lecture.durationText,
+                style: const TextStyle(
+                  color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600),
               ),
             ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(lecture.title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 4),
-                    Text(lecture.instructor, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                    const SizedBox(height: 4),
-                    Row(children: [
-                      const Icon(Icons.star_rounded, size: 12, color: Color(0xFFFBBF24)),
-                      Text(' ${lecture.rating}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.visibility_outlined, size: 12, color: AppColors.textHint),
-                      Text(' ${lecture.viewCountText}', style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: () => appState.toggleFavorite(lecture.id),
-                        child: Icon(isFav ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                          size: 18, color: isFav ? AppColors.primary : AppColors.textHint),
-                      ),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  해시태그 영역 — 2줄 이하: Wrap / 3줄 이상: 가로 스크롤
+// ═══════════════════════════════════════════════════════════
+class _HashtagArea extends StatelessWidget {
+  final List<String> tags;
+  final Color color;
+  final void Function(String tag) onTagTap;
+
+  const _HashtagArea({
+    required this.tags,
+    required this.color,
+    required this.onTagTap,
+  });
+
+  double _chipWidth(String tag) {
+    final text = '#$tag';
+    double w = 0;
+    for (final ch in text.runes) {
+      w += (ch > 0x2E7F) ? 9.0 : 6.0;
+    }
+    return w + 19;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (tags.isEmpty) return const SizedBox.shrink();
+
+    Widget chip(String tag) => GestureDetector(
+      onTap: () => onTagTap(tag),
+      child: Container(
+        margin: const EdgeInsets.only(right: 5, bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: color.withValues(alpha: 0.18), width: 0.8),
         ),
+        child: Text(
+          '#$tag',
+          style: TextStyle(
+            fontSize: 10,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Colors.grey.withValues(alpha: 0.1), width: 0.8),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 5),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final avail = constraints.maxWidth;
+          if (avail <= 0) {
+            return Wrap(children: tags.map(chip).toList());
+          }
+
+          int lineCount = 1;
+          double lineW = 0;
+          for (final t in tags) {
+            final cw = _chipWidth(t);
+            if (lineW + cw > avail) {
+              lineCount++;
+              lineW = cw;
+            } else {
+              lineW += cw;
+            }
+          }
+
+          if (lineCount <= 2) {
+            return Wrap(children: tags.map(chip).toList());
+          }
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: Row(children: tags.map(chip).toList()),
+          );
+        },
       ),
     );
   }

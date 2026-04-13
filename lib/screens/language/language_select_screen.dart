@@ -54,35 +54,34 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
     },
   ];
 
-  // 언어별 UI 텍스트
   static const Map<String, Map<String, String>> _i18n = {
     'ko': {
-      'title': '이공',
-      'subtitle': '2분 공부',
+      'title': 'miniTutor',
+      'subtitle': '합격을 향한 키워드 학습',
       'desc': '언어를 선택하세요',
       'btn': '시작하기',
     },
     'en': {
-      'title': '2GONG',
-      'subtitle': '2-Minute Study',
+      'title': 'miniTutor',
+      'subtitle': 'Keyword Learning to Pass',
       'desc': 'Select your language',
       'btn': 'Get Started',
     },
     'ja': {
-      'title': '2ゴング',
-      'subtitle': '2分学習',
+      'title': 'miniTutor',
+      'subtitle': '合格へのキーワード学習',
       'desc': '言語を選択してください',
       'btn': 'はじめる',
     },
     'zh': {
-      'title': '2功',
-      'subtitle': '2分钟学习',
+      'title': 'miniTutor',
+      'subtitle': '关键词学习到通过',
       'desc': '请选择语言',
       'btn': '开始',
     },
     'es': {
-      'title': '2GONG',
-      'subtitle': 'Estudio de 2 Minutos',
+      'title': 'miniTutor',
+      'subtitle': 'Aprendizaje Clave para Pasar',
       'desc': 'Selecciona tu idioma',
       'btn': 'Comenzar',
     },
@@ -92,7 +91,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
   void initState() {
     super.initState();
     _animController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 600));
+        vsync: this, duration: const Duration(milliseconds: 700));
     _fadeAnim =
         CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _animController.forward();
@@ -121,116 +120,78 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
           content: Text(_t('desc')),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+          duration: const Duration(seconds: 2),
         ),
       );
       return;
     }
-    context.read<AppState>().setLanguageSelected(true);
+    final appState = context.read<AppState>();
+    appState.setLanguage(_selectedLang!);
+    appState.setLanguageSelected(true);
+    appState.refreshApiLectures();
   }
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1a1a2e), Color(0xFF16213e), Color(0xFF0f3460)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF0f1b35), Color(0xFF162040), Color(0xFF1a2d5a)],
           ),
         ),
         child: SafeArea(
           child: FadeTransition(
             opacity: _fadeAnim,
-            child: Column(
-              children: [
-                const SizedBox(height: 40),
-                // 로고 영역
-                _buildLogo(),
-                const SizedBox(height: 40),
-                // 언어 선택 안내
-                Text(
-                  _t('desc'),
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // 언어 버튼 목록
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  // ── 상단 여백 (전체 높이의 8%)
+                  SizedBox(height: size.height * 0.06),
+
+                  // ── 로고 영역 (컴팩트하게)
+                  _buildLogo(),
+
+                  SizedBox(height: size.height * 0.035),
+
+                  // ── 안내 문구
+                  _buildDesc(),
+
+                  SizedBox(height: size.height * 0.03),
+
+                  // ── 언어 버튼 목록 (Expanded로 가운데 정렬)
+                  Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // 첫 줄: 한국어 (전체 너비)
                         _buildLangBtn(_languages[0], fullWidth: true),
-                        const SizedBox(height: 12),
-                        // 두 번째 줄: 영어 + 일본어
+                        const SizedBox(height: 10),
                         Row(children: [
                           Expanded(child: _buildLangBtn(_languages[1])),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(child: _buildLangBtn(_languages[2])),
                         ]),
-                        const SizedBox(height: 12),
-                        // 세 번째 줄: 중국어 + 스페인어
+                        const SizedBox(height: 10),
                         Row(children: [
                           Expanded(child: _buildLangBtn(_languages[3])),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 10),
                           Expanded(child: _buildLangBtn(_languages[4])),
                         ]),
                       ],
                     ),
                   ),
-                ),
-                // 시작 버튼
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(32, 0, 32, 32),
-                  child: GestureDetector(
-                    onTap: _onStart,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      width: double.infinity,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        gradient: _selectedLang != null
-                            ? const LinearGradient(
-                                colors: [AppColors.primary, AppColors.primaryLight])
-                            : null,
-                        color: _selectedLang == null
-                            ? Colors.white.withValues(alpha: 0.15)
-                            : null,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: _selectedLang != null
-                            ? [
-                                BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.4),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 6),
-                                )
-                              ]
-                            : [],
-                      ),
-                      child: Center(
-                        child: Text(
-                          _t('btn'),
-                          style: TextStyle(
-                            color: _selectedLang != null
-                                ? Colors.white
-                                : Colors.white.withValues(alpha: 0.4),
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+
+                  // ── 시작 버튼
+                  _buildStartButton(),
+
+                  const SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),
@@ -239,47 +200,134 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
   }
 
   Widget _buildLogo() {
-    return Column(children: [
-      Container(
-        width: 80,
-        height: 80,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryLight],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.5),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 아이콘 (작게)
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.primaryLight],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-          ],
+            borderRadius: BorderRadius.circular(18),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.45),
+                blurRadius: 20,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Image.asset(
+              'assets/icons/app_icon.png',
+              fit: BoxFit.cover,
+              width: 64,
+              height: 64,
+              errorBuilder: (_, __, ___) => const Center(
+                child: Text('MT',
+                  style: TextStyle(color: Colors.white, fontSize: 16,
+                    fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        // 앱 이름
+        const Text(
+          'miniTutor',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        // 서브 태그 (선택된 언어에 따라 다국어 변경)
+        Text(
+          _t('subtitle'),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.55),
+            fontSize: 11,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 1.0,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDesc() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      ),
+      child: Text(
+        _t('desc'),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: 0.85),
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 0.3,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartButton() {
+    return GestureDetector(
+      onTap: _onStart,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        width: double.infinity,
+        height: 50,
+        decoration: BoxDecoration(
+          gradient: _selectedLang != null
+              ? const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                )
+              : null,
+          color: _selectedLang == null
+              ? Colors.white.withValues(alpha: 0.12)
+              : null,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: _selectedLang != null
+              ? [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 5),
+                  )
+                ]
+              : [],
         ),
         child: Center(
           child: Text(
-            _t('title'),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 22,
-              fontWeight: FontWeight.w900,
+            _t('btn'),
+            style: TextStyle(
+              color: _selectedLang != null
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: 0.35),
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.5,
             ),
           ),
         ),
       ),
-      const SizedBox(height: 14),
-      Text(
-        _t('subtitle'),
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 24,
-          fontWeight: FontWeight.w800,
-          letterSpacing: 1,
-        ),
-      ),
-    ]);
+    );
   }
 
   Widget _buildLangBtn(Map<String, dynamic> lang, {bool fullWidth = false}) {
@@ -287,26 +335,26 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
     return GestureDetector(
       onTap: () => _onSelectLang(lang['code'] as String),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: const Duration(milliseconds: 220),
         width: fullWidth ? double.infinity : null,
-        height: 64,
+        height: 56,
         decoration: BoxDecoration(
           color: isSelected
-              ? (lang['color'] as Color).withValues(alpha: 0.9)
-              : Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(16),
+              ? (lang['color'] as Color).withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected
-                ? Colors.white.withValues(alpha: 0.6)
-                : Colors.white.withValues(alpha: 0.15),
-            width: isSelected ? 2 : 1,
+                ? Colors.white.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.12),
+            width: isSelected ? 1.5 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: (lang['color'] as Color).withValues(alpha: 0.4),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                    color: (lang['color'] as Color).withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
                   )
                 ]
               : [],
@@ -314,8 +362,11 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(lang['flag'] as String, style: const TextStyle(fontSize: 24)),
-            const SizedBox(width: 10),
+            Text(
+              lang['flag'] as String,
+              style: const TextStyle(fontSize: 20),
+            ),
+            const SizedBox(width: 9),
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -323,8 +374,10 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
                 Text(
                   lang['native'] as String,
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.white.withValues(alpha: 0.9),
-                    fontSize: 15,
+                    color: isSelected
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.85),
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -332,15 +385,16 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
                   Text(
                     lang['name'] as String,
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      fontSize: 11,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 10,
                     ),
                   ),
               ],
             ),
             if (isSelected) ...[
               const SizedBox(width: 8),
-              const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+              const Icon(Icons.check_circle_rounded,
+                  color: Colors.white, size: 16),
             ],
           ],
         ),

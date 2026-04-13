@@ -36,14 +36,12 @@ class ProfileDrawer extends StatelessWidget {
                   _MenuItem(Icons.history_rounded, T('recent_lectures'), () => _openMyActivity(context, 0)),
                   _MenuItem(Icons.note_alt_outlined, T('my_notes'), () => _openMyActivity(context, 1)),
                   _MenuItem(Icons.question_answer_outlined, T('my_qa'), () => _openMyActivity(context, 2)),
-                  _MenuItem(Icons.support_agent_rounded, T('expert_consult'), () => _openMyActivity(context, 3)),
-                  _MenuItem(Icons.bookmark_rounded, T('favorites'), () => _openMyActivity(context, 4)),
+                  _MenuItem(Icons.support_agent_rounded, T('my_consult'), () => _openMyActivity(context, 3)),
                 ]),
                 const Divider(height: 1),
                 // 학습 관리
                 _buildMenuSection(T('study_manage'), [
                   _MenuItem(Icons.calendar_month_outlined, T('my_schedule'), () => _openSchedule(context)),
-                  _MenuItem(Icons.auto_stories_outlined, T('textbook_progress'), () => _openCurriculum(context)),
                   _MenuItem(Icons.bar_chart_rounded, T('study_stats'), () => _showStats(context, appState)),
                 ]),
                 const Divider(height: 1),
@@ -319,7 +317,6 @@ class ProfileDrawer extends StatelessWidget {
           _buildStatRow('⏱️ 오늘 학습', '${appState.todayStudyMinutes}분'),
           _buildStatRow('📚 총 학습', '${appState.totalStudyMinutes}분'),
           _buildStatRow('✅ 완료 강의', '${appState.completedLectures}개'),
-          _buildStatRow('🔖 즐겨찾기', '${appState.favoriteIds.length}개'),
         ]),
       ),
     );

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/app_state.dart';
-import '../../services/content_service.dart';
+import '../../services/note_repository.dart';
 import '../../services/translations.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/lecture_card.dart';
 import '../lecture/lecture_player_screen.dart';
-import '../lecture/note_canvas_screen.dart';
+import 'my_note_viewer_screen.dart';
 
 class MyActivityScreen extends StatefulWidget {
   final int initialTab;
@@ -19,12 +19,28 @@ class MyActivityScreen extends StatefulWidget {
 class _MyActivityScreenState extends State<MyActivityScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final _contentService = ContentService();
+  List<NoteMetaData> _notes = [];
+  bool _notesLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this, initialIndex: widget.initialTab);
+    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTab.clamp(0, 3));
+    _tabController.addListener(() {
+      if (_tabController.index == 1) _loadNotes();
+    });
+    _loadNotes();
+  }
+
+  Future<void> _loadNotes() async {
+    if (!mounted) return;
+    setState(() => _notesLoading = true);
+    final list = await NoteRepository().getAllNotes();
+    if (!mounted) return;
+    setState(() {
+      _notes = list;
+      _notesLoading = false;
+    });
   }
 
   @override
@@ -53,12 +69,15 @@ class _MyActivityScreenState extends State<MyActivityScreen>
             Tab(text: T('tab_notes')),
             Tab(text: T('tab_my_qa')),
             Tab(text: T('tab_expert')),
-            Tab(text: T('tab_favorites')),
           ],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
           dividerColor: AppColors.divider,
+          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
         ),
       ),
       body: TabBarView(
@@ -68,7 +87,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           _buildNoteTab(lang),
           _buildQATab(lang),
           _buildConsultationTab(lang),
-          _buildFavoriteTab(lang),
         ],
       ),
     );
@@ -126,84 +144,184 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     ]);
   }
 
-  // ── 탭 2: 노트 목록 ──────────────────────────────
+  // ── 탭 2: 내 노트 목록 (NoteRepository 기반) ──────────
   Widget _buildNoteTab(String lang) {
     final T = (String key) => AppTranslations.tLang(lang, key);
-    final notes = _contentService.getSavedNotes();
     final appState = context.read<AppState>();
 
-    return notes.isEmpty
-        ? _buildEmptyState(Icons.note_alt_outlined, T('empty_notes'), T('empty_notes_sub'))
-        : ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-            itemCount: notes.length,
-            itemBuilder: (_, i) {
-              final note = notes[i];
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
-                  leading: Container(
-                    width: 44, height: 44,
-                    decoration: BoxDecoration(
-                      color: _subjectColor(note.subject).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12)),
-                    child: Icon(Icons.edit_note_rounded, color: _subjectColor(note.subject), size: 24),
-                  ),
-                  title: Text(note.lectureTitle,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const SizedBox(height: 3),
-                    Text(note.previewText,
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 3),
-                    Row(children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: _subjectColor(note.subject).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4)),
-                        child: Text(note.subject,
-                          style: TextStyle(fontSize: 10, color: _subjectColor(note.subject), fontWeight: FontWeight.w600))),
-                      const SizedBox(width: 6),
-                      Text('${T('stroke_count').replaceAll('{n}', '${note.strokeCount}')} · ${note.savedAt}',
-                        style: const TextStyle(fontSize: 10, color: AppColors.textHint)),
-                    ]),
-                  ]),
-                  trailing: PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert_rounded, size: 18, color: AppColors.textHint),
-                    onSelected: (v) {
-                      if (v == 'open') {
-                        final lecture = appState.allLectures.where((l) => l.id == note.lectureId).firstOrNull;
-                        if (lecture != null) {
-                          Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => NoteCanvasScreen(lecture: lecture)));
+    if (_notesLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final notes = _notes;
+    if (notes.isEmpty) {
+      return Column(children: [
+        Expanded(child: _buildEmptyState(
+          Icons.note_alt_outlined, T('empty_notes'), T('empty_notes_sub'))),
+      ]);
+    }
+    return RefreshIndicator(
+      onRefresh: _loadNotes,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+        itemCount: notes.length,
+        itemBuilder: (_, i) {
+          final note = notes[i];
+            final subjectColor = _subjectColor(note.subject);
+            // 교안 첫 페이지 이미지 (있으면 미리보기)
+            final previewUrl = note.handoutUrls.isNotEmpty
+                ? note.handoutUrls.first
+                : null;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8, offset: const Offset(0, 2))],
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  final lecture = appState.allLectures
+                      .where((l) => l.id == note.lectureId)
+                      .firstOrNull;
+                  if (lecture != null) {
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => MyNoteViewerScreen(lecture: lecture)))
+                    .then((_) => _loadNotes());
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    // ── 교안 미리보기 썸네일 ──
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        width: 72, height: 72,
+                        color: subjectColor.withValues(alpha: 0.08),
+                        child: previewUrl != null
+                            ? (previewUrl.startsWith('assets/')
+                                ? Image.asset(previewUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _noteThumbnailFallback(subjectColor))
+                                : Image.network(previewUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _noteThumbnailFallback(subjectColor)))
+                            : _noteThumbnailFallback(subjectColor),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // ── 텍스트 정보 ──
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 과목 배지 + 강사명
+                          Row(children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: subjectColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(4)),
+                              child: Text(note.subject,
+                                style: TextStyle(fontSize: 10,
+                                  color: subjectColor,
+                                  fontWeight: FontWeight.w700)),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(note.instructorName,
+                              style: const TextStyle(fontSize: 11,
+                                color: AppColors.textSecondary)),
+                          ]),
+                          const SizedBox(height: 4),
+                          // 강의 제목
+                          Text(note.lectureTitle,
+                            style: const TextStyle(fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 4),
+                          // 필기 수 · 메모 수 · 저장 시각
+                          Row(children: [
+                            Icon(Icons.edit_rounded, size: 11,
+                              color: subjectColor.withValues(alpha: 0.7)),
+                            const SizedBox(width: 3),
+                            Text('필기 ${note.strokeCount}획',
+                              style: const TextStyle(fontSize: 11,
+                                color: AppColors.textSecondary)),
+                            if (note.memoCount > 0) ...[
+                              const SizedBox(width: 8),
+                              const Icon(Icons.sticky_note_2_outlined,
+                                size: 11, color: AppColors.textHint),
+                              const SizedBox(width: 3),
+                              Text('메모 ${note.memoCount}개',
+                                style: const TextStyle(fontSize: 11,
+                                  color: AppColors.textHint)),
+                            ],
+                          ]),
+                          const SizedBox(height: 3),
+                          Text(note.savedAt,
+                            style: const TextStyle(fontSize: 10,
+                              color: AppColors.textHint)),
+                        ],
+                      ),
+                    ),
+                    // ── 휴지통 삭제 버튼 ──
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline_rounded,
+                        size: 20, color: AppColors.textHint),
+                      splashRadius: 20,
+                      tooltip: '노트 삭제',
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                            title: const Text('내 노트 삭제',
+                              style: TextStyle(fontWeight: FontWeight.w800)),
+                            content: Text('"${note.lectureTitle}" 필기를 삭제할까요?\n삭제된 필기는 복구할 수 없습니다.'),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: Text(T('cancel'))),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.error),
+                                onPressed: () => Navigator.pop(context, true),
+                                child: Text(T('delete_btn'))),
+                            ],
+                          ),
+                        );
+                        if (confirm == true && context.mounted) {
+                          await NoteRepository().deleteNote(note.lectureId);
+                          await _loadNotes();
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('내 노트가 삭제되었습니다'),
+                                duration: Duration(seconds: 2)));
+                          }
                         }
-                      }
-                    },
-                    itemBuilder: (_) => [
-                      PopupMenuItem(value: 'open', child: Text(T('note_open'))),
-                      PopupMenuItem(value: 'delete', child: Text(T('delete_btn'), style: const TextStyle(color: AppColors.error))),
-                    ],
-                  ),
-                  onTap: () {
-                    final lecture = appState.allLectures.where((l) => l.id == note.lectureId).firstOrNull;
-                    if (lecture != null) {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => NoteCanvasScreen(lecture: lecture)));
-                    }
-                  },
+                      },
+                    ),
+                  ]),
                 ),
-              );
-            },
-          );
+              ),
+            );
+          },
+      ),
+    );
+  }
+
+  Widget _noteThumbnailFallback(Color color) {
+    return Center(
+      child: Icon(Icons.edit_note_rounded, color: color, size: 32));
   }
 
   // ── 탭 3: 강의 Q&A ────────────────────────────────
@@ -211,7 +329,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     final T = (String key) => AppTranslations.tLang(lang, key);
     final qaList = [
       {'subject': '수학', 'lectureTitle': '이차방정식 근의 공식', 'question': '판별식이 0일 때 중근이 되는 이유가 뭔가요?', 'answer': '판별식 D = b²-4ac = 0 이면 근의 공식에서 ±√0 = 0이 되어 두 근이 같아지기 때문입니다.', 'answered': true, 'time': '2일 전'},
-      {'subject': '영어', 'lectureTitle': '현재완료 vs 과거시제', 'question': 'just, already, yet은 어떤 시제와 쓰나요?', 'answer': '', 'answered': false, 'time': '5시간 전'},
       {'subject': '과학', 'lectureTitle': '뉴턴의 운동법칙', 'question': '무게와 질량의 차이가 헷갈려요', 'answer': '질량은 물체가 가진 물질의 양(kg), 무게는 지구가 당기는 중력의 크기(N)입니다. 달에서는 질량은 같지만 무게가 달라져요!', 'answered': true, 'time': '1주 전'},
     ];
 
@@ -287,12 +404,12 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           );
   }
 
-  // ── 탭 4: 전문가 상담 ─────────────────────────────
+  // ── 탭 4: 내 상담 ─────────────────────────────
   Widget _buildConsultationTab(String lang) {
     final T = (String key) => AppTranslations.tLang(lang, key);
     final myConsultations = [
       {'subject': '수학', 'title': '이차방정식 근의 공식 언제 쓰는 건가요?', 'answered': true, 'time': '2일 전', 'views': 234},
-      {'subject': '영어', 'title': '현재완료 have+p.p. 써야 하는 경우가 헷갈려요', 'answered': false, 'time': '5시간 전', 'views': 45},
+      {'subject': '과학', 'title': '뉴턴 제2법칙 F=ma에서 a가 음수면 어떻게 되나요?', 'answered': false, 'time': '5시간 전', 'views': 45},
     ];
 
     return myConsultations.isEmpty
@@ -341,43 +458,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           );
   }
 
-  // ── 탭 5: 즐겨찾기 ───────────────────────────────
-  Widget _buildFavoriteTab(String lang) {
-    final T = (String key) => AppTranslations.tLang(lang, key);
-    final appState = context.watch<AppState>();
-    final favs = appState.favoriteLectures;
-
-    return Column(children: [
-      if (favs.isNotEmpty)
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Row(children: [
-            Text(T('fav_count').replaceAll('{n}', '${favs.length}'),
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-          ]),
-        ),
-      Expanded(
-        child: favs.isEmpty
-            ? _buildEmptyState(Icons.bookmark_border_rounded, T('empty_favorites'), T('empty_favorites_sub'))
-            : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
-                itemCount: favs.length,
-                itemBuilder: (_, i) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: LectureCard(
-                    lecture: favs[i], isHorizontal: true,
-                    onTap: () {
-                      appState.addRecentView(favs[i].id);
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => LecturePlayerScreen(lecture: favs[i])));
-                    },
-                  ),
-                ),
-              ),
-      ),
-    ]);
-  }
-
   // ── 공통 빈 상태 ──────────────────────────────────
   Widget _buildEmptyState(IconData icon, String title, String subtitle) {
     return Center(
@@ -393,11 +473,9 @@ class _MyActivityScreenState extends State<MyActivityScreen>
 
   Color _subjectColor(String subject) {
     switch (subject) {
-      case '국어': return AppColors.korean;
-      case '영어': return AppColors.english;
       case '수학': return AppColors.math;
       case '과학': return AppColors.science;
-      case '사회': return AppColors.social;
+      case '화학': return const Color(0xFFE67E22);
       default: return AppColors.other;
     }
   }

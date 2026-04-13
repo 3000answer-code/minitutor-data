@@ -25,7 +25,7 @@ class Instructor {
 
   String get gradeText {
     switch (grade) {
-      case 'elementary': return '초등';
+      case 'elementary': return '예비중';
       case 'middle': return '중등';
       case 'high': return '고등';
       default: return grade;

@@ -11,12 +11,17 @@ class AppColors {
   static const Color accentLight = Color(0xFFFB923C);
 
   // Subjects 색상
-  static const Color korean = Color(0xFFEF4444);   // 국어 - 빨강
-  static const Color english = Color(0xFF3B82F6);  // 영어 - 파랑
-  static const Color math = Color(0xFF10B981);     // 수학 - 초록
-  static const Color science = Color(0xFF8B5CF6);  // 과학 - 보라
-  static const Color social = Color(0xFFF59E0B);   // 사회 - 노랑
-  static const Color other = Color(0xFFEC4899);    // 기타 - 핑크
+  static const Color korean = Color(0xFFEF4444);       // 국어 - 빨강
+  static const Color english = Color(0xFF3B82F6);      // 영어 - 파랑
+  static const Color math = Color(0xFF10B981);         // 수학 - 초록
+  static const Color science = Color(0xFF8B5CF6);      // 과학(중등) - 보라
+  static const Color commonScience = Color(0xFF7C3AED); // 공통과학(고등) - 진보라
+  static const Color physics = Color(0xFF0EA5E9);      // 물리 - 하늘
+  static const Color chemistry = Color(0xFFFF6B35);    // 화학 - 주황
+  static const Color biology = Color(0xFF22C55E);      // 생명과학 - 연초록
+  static const Color earth = Color(0xFF6366F1);        // 지구과학 - 인디고
+  static const Color social = Color(0xFFF59E0B);       // 사회 - 노랑
+  static const Color other = Color(0xFFEC4899);        // 기타 - 핑크
 
   // Neutrals
   static const Color background = Color(0xFFF8FAFC);

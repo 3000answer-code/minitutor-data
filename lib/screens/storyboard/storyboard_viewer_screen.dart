@@ -46,7 +46,7 @@ class StoryboardData {
 
     // ────── SECTION 0: 타이틀 & 소개 ──────
     StoryboardSlide(
-      page: 1, section: '소개', title: '2공 앱 스토리보드',
+      page: 1, section: '소개', title: 'miniTutor 앱 스토리보드',
       description: '2분 공부 - 핵심 개념만 쏙쏙!\n공만세를 새롭게 리뉴얼한 2공 앱의 전체 UI/UX 설계 문서입니다.',
       icon: Icons.menu_book_rounded, color: AppColors.primary,
       elements: [
@@ -376,10 +376,10 @@ class StoryboardData {
     ),
     StoryboardSlide(
       page: 36, section: '진도학습', title: '학년 선택 팝업',
-      description: '초등(1~6학년) / 중학(1~3학년) / 고등(1~3학년)',
+      description: '예비중(1~6학년) / 중학(1~3학년) / 고등(1~3학년)',
       icon: Icons.school_rounded, color: AppColors.success,
       elements: [
-        StoryboardElement(type: 'button', label: '초등', detail: '초1 / 초2 / 초3 / 초4 / 초5 / 초6'),
+        StoryboardElement(type: 'button', label: '예비중', detail: '예비중 1/2/3/4/5/6학년'),
         StoryboardElement(type: 'button', label: '중학', detail: '중1 / 중2 / 중3'),
         StoryboardElement(type: 'button', label: '고등', detail: '고1 / 고2 / 고3'),
       ],
@@ -411,7 +411,7 @@ class StoryboardData {
       icon: Icons.search_rounded, color: AppColors.accent,
       elements: [
         StoryboardElement(type: 'ui', label: '검색창', detail: '텍스트 입력 + 검색 버튼'),
-        StoryboardElement(type: 'ui', label: '학제 필터', detail: '초등/중학/고등'),
+        StoryboardElement(type: 'ui', label: '학제 필터', detail: '예비중/중학/고등'),
         StoryboardElement(type: 'ui', label: '과목 필터', detail: '국어/영어/수학/과학/사회/기타'),
         StoryboardElement(type: 'ui', label: '인기 검색어', detail: '매일 18:00 업데이트, 순위 표시'),
         StoryboardElement(type: 'ui', label: '최근 검색어', detail: '사용자 최근 검색 기록'),
@@ -506,10 +506,10 @@ class StoryboardData {
     // ────── SECTION 6: 강사별 강의 ──────
     StoryboardSlide(
       page: 53, section: '강사별 강의', title: '강사 목록',
-      description: '학제별 탭(초등/중학/고등) → 강사 그리드',
+      description: '학제별 탭(예비중/중학/고등) → 강사 그리드',
       icon: Icons.people_rounded, color: AppColors.korean,
       elements: [
-        StoryboardElement(type: 'ui', label: '학제 탭', detail: '초등 / 중학 / 고등'),
+        StoryboardElement(type: 'ui', label: '학제 탭', detail: '예비중 / 중학 / 고등'),
         StoryboardElement(type: 'ui', label: '강사 카드', detail: '프로필 사진 + 이름 + 과목 + 강의수'),
         StoryboardElement(type: 'spec', label: '탭 동작', detail: '강사 카드 탭 → 해당 강사 강의 목록'),
       ],
@@ -546,7 +546,7 @@ class StoryboardData {
         StoryboardElement(type: 'ui', label: '기간 연장 버튼', detail: '이용권 구매 화면으로 이동'),
         StoryboardElement(type: 'flow', label: '나의 활동', detail: '최근영상/노트/Q&A/상담/즐겨찾기'),
         StoryboardElement(type: 'flow', label: '나의 일정', detail: '캘린더 일정 관리'),
-        StoryboardElement(type: 'flow', label: '2공이란?', detail: '앱 소개 화면'),
+        StoryboardElement(type: 'flow', label: 'miniTutor란?', detail: '앱 소개 화면'),
         StoryboardElement(type: 'flow', label: '공지사항', detail: '공지/이벤트 목록'),
         StoryboardElement(type: 'flow', label: '고객센터', detail: 'FAQ + 1:1 문의'),
         StoryboardElement(type: 'flow', label: '설정', detail: '학년/자막/알림/데이터'),
@@ -637,7 +637,7 @@ class StoryboardData {
         StoryboardElement(type: 'ui', label: '월 달력', detail: '월 네비게이션 + 날짜 그리드'),
         StoryboardElement(type: 'ui', label: '일정 점 표시', detail: '일정 있는 날짜에 색상 점'),
         StoryboardElement(type: 'ui', label: '선택 날짜 일정', detail: '달력 하단 해당일 일정 목록'),
-        StoryboardElement(type: 'ui', label: '2공 이벤트 탭', detail: '2공 공식 행사/이벤트'),
+        StoryboardElement(type: 'ui', label: 'miniTutor 이벤트 탭', detail: 'miniTutor 공식 행사/이벤트'),
       ],
     ),
     StoryboardSlide(
@@ -665,11 +665,11 @@ class StoryboardData {
 
     // ────── SECTION 10: 2공이란? ──────
     StoryboardSlide(
-      page: 79, section: '2공이란?', title: '2공 앱 소개',
+      page: 79, section: 'miniTutor란?', title: 'miniTutor 앱 소개',
       description: '2분 공부 컨셉 소개 + 이용 방법',
       icon: Icons.info_rounded, color: AppColors.primary,
       elements: [
-        StoryboardElement(type: 'ui', label: '앱 소개 이미지', detail: '2공 브랜드 스토리'),
+        StoryboardElement(type: 'ui', label: '앱 소개 이미지', detail: 'miniTutor 브랜드 스토리'),
         StoryboardElement(type: 'ui', label: '이용 방법', detail: '단계별 사용 가이드'),
         StoryboardElement(type: 'ui', label: '강사 소개', detail: '주요 강사 프로필 이미지'),
       ],
@@ -738,7 +738,7 @@ class StoryboardData {
       icon: Icons.question_answer_rounded, color: AppColors.success,
       elements: [
         StoryboardElement(type: 'ui', label: '문의 내용', detail: '카테고리 + 제목 + 내용'),
-        StoryboardElement(type: 'ui', label: '답변 카드', detail: '2공 고객센터 답변 + 날짜'),
+        StoryboardElement(type: 'ui', label: '답변 카드', detail: 'miniTutor 고객센터 답변 + 날짜'),
         StoryboardElement(type: 'ui', label: '미답변 안내', detail: '답변 대기 중 안내 문구'),
       ],
     ),
@@ -826,7 +826,7 @@ class _StoryboardViewerScreenState extends State<StoryboardViewerScreen> {
         backgroundColor: const Color(0xFF1E293B),
         foregroundColor: Colors.white,
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('2공 스토리보드', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const Text('miniTutor 스토리보드', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           Text('${_currentPage + 1} / ${slides.length}슬라이드',
               style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.6))),
         ]),

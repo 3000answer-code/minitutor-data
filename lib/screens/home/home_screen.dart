@@ -17,8 +17,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  List<String> _tabs = ['추천', '인기', '국어', '영어', '수학', '과학', '사회'];
-  final _tabKeys = ['recommend', 'popular', '국어', '영어', '수학', '과학', '사회'];
+  List<String> _tabs = ['추천', '인기', '수학', '과학', '두번설명'];
+  final _tabKeys = ['recommend', 'popular', '수학', '과학', '두번설명'];
   int _bannerIndex = 0;
   final PageController _bannerController = PageController();
 
@@ -61,8 +61,7 @@ class _HomeScreenState extends State<HomeScreen>
     // 탭 이름 언어 갱신
     _tabs = [
       T('tab_recommend'), T('tab_popular'),
-      T('tab_korean'), T('tab_english'), T('tab_math'),
-      T('tab_science'), T('tab_social'),
+      T('tab_math'), T('tab_science'), T('tab_twice'),
     ];
     // Scaffold 없음 — MainShell의 Scaffold가 AppBar+endDrawer 담당
     return Column(

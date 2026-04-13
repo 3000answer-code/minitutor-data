@@ -30,6 +30,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    // FAB 탭 전환 반응 - 애니메이션 완료 후 setState
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
     _events = ContentService().getScheduleEvents();
   }
 
@@ -60,20 +66,25 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: '내 일정'), Tab(text: '2공 행사/이벤트')],
+          tabs: const [Tab(text: '내 일정'), Tab(text: 'miniTutor 행사/이벤트')],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
           dividerColor: AppColors.divider,
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEventSheet(),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('일정 추가', style: TextStyle(fontWeight: FontWeight.w700)),
-      ),
+      // FAB: 'miniTutor 행사/이벤트' 탭(index=1)에서는 완전히 숨김
+      floatingActionButton: _tabController.index == 1
+          ? const SizedBox.shrink()
+          : FloatingActionButton.extended(
+              onPressed: () => _showAddEventSheet(),
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 2,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('일정 추가', style: TextStyle(fontWeight: FontWeight.w700)),
+            ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       body: TabBarView(
         controller: _tabController,
         children: [
@@ -291,7 +302,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     );
   }
 
-  // ── 2공 행사/이벤트 탭 ───────────────────────────
+  // ── miniTutor 행사/이벤트 탭 ───────────────────────────
   Widget _buildAppEventsTab() {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
@@ -324,7 +335,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(20)),
-                    child: const Text('2공 이벤트',
+                    child: const Text('미니튜터 이벤트',
                       style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
                   ),
                   const SizedBox(height: 6),
@@ -386,12 +397,30 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      useRootNavigator: false,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) => Padding(
-          padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.88,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (ctx, scrollCtrl) => StatefulBuilder(
+        builder: (ctx, setModalState) => AnimatedPadding(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
           child: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            controller: scrollCtrl,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+              child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
               Center(child: Container(width: 40, height: 4,
                 decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
@@ -479,9 +508,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                 ),
               ),
             ]),
-          ),
-        ),
-      ),
+            ),         // Padding
+          ),           // SingleChildScrollView
+          ),           // Container
+        ),             // AnimatedPadding
+        ),             // StatefulBuilder
+      ),               // DraggableScrollableSheet
     );
   }
 

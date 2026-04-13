@@ -1,8 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 인터넷 및 미디어 권한 -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
     <application
-        android:label="Minute Mentor"
+        android:label="Mini Tutor"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -28,20 +33,51 @@
 
     <!-- Android 11+ 패키지 가시성: Google Drive 및 브라우저 열기 허용 -->
     <queries>
-        <!-- 텍스트 처리 (Flutter 엔진 필요) -->
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-        <!-- https URL 열기 (브라우저, Google Drive 등) -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="https"/>
         </intent>
-        <!-- http URL 열기 -->
         <intent>
             <action android:name="android.intent.action.VIEW"/>
             <data android:scheme="http"/>
         </intent>
     </queries>
 </manifest>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
