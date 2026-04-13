@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/lecture.dart';
 
-/// 2공 API 서버 연동 서비스
+/// Asome Tutor API 서버 연동 서비스
 /// - 환경 설정은 lib/config.dart 에서 관리
 /// - NAS ↔ AWS 전환: config.dart 의 currentEnv 만 변경하면 됨
 class ApiService {
@@ -14,7 +14,7 @@ class ApiService {
 
   // 강의 데이터 URL (GitHub Raw → 어디서든 접근 가능, APK 재설치 없이 자동 업데이트)
   static const List<String> _adminUrls = [
-    'https://raw.githubusercontent.com/3000answer-code/minitutor-data/main/lectures.json',
+    'https://raw.githubusercontent.com/3000answer-code/asometutor-data/main/lectures.json',
     'https://5061-i9igdqirkxrt7g1sztl0y-2e1b9533.sandbox.novita.ai/lectures.json',
     'http://10.0.2.2:5061/lectures.json',
   ];

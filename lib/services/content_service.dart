@@ -45,11 +45,11 @@ class ContentService {
 
   // ── 공지사항 샘플 ──────────────────────────────────
   List<Notice> getNotices() => [
-    Notice(id: 'not_001', title: '[공지] miniTutor 앱 버전 2.0 업데이트 안내',
-      content: 'miniTutor 앱이 새롭게 업데이트 되었습니다.\n\n✅ 주요 변경사항\n- 강의 재생 속도 조절 기능 개선\n- 노트 필기 3색 펜 추가\n- 나의 일정 달력 기능 추가\n- 전반적인 성능 최적화\n\n더 편리해진 miniTutor로 공부를 시작해보세요!',
+    Notice(id: 'not_001', title: '[공지] Asome Tutor 앱 버전 2.0 업데이트 안내',
+      content: 'Asome Tutor 앱이 새롭게 업데이트 되었습니다.\n\n✅ 주요 변경사항\n- 강의 재생 속도 조절 기능 개선\n- 노트 필기 3색 펜 추가\n- 나의 일정 달력 기능 추가\n- 전반적인 성능 최적화\n\n더 편리해진 Asome Tutor로 공부를 시작해보세요!',
       category: '공지', createdAt: DateTime.now().subtract(const Duration(days: 1)), isImportant: true),
     Notice(id: 'not_002', title: '[이벤트] 11월 퀴즈왕 선발 대회 🏆',
-      content: 'miniTutor 퀴즈왕 선발 대회를 개최합니다!\n\n📅 기간: 2024년 11월 25일 ~ 11월 30일\n🎁 경품: 1등 - 스타벅스 기프티콘 5만원권\n\n참여 방법:\n1. miniTutor 앱 내 퀴즈 메뉴 접속\n2. 수학/과학 퀴즈 10문제 풀기\n3. 최고점 기록 달성!\n\n지금 바로 도전해보세요!',
+      content: 'Asome Tutor 퀴즈왕 선발 대회를 개최합니다!\n\n📅 기간: 2024년 11월 25일 ~ 11월 30일\n🎁 경품: 1등 - 스타벅스 기프티콘 5만원권\n\n참여 방법:\n1. Asome Tutor 앱 내 퀴즈 메뉴 접속\n2. 수학/과학 퀴즈 10문제 풀기\n3. 최고점 기록 달성!\n\n지금 바로 도전해보세요!',
       category: '이벤트', createdAt: DateTime.now().subtract(const Duration(days: 2)), isImportant: false),
     Notice(id: 'not_003', title: '[공지] 고등 물리 시리즈 신규 강의 오픈',
       content: '고등 물리 완성 시리즈가 새로 업로드 되었습니다.\n\n📚 신규 강의 목록\n- 뉴턴의 운동법칙 3편\n- 전기와 자기 2편\n- 파동과 빛 1편\n\n최과학 강사의 2분 명강의를 지금 만나보세요!',
@@ -65,8 +65,8 @@ class ContentService {
   // ── FAQ 샘플 ──────────────────────────────────────
   List<FaqItem> getFaqItems() => [
     FaqItem(id: 'faq_001', category: '이용방법',
-      question: 'miniTutor 앱은 어떻게 사용하나요?',
-      answer: 'miniTutor는 짧은 짧은 강의 영상으로 공부하는 앱입니다.\n\n① 홈에서 원하는 강의를 선택하세요\n② 영상을 시청하며 노트에 필기하세요\n③ 진도학습에서 학습 현황을 확인하세요\n④ 모르는 내용은 전문가 상담을 활용하세요'),
+      question: 'Asome Tutor 앱은 어떻게 사용하나요?',
+      answer: 'Asome Tutor는 짧은 짧은 강의 영상으로 공부하는 앱입니다.\n\n① 홈에서 원하는 강의를 선택하세요\n② 영상을 시청하며 노트에 필기하세요\n③ 진도학습에서 학습 현황을 확인하세요\n④ 모르는 내용은 전문가 상담을 활용하세요'),
     FaqItem(id: 'faq_002', category: '이용방법',
       question: '자막은 어떻게 켜고 끄나요?',
       answer: '강의 재생 화면 우상단의 [CC] 버튼을 누르면 자막을 켜고 끌 수 있습니다.\n설정 메뉴에서 자막 기본값(On/Off)을 설정할 수 있습니다.'),

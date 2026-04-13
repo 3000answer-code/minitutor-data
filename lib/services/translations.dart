@@ -8,18 +8,18 @@ class AppTranslations {
     // 공통
     // ────────────────────────────────────────────
     'app_name': {
-      'ko': '이공',
-      'en': '2GONG',
-      'ja': '2ゴング',
-      'zh': '2功',
-      'es': '2GONG',
+      'ko': 'Asome Tutor',
+      'en': 'Asome Tutor',
+      'ja': 'Asome Tutor',
+      'zh': 'Asome Tutor',
+      'es': 'Asome Tutor',
     },
     'app_slogan': {
-      'ko': '2분공부',
-      'en': '2-Min Study',
-      'ja': '2分学習',
-      'zh': '2分钟学习',
-      'es': 'Estudio 2Min',
+      'ko': '합격을 향한 키워드 학습',
+      'en': 'Keyword Learning to Pass',
+      'ja': 'キーワード学習',
+      'zh': '关键词学习',
+      'es': 'Aprendizaje Clave',
     },
 
     // ────────────────────────────────────────────
@@ -890,10 +890,10 @@ class AppTranslations {
       'ko': '결제 내역', 'en': 'Payment History', 'ja': '決済履歴', 'zh': '付款记录', 'es': 'Pagos',
     },
     'app_info': {
-      'ko': '이공 (2분공부)', 'en': '2GONG', 'ja': '2ゴング', 'zh': '2功', 'es': '2GONG',
+      'ko': 'Asome Tutor', 'en': 'Asome Tutor', 'ja': 'Asome Tutor', 'zh': 'Asome Tutor', 'es': 'Asome Tutor',
     },
     'about_app': {
-      'ko': '이공이란?', 'en': 'About 2GONG', 'ja': '2ゴングとは', 'zh': '关于2功', 'es': 'Sobre 2GONG',
+      'ko': 'Asome Tutor란?', 'en': 'About Asome Tutor', 'ja': 'Asome Tutorとは', 'zh': '关于Asome Tutor', 'es': 'Sobre Asome Tutor',
     },
     'storyboard': {
       'ko': '스토리보드 뷰어', 'en': 'Storyboard', 'ja': 'ストーリーボード', 'zh': '故事板', 'es': 'Guión',

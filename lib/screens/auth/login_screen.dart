@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, letterSpacing: -1)),
           ),
           const SizedBox(height: 12),
-          const Text('miniTutor',
+          const Text('Asome Tutor',
             style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
           const SizedBox(height: 4),
           const Text('합격을 향한 키워드 학습',

@@ -51,7 +51,7 @@ class ProfileDrawer extends StatelessWidget {
                   _MenuItem(Icons.receipt_long_outlined, T('payment_history'), () => _openStorePayment(context)),
                 ]),
                 const Divider(height: 1),
-                // 2공
+                // Asome Tutor
                 _buildMenuSection(T('app_info'), [
                   _MenuItem(Icons.info_outline_rounded, T('about_app'), () => _showAbout(context)),
                   _MenuItem(Icons.slideshow_rounded, T('storyboard'), () => _openStoryboard(context)),
@@ -286,13 +286,13 @@ class ProfileDrawer extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: const LinearGradient(colors: [AppColors.primary, AppColors.primaryLight]),
               borderRadius: BorderRadius.circular(8)),
-            child: const Text('이공', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
+            child: const Text('AT', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w900)),
           ),
           const SizedBox(width: 8),
-          const Text('이공이란?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+          const Text('Asome Tutor란?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
         ]),
         content: const Text(
-          '이공은 "2분 공부"의 줄임말입니다.\n\n하루 단 2분, 핵심 개념만 쏙쏙 담은 강의로 공부 부담을 줄이고, 매일 꾸준히 학습하는 습관을 만들어드립니다.\n\n국내 최고 강사진의 2분 강의로 공부의 혁신을 경험하세요!',
+          'Asome Tutor는 합격을 향한 키워드 학습 플랫폼입니다.\n\n핵심 개념만 쏙쏙 담은 강의로 공부 부담을 줄이고, 매일 꾸준히 학습하는 습관을 만들어드립니다.\n\n국내 최고 강사진의 강의로 공부의 혁신을 경험하세요!',
           style: TextStyle(fontSize: 14, height: 1.7, color: AppColors.textSecondary),
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
@@ -435,10 +435,10 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   static const String _termsContent = '''제1조 (목적)
-본 약관은 이공(2분공부) 서비스 이용에 관한 권리, 의무 및 책임 사항을 규정합니다.
+본 약관은 Asome Tutor 서비스 이용에 관한 권리, 의무 및 책임 사항을 규정합니다.
 
 제2조 (정의)
-"서비스"란 이공이 제공하는 모든 온라인 교육 콘텐츠 및 관련 서비스를 의미합니다.
+"서비스"란 Asome Tutor가 제공하는 모든 온라인 교육 콘텐츠 및 관련 서비스를 의미합니다.
 
 제3조 (서비스 이용)
 모든 콘텐츠는 저작권법에 의해 보호되며 무단 복제·배포를 금지합니다.

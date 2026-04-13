@@ -42,7 +42,7 @@ class ScheduleEvent {
   final String alertBefore; // 정시/10분전/30분전/1시간전/1일전/1주전
   final String repeat;      // 없음/매일/매주/매월/매년
   final Color color;
-  final bool isAppEvent;    // true: 2공 이벤트, false: 내 일정
+  final bool isAppEvent;    // true: Asome Tutor 이벤트, false: 내 일정
 
   ScheduleEvent({
     required this.id,

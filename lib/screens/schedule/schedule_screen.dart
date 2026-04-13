@@ -66,14 +66,14 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: '내 일정'), Tab(text: 'miniTutor 행사/이벤트')],
+          tabs: const [Tab(text: '내 일정'), Tab(text: 'Asome Tutor 행사/이벤트')],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
           dividerColor: AppColors.divider,
         ),
       ),
-      // FAB: 'miniTutor 행사/이벤트' 탭(index=1)에서는 완전히 숨김
+      // FAB: 'Asome Tutor 행사/이벤트' 탭(index=1)에서는 완전히 숨김
       floatingActionButton: _tabController.index == 1
           ? const SizedBox.shrink()
           : FloatingActionButton.extended(
@@ -302,7 +302,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     );
   }
 
-  // ── miniTutor 행사/이벤트 탭 ───────────────────────────
+  // ── Asome Tutor 행사/이벤트 탭 ───────────────────────────
   Widget _buildAppEventsTab() {
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),

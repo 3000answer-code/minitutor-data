@@ -371,7 +371,7 @@ class _SupportScreenState extends State<SupportScreen>
                   Row(children: [
                     const Icon(Icons.support_agent_rounded, color: AppColors.success, size: 18),
                     const SizedBox(width: 6),
-                    const Text('miniTutor 고객센터 답변', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.success)),
+                    const Text('Asome Tutor 고객센터 답변', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.success)),
                   ]),
                   const SizedBox(height: 10),
                   Text(inquiry.answer!, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, height: 1.7)),

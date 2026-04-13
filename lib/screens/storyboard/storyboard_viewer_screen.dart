@@ -46,8 +46,8 @@ class StoryboardData {
 
     // ────── SECTION 0: 타이틀 & 소개 ──────
     StoryboardSlide(
-      page: 1, section: '소개', title: 'miniTutor 앱 스토리보드',
-      description: '2분 공부 - 핵심 개념만 쏙쏙!\n공만세를 새롭게 리뉴얼한 2공 앱의 전체 UI/UX 설계 문서입니다.',
+      page: 1, section: '소개', title: 'Asome Tutor 앱 스토리보드',
+      description: '2분 공부 - 핵심 개념만 쏙쏙!\nAsome Tutor를 새롭게 리뉴얼한 Asome Tutor 앱의 전체 UI/UX 설계 문서입니다.',
       icon: Icons.menu_book_rounded, color: AppColors.primary,
       elements: [
         StoryboardElement(type: 'spec', label: '총 92페이지 스토리보드'),
@@ -86,10 +86,10 @@ class StoryboardData {
     // ────── SECTION 1: 홈 화면 ──────
     StoryboardSlide(
       page: 5, section: '홈', title: '홈 - 추천 탭',
-      description: '상단 바: 알림 아이콘 + 로고(2공) + 슬라이드 메뉴 아이콘\n롤링 배너 + 무작위 추천 강의 목록',
+      description: '상단 바: 알림 아이콘 + 로고(Asome Tutor) + 슬라이드 메뉴 아이콘\n롤링 배너 + 무작위 추천 강의 목록',
       icon: Icons.home_rounded, color: AppColors.primary,
       elements: [
-        StoryboardElement(type: 'ui', label: '상단 앱바', detail: '알림(🔔) / 2공 로고 / 햄버거 메뉴(☰)'),
+        StoryboardElement(type: 'ui', label: '상단 앱바', detail: '알림(🔔) / Asome Tutor 로고 / 햄버거 메뉴(☰)'),
         StoryboardElement(type: 'ui', label: '롤링 배너', detail: '자동 슬라이드 이미지 배너'),
         StoryboardElement(type: 'ui', label: '추천 강의 목록', detail: '썸네일 + 강의명 + 강사 + 시간'),
         StoryboardElement(type: 'ui', label: '하단 퀵메뉴', detail: '홈/진도/검색/상담/강사 5탭'),
@@ -546,7 +546,7 @@ class StoryboardData {
         StoryboardElement(type: 'ui', label: '기간 연장 버튼', detail: '이용권 구매 화면으로 이동'),
         StoryboardElement(type: 'flow', label: '나의 활동', detail: '최근영상/노트/Q&A/상담/즐겨찾기'),
         StoryboardElement(type: 'flow', label: '나의 일정', detail: '캘린더 일정 관리'),
-        StoryboardElement(type: 'flow', label: 'miniTutor란?', detail: '앱 소개 화면'),
+        StoryboardElement(type: 'flow', label: 'Asome Tutor란?', detail: '앱 소개 화면'),
         StoryboardElement(type: 'flow', label: '공지사항', detail: '공지/이벤트 목록'),
         StoryboardElement(type: 'flow', label: '고객센터', detail: 'FAQ + 1:1 문의'),
         StoryboardElement(type: 'flow', label: '설정', detail: '학년/자막/알림/데이터'),
@@ -631,13 +631,13 @@ class StoryboardData {
     // ────── SECTION 9: 나의 일정 ──────
     StoryboardSlide(
       page: 69, section: '나의 일정', title: '나의 일정 - 달력',
-      description: '월별 캘린더 + 날짜별 일정 표시\n개인 일정 + 2공 행사/이벤트',
+      description: '월별 캘린더 + 날짜별 일정 표시\n개인 일정 + Asome Tutor 행사/이벤트',
       icon: Icons.calendar_month_rounded, color: AppColors.primary,
       elements: [
         StoryboardElement(type: 'ui', label: '월 달력', detail: '월 네비게이션 + 날짜 그리드'),
         StoryboardElement(type: 'ui', label: '일정 점 표시', detail: '일정 있는 날짜에 색상 점'),
         StoryboardElement(type: 'ui', label: '선택 날짜 일정', detail: '달력 하단 해당일 일정 목록'),
-        StoryboardElement(type: 'ui', label: 'miniTutor 이벤트 탭', detail: 'miniTutor 공식 행사/이벤트'),
+        StoryboardElement(type: 'ui', label: 'Asome Tutor 이벤트 탭', detail: 'Asome Tutor 공식 행사/이벤트'),
       ],
     ),
     StoryboardSlide(
@@ -663,13 +663,13 @@ class StoryboardData {
       ],
     ),
 
-    // ────── SECTION 10: 2공이란? ──────
+    // ────── SECTION 10: Asome Tutor이란? ──────
     StoryboardSlide(
-      page: 79, section: 'miniTutor란?', title: 'miniTutor 앱 소개',
+      page: 79, section: 'Asome Tutor란?', title: 'Asome Tutor 앱 소개',
       description: '2분 공부 컨셉 소개 + 이용 방법',
       icon: Icons.info_rounded, color: AppColors.primary,
       elements: [
-        StoryboardElement(type: 'ui', label: '앱 소개 이미지', detail: 'miniTutor 브랜드 스토리'),
+        StoryboardElement(type: 'ui', label: '앱 소개 이미지', detail: 'Asome Tutor 브랜드 스토리'),
         StoryboardElement(type: 'ui', label: '이용 방법', detail: '단계별 사용 가이드'),
         StoryboardElement(type: 'ui', label: '강사 소개', detail: '주요 강사 프로필 이미지'),
       ],
@@ -734,11 +734,11 @@ class StoryboardData {
     ),
     StoryboardSlide(
       page: 88, section: '고객센터', title: '1:1 문의 상세',
-      description: '문의 내용 + 2공 고객센터 답변',
+      description: '문의 내용 + Asome Tutor 고객센터 답변',
       icon: Icons.question_answer_rounded, color: AppColors.success,
       elements: [
         StoryboardElement(type: 'ui', label: '문의 내용', detail: '카테고리 + 제목 + 내용'),
-        StoryboardElement(type: 'ui', label: '답변 카드', detail: 'miniTutor 고객센터 답변 + 날짜'),
+        StoryboardElement(type: 'ui', label: '답변 카드', detail: 'Asome Tutor 고객센터 답변 + 날짜'),
         StoryboardElement(type: 'ui', label: '미답변 안내', detail: '답변 대기 중 안내 문구'),
       ],
     ),
@@ -826,7 +826,7 @@ class _StoryboardViewerScreenState extends State<StoryboardViewerScreen> {
         backgroundColor: const Color(0xFF1E293B),
         foregroundColor: Colors.white,
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('miniTutor 스토리보드', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
+          const Text('Asome Tutor 스토리보드', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16)),
           Text('${_currentPage + 1} / ${slides.length}슬라이드',
               style: TextStyle(fontSize: 11, color: Colors.white.withValues(alpha: 0.6))),
         ]),

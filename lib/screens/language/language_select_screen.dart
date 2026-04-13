@@ -56,31 +56,31 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
 
   static const Map<String, Map<String, String>> _i18n = {
     'ko': {
-      'title': 'miniTutor',
+      'title': 'Asome Tutor',
       'subtitle': '합격을 향한 키워드 학습',
       'desc': '언어를 선택하세요',
       'btn': '시작하기',
     },
     'en': {
-      'title': 'miniTutor',
+      'title': 'Asome Tutor',
       'subtitle': 'Keyword Learning to Pass',
       'desc': 'Select your language',
       'btn': 'Get Started',
     },
     'ja': {
-      'title': 'miniTutor',
+      'title': 'Asome Tutor',
       'subtitle': '合格へのキーワード学習',
       'desc': '言語を選択してください',
       'btn': 'はじめる',
     },
     'zh': {
-      'title': 'miniTutor',
+      'title': 'Asome Tutor',
       'subtitle': '关键词学习到通过',
       'desc': '请选择语言',
       'btn': '开始',
     },
     'es': {
-      'title': 'miniTutor',
+      'title': 'Asome Tutor',
       'subtitle': 'Aprendizaje Clave para Pasar',
       'desc': 'Selecciona tu idioma',
       'btn': 'Comenzar',
@@ -240,7 +240,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
         const SizedBox(height: 10),
         // 앱 이름
         const Text(
-          'miniTutor',
+          'Asome Tutor',
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,

@@ -52,9 +52,9 @@ class _NoticeScreenState extends State<NoticeScreen>
     NoticeItem(
       id: 'n1',
       category: '공지',
-      title: '🎉 miniTutor 앱 정식 출시 안내',
+      title: '🎉 Asome Tutor 앱 정식 출시 안내',
       content:
-          '안녕하세요, miniTutor입니다!\n\n공만세에서 새롭게 리뉴얼된 miniTutor 앱이 드디어 정식 출시되었습니다.\n\nminiTutor는 바쁜 일상 속에서도 하루 단 2분으로 핵심 개념을 이해할 수 있도록 설계된 학습 플랫폼입니다.\n\n주요 변경사항:\n• 전면 리뉴얼된 UI/UX\n• 2분 핵심 강의 전면 도입\n• 노트 필기 기능 강화\n• 전문가 상담 시스템 개선\n\n더 나은 학습 경험을 위해 최선을 다하겠습니다. 감사합니다!',
+          '안녕하세요, Asome Tutor입니다!\n\nAsome Tutor에서 새롭게 리뉴얼된 Asome Tutor 앱이 드디어 정식 출시되었습니다.\n\nAsome Tutor는 바쁜 일상 속에서도 하루 단 2분으로 핵심 개념을 이해할 수 있도록 설계된 학습 플랫폼입니다.\n\n주요 변경사항:\n• 전면 리뉴얼된 UI/UX\n• 2분 핵심 강의 전면 도입\n• 노트 필기 기능 강화\n• 전문가 상담 시스템 개선\n\n더 나은 학습 경험을 위해 최선을 다하겠습니다. 감사합니다!',
       createdAt: DateTime.now().subtract(const Duration(hours: 2)),
       isPinned: true,
       isNew: true,
@@ -64,7 +64,7 @@ class _NoticeScreenState extends State<NoticeScreen>
       category: '이벤트',
       title: '🎁 출시 기념 프리미엄 30일 무료 이벤트',
       content:
-          'miniTutor 출시를 기념하여 특별 이벤트를 진행합니다!\n\n■ 이벤트 기간\n2024년 12월 1일 ~ 2024년 12월 31일\n\n■ 이벤트 내용\n신규 가입 회원 전원에게 프리미엄 30일 무료 제공\n\n■ 참여 방법\n1. miniTutor 앱 다운로드\n2. 회원가입\n3. 자동으로 프리미엄 30일 적용!\n\n이 기회를 놓치지 마세요. 친구에게도 알려주세요! 😊',
+          'Asome Tutor 출시를 기념하여 특별 이벤트를 진행합니다!\n\n■ 이벤트 기간\n2024년 12월 1일 ~ 2024년 12월 31일\n\n■ 이벤트 내용\n신규 가입 회원 전원에게 프리미엄 30일 무료 제공\n\n■ 참여 방법\n1. Asome Tutor 앱 다운로드\n2. 회원가입\n3. 자동으로 프리미엄 30일 적용!\n\n이 기회를 놓치지 마세요. 친구에게도 알려주세요! 😊',
       createdAt: DateTime.now().subtract(const Duration(hours: 5)),
       isPinned: true,
       isNew: true,
@@ -74,7 +74,7 @@ class _NoticeScreenState extends State<NoticeScreen>
       category: '업데이트',
       title: '📱 버전 1.0.1 업데이트 안내',
       content:
-          'miniTutor 버전 1.0.1이 업데이트 되었습니다.\n\n■ 개선사항\n• 강의 재생 속도 조절 안정화\n• 노트 저장 버그 수정\n• 검색 속도 개선\n• 일부 기기에서 발생하던 앱 종료 문제 해결\n\n■ 추가 기능\n• 강의 다운로드 예약 기능 (추후 업데이트 예정)\n• 학습 통계 화면 UI 개선\n\n항상 더 나은 miniTutor를 위해 노력하겠습니다!',
+          'Asome Tutor 버전 1.0.1이 업데이트 되었습니다.\n\n■ 개선사항\n• 강의 재생 속도 조절 안정화\n• 노트 저장 버그 수정\n• 검색 속도 개선\n• 일부 기기에서 발생하던 앱 종료 문제 해결\n\n■ 추가 기능\n• 강의 다운로드 예약 기능 (추후 업데이트 예정)\n• 학습 통계 화면 UI 개선\n\n항상 더 나은 Asome Tutor를 위해 노력하겠습니다!',
       createdAt: DateTime.now().subtract(const Duration(days: 1)),
       isNew: true,
     ),
@@ -83,7 +83,7 @@ class _NoticeScreenState extends State<NoticeScreen>
       category: '공지',
       title: '📚 2025 수능 대비 특별 강의 오픈',
       content:
-          '2025 수능을 준비하는 수험생 여러분을 위한 특별 강의 시리즈가 오픈되었습니다.\n\n■ 제공 과목\n• 수학 (공통, 미적분, 확률과 통계)\n• 과학탐구 (물리, 화학, 생명과학, 지구과학)\n\n■ 강의 특징\n• 개념별 2분 핵심 요약\n• 빈출 문제 유형 분석\n• 국내 최고 강사진 참여\n\n합격의 그날까지 miniTutor가 함께하겠습니다! 파이팅!',
+          '2025 수능을 준비하는 수험생 여러분을 위한 특별 강의 시리즈가 오픈되었습니다.\n\n■ 제공 과목\n• 수학 (공통, 미적분, 확률과 통계)\n• 과학탐구 (물리, 화학, 생명과학, 지구과학)\n\n■ 강의 특징\n• 개념별 2분 핵심 요약\n• 빈출 문제 유형 분석\n• 국내 최고 강사진 참여\n\n합격의 그날까지 Asome Tutor가 함께하겠습니다! 파이팅!',
       createdAt: DateTime.now().subtract(const Duration(days: 3)),
     ),
     NoticeItem(
@@ -99,7 +99,7 @@ class _NoticeScreenState extends State<NoticeScreen>
       category: '정책',
       title: '📋 이용약관 및 개인정보처리방침 개정 안내',
       content:
-          'miniTutor 서비스 이용약관 및 개인정보처리방침이 일부 개정됩니다.\n\n■ 시행일\n2024년 12월 15일부터\n\n■ 주요 변경 내용\n\n[이용약관]\n• 제7조 (서비스 이용시간) 내용 추가\n• 제12조 (저작권) 관련 조항 명확화\n\n[개인정보처리방침]\n• 개인정보 보유기간 명시 강화\n• 제3자 제공 관련 내용 정비\n\n자세한 내용은 앱 내 설정 > 이용약관에서 확인하실 수 있습니다.\n궁금하신 점은 고객센터로 문의해 주세요.',
+          'Asome Tutor 서비스 이용약관 및 개인정보처리방침이 일부 개정됩니다.\n\n■ 시행일\n2024년 12월 15일부터\n\n■ 주요 변경 내용\n\n[이용약관]\n• 제7조 (서비스 이용시간) 내용 추가\n• 제12조 (저작권) 관련 조항 명확화\n\n[개인정보처리방침]\n• 개인정보 보유기간 명시 강화\n• 제3자 제공 관련 내용 정비\n\n자세한 내용은 앱 내 설정 > 이용약관에서 확인하실 수 있습니다.\n궁금하신 점은 고객센터로 문의해 주세요.',
       createdAt: DateTime.now().subtract(const Duration(days: 10)),
     ),
     NoticeItem(

@@ -12,7 +12,7 @@ import 'package:chewie/chewie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 // Conditional import for web speech API
-import 'package:minitutor/utils/web_speech_web.dart' if (dart.library.io) 'package:minitutor/utils/web_speech_stub.dart';
+import 'package:asometutor/utils/web_speech_web.dart' if (dart.library.io) 'package:asometutor/utils/web_speech_stub.dart';
 import '../../models/lecture.dart';
 import '../../services/app_state.dart';
 import '../../services/auth_service.dart';
@@ -26,7 +26,7 @@ const Color _kOrange = Color(0xFFF97316);
 const String _kOrangeHex = '#F97316';
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LecturePlayerScreen — 공만세 스타일 동영상 플레이어
+// LecturePlayerScreen — Asome Tutor 스타일 동영상 플레이어
 // ─────────────────────────────────────────────────────────────────────────────
 class LecturePlayerScreen extends StatefulWidget {
   final Lecture lecture;

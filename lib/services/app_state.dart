@@ -126,11 +126,11 @@ class AppState extends ChangeNotifier {
   // ─── Getters ───
   String get selectedLanguage => _selectedLanguage;
   bool get languageSelected => _languageSelected;
-  // 레거시 브랜드명(2분공부/이공/2공) → miniTutor로 자동 변환
+  // 레거시 브랜드명(2분공부/이공/Asome Tutor) → Asome Tutor로 자동 변환
   String get nickname {
     if (!_isLoggedIn) return '게스트';
-    const legacyNames = ['2분공부', '이공', '2공', '2GONG', 'Minute Mentor'];
-    if (legacyNames.contains(_nickname.trim())) return 'miniTutor';
+    const legacyNames = ['2분공부', '이공', 'Asome Tutor', '2GONG', 'Minute Mentor'];
+    if (legacyNames.contains(_nickname.trim())) return 'Asome Tutor';
     return _nickname;
   }
   String get email => _email;
@@ -142,10 +142,10 @@ class AppState extends ChangeNotifier {
   // ─── 어드민 여부 (이메일 기반) ───
   bool get isAdmin {
     const adminEmails = [
-      'admin@minitutor.com',
+      'admin@asometutor.com',
       'admin@2gong.com',
-      'master@minitutor.com',
-      'superadmin@minitutor.com',
+      'master@asometutor.com',
+      'superadmin@asometutor.com',
     ];
     return adminEmails.contains(_email.trim().toLowerCase());
   }

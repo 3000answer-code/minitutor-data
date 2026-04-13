@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary - 2공 브랜드 컬러 (파란색 계열)
+  // Primary - Asome Tutor 브랜드 컬러 (파란색 계열)
   static const Color primary = Color(0xFF2563EB);
   static const Color primaryLight = Color(0xFF3B82F6);
   static const Color primaryDark = Color(0xFF1D4ED8);

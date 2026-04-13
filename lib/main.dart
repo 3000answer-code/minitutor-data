@@ -43,7 +43,7 @@ class App2Gong extends StatelessWidget {
       create: (_) => AppState(),
       child: Consumer<AppState>(
         builder: (context, appState, _) => MaterialApp(
-          title: 'miniTutor',
+          title: 'Asome Tutor',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           home: const _AppRootScreen(),
@@ -194,7 +194,7 @@ class _SplashScreenState extends State<_SplashScreen>
                       const SizedBox(height: 24),
                       // 브랜드명
                       const Text(
-                        'miniTutor',
+                        'Asome Tutor',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 32,
@@ -341,7 +341,7 @@ class MainShell extends StatelessWidget {
       automaticallyImplyLeading: false,
       titleSpacing: 12,
       title: Row(children: [
-        // miniTutor 아이콘
+        // Asome Tutor 아이콘
         Container(
           width: 40,
           height: 40,

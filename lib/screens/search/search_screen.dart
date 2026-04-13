@@ -1428,7 +1428,7 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  // ── 검색 결과 화면 (공만세 스타일)
+  // ── 검색 결과 화면 (Asome Tutor 스타일)
   Widget _buildSearchResults(AppState appState) {
     String normalize(String s) =>
         s.replaceAll(RegExp(r'[\s_\-]+'), '').toLowerCase();
@@ -1476,7 +1476,7 @@ class _SearchScreenState extends State<SearchScreen>
     return Column(children: [
       // ── 검색 컨텍스트 배너 (카테고리 진입 시)
       if (_categoryFilter.isNotEmpty) _buildCategoryBanner(nq),
-      // ── 공만세 스타일 필터 영역
+      // ── Asome Tutor 스타일 필터 영역
       _buildGongmansaeFilterBar(),
       // ── 결과 헤더: 총 N개 + 정렬
       _buildResultHeader(results.length),
@@ -1614,7 +1614,7 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  // ── 공만세 스타일 필터바 (학년 + 과목)
+  // ── Asome Tutor 스타일 필터바 (학년 + 과목)
   Widget _buildGongmansaeFilterBar() {
     const grades = [
       {'value': '', 'label': '전체'},
@@ -1708,7 +1708,7 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
-  // 총 N개 | 관련순▼ | 자동재생 토글 (공만세 캡처 그대로)
+  // 총 N개 | 관련순▼ | 자동재생 토글 (Asome Tutor 캡처 그대로)
   Widget _buildResultHeader(int count) {
     return Container(
       color: Colors.white,
@@ -1747,7 +1747,7 @@ class _SearchScreenState extends State<SearchScreen>
           ]),
         ),
         const Spacer(),
-        // 자동재생 토글 (공만세 스타일)
+        // 자동재생 토글 (Asome Tutor 스타일)
         Row(children: [
           const Text('자동 재생',
               style: TextStyle(
