@@ -223,6 +223,10 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
+          // ── 최근 본 강의 (추천 탭에만 표시) ──
+          if (tab == 'recommend')
+            SliverToBoxAdapter(child: _buildRecentLectures(appState)),
+
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
       ),
@@ -1284,27 +1288,49 @@ class _HomeScreenState extends State<HomeScreen>
     final lang = appState.selectedLanguage;
     final T = (String key) => AppTranslations.tLang(lang, key);
     if (recent.isEmpty) return const SizedBox.shrink();
+
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      // 헤더
       Padding(
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
-        child: Text(T('section_recent'),
-            style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: AppColors.textPrimary)),
+        padding: const EdgeInsets.fromLTRB(16, 24, 16, 10),
+        child: Row(children: [
+          const Text('📺', style: TextStyle(fontSize: 16)),
+          const SizedBox(width: 6),
+          Text(T('section_recent'),
+              style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary)),
+          const Spacer(),
+          Text('${recent.take(5).length}개',
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+        ]),
       ),
+      // 가로 스크롤 카드 목록 (화면 78% 너비 → 옆 카드 살짝 보임)
       SizedBox(
-        height: 260,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          itemCount: recent.take(5).length,
-          itemBuilder: (context, i) => LectureCard(
-            lecture: recent[i],
-            onTap: () => _openLecture(recent[i]),
-          ),
+        height: 185,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final cardWidth = MediaQuery.of(context).size.width * 0.78;
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(left: 16, right: 6),
+              itemCount: recent.take(5).length,
+              itemBuilder: (context, i) => SizedBox(
+                width: cardWidth,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 10),
+                  child: LectureCard(
+                    lecture: recent[i],
+                    onTap: () => _openLecture(recent[i]),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
+      const SizedBox(height: 8),
     ]);
   }
 
