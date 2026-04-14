@@ -198,8 +198,9 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        width: 72, height: 72,
+                        width: 100, height: 100,
                         color: Colors.white,
+                        alignment: Alignment.center,
                         child: previewUrl != null
                             ? (previewUrl.startsWith('assets/')
                                 ? Image.asset(previewUrl,

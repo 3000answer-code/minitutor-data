@@ -217,12 +217,12 @@ class ScienceCategoryScreen extends StatelessWidget {
                   // 과목별 배너 이미지 결정
                   String? bannerImg;
                   switch (label) {
-                    case '과학':     bannerImg = 'assets/images/banners/banner_science.png'; break;
-                    case '공통과학': bannerImg = 'assets/images/banners/banner_science.png'; break;
-                    case '물리':     bannerImg = 'assets/images/banners/banner_science.png'; break;
-                    case '화학':     bannerImg = 'assets/images/banners/banner_science.png'; break;
-                    case '생명과학': bannerImg = 'assets/images/banners/banner_science.png'; break;
-                    case '지구과학': bannerImg = 'assets/images/banners/banner_science.png'; break;
+                    case '과학':     bannerImg = 'assets/images/banners/banner_science_new2.jpg'; break;
+                    case '공통과학': bannerImg = 'assets/images/banners/banner_science_new2.jpg'; break;
+                    case '물리':     bannerImg = 'assets/images/banners/banner_science_new2.jpg'; break;
+                    case '화학':     bannerImg = 'assets/images/banners/banner_science_new2.jpg'; break;
+                    case '생명과학': bannerImg = 'assets/images/banners/banner_science_new2.jpg'; break;
+                    case '지구과학': bannerImg = 'assets/images/banners/banner_science_new2.jpg'; break;
                     default: bannerImg = null;
                   }
 

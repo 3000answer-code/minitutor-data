@@ -268,14 +268,14 @@ class _HomeScreenState extends State<HomeScreen>
         'emoji': '📐',
         'title': '수학',
         'desc': '고등 · 중등 세분화',
-        'image': 'assets/images/banners/banner_math.png',
+        'image': 'assets/images/banners/banner_math_new2.jpg',
         'overlay': Color(0xAA1B5E20), // 진한 초록 오버레이
       },
       '과학': {
         'emoji': '🔬',
         'title': '과학',
         'desc': '중등 · 고등 세분화',
-        'image': 'assets/images/banners/banner_science_new.jpg',
+        'image': 'assets/images/banners/banner_science_new2.jpg',
         'overlay': Color(0x886A1B9A), // 진한 보라 오버레이
       },
     };
@@ -382,23 +382,26 @@ class _HomeScreenState extends State<HomeScreen>
     final appState = context.watch<AppState>();
     final allLecs = appState.allLectures;
 
-    // 과학 관련 강의 수 계산
-    int scienceLecCount(String sub) =>
-        allLecs.where((l) => l.subject.contains(sub) || l.description.contains(sub)).length;
+    // 과학 관련 강의 수 계산 (subject 정확히 일치)
+    int scienceLecCount(String sub) {
+      if (sub == '과학') {
+        // '과학'은 중학교 과학만 (subject == '과학' 정확히)
+        return allLecs.where((l) => l.subject == '과학').length;
+      }
+      return allLecs.where((l) => l.subject == sub).length;
+    }
 
     final categories = [
       {'title': '과학', 'sub': '중등 과학', 'icon': '🔬', 'color': const Color(0xFF5E35B1), 'count': scienceLecCount('과학'), 'image': 'assets/images/subjects/science_card.jpg'},
-      {'title': '공통과학', 'sub': '고등 공통과학', 'icon': '🧪', 'color': const Color(0xFF1976D2), 'count': scienceLecCount('공통과학'), 'image': 'assets/images/subjects/common_science_card.jpg'},
-      {'title': '물리', 'sub': '고등 물리학', 'icon': '⚡', 'color': const Color(0xFF1565C0), 'count': scienceLecCount('물리'), 'image': 'assets/images/subjects/physics_card.jpg'},
-      {'title': '화학', 'sub': '고등 화학', 'icon': '🧬', 'color': const Color(0xFFE65100), 'count': scienceLecCount('화학'), 'image': 'assets/images/subjects/chemistry_card.jpg'},
-      {'title': '생명과학', 'sub': '고등 생명과학', 'icon': '🌿', 'color': const Color(0xFF2E7D32), 'count': scienceLecCount('생명과학'), 'image': 'assets/images/subjects/biology_card.jpg'},
-      {'title': '지구과학', 'sub': '고등 지구과학', 'icon': '🌍', 'color': const Color(0xFF00838F), 'count': scienceLecCount('지구과학'), 'image': 'assets/images/subjects/earth_card.jpg'},
+      {'title': '공통과학', 'sub': '고1 공통과학', 'icon': '🧪', 'color': const Color(0xFF1976D2), 'count': scienceLecCount('공통과학'), 'image': 'assets/images/subjects/common_science_card.jpg'},
+      {'title': '물리', 'sub': '고2·3 물리학', 'icon': '⚡', 'color': const Color(0xFF1565C0), 'count': scienceLecCount('물리'), 'image': 'assets/images/subjects/physics_card.jpg'},
+      {'title': '화학', 'sub': '고2·3 화학', 'icon': '🧬', 'color': const Color(0xFFE65100), 'count': scienceLecCount('화학'), 'image': 'assets/images/subjects/chemistry_card.jpg'},
+      {'title': '생명과학', 'sub': '고2·3 생명과학', 'icon': '🌿', 'color': const Color(0xFF2E7D32), 'count': scienceLecCount('생명과학'), 'image': 'assets/images/subjects/biology_card.jpg'},
+      {'title': '지구과학', 'sub': '고2·3 지구과학', 'icon': '🌍', 'color': const Color(0xFF00838F), 'count': scienceLecCount('지구과학'), 'image': 'assets/images/subjects/earth_card.jpg'},
     ];
 
-    final totalCount = allLecs.where((l) =>
-        l.subject.contains('과학') || l.subject.contains('물리') ||
-        l.subject.contains('화학') || l.subject.contains('생명') ||
-        l.subject.contains('지구')).length;
+    // 총 과학 강의 수 (모든 과학 과목 합산)
+    final totalCount = categories.fold<int>(0, (sum, c) => sum + (c['count'] as int));
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -410,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen>
           const Text('과학 강의',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
           const Spacer(),
-          Text('총 ${totalCount > 0 ? totalCount : 11}개',
+          Text('총 ${totalCount}개',
               style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
         ]),
         const SizedBox(height: 12),
@@ -422,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             image: const DecorationImage(
-              image: AssetImage('assets/images/banners/banner_science_new.jpg'),
+              image: AssetImage('assets/images/banners/banner_science_new2.jpg'),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(Color(0x886A1B9A), BlendMode.multiply),
             ),
@@ -437,7 +440,7 @@ class _HomeScreenState extends State<HomeScreen>
                 const Text('과학',
                     style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 4),
-                Text('중등 · 고등 세분화  |  총 ${totalCount > 0 ? totalCount : 11}개',
+                Text('중등 · 고등 세분화  |  총 ${totalCount}개',
                     style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13)),
               ]),
             ),
@@ -474,7 +477,20 @@ class _HomeScreenState extends State<HomeScreen>
             final String? catImage = cat['image'] as String?;
             return GestureDetector(
               onTap: () {
-                // 해당 과목 강의 목록으로 이동 가능
+                // 해당 과목 강의 목록으로 이동
+                final subject = cat['title'] as String;
+                // 과학 카드는 subject 정확히 일치하는 것만 (getLecturesBySubject('과학')은 전체 과학 포함이라 직접 필터)
+                final lectures = appState.allLectures.where((l) => l.subject == subject).toList();
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => _SubjectLectureListScreen(
+                    subject: subject,
+                    lectures: lectures,
+                    color: cat['color'] as Color,
+                    icon: cat['icon'] as String,
+                    sub: cat['sub'] as String,
+                    onTap: _openLecture,
+                  ),
+                ));
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -723,26 +739,31 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   /// 해시태그 칩 위젯
-  Widget _hashtagChip(String tag, Color color) => Container(
-    margin: const EdgeInsets.only(right: 6),
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: color.withValues(alpha: 0.22), width: 0.8),
-    ),
-    child: Text(
-      '#$tag',
-      style: TextStyle(
-        fontSize: 10,
-        color: color.withValues(alpha: 0.9),
-        fontWeight: FontWeight.w600,
+  Widget _hashtagChip(String tag, [Color? color]) {
+    const tagBg     = Color(0xFFEAF6FF);
+    const tagText   = Color(0xFF42A8F0);
+    const tagBorder = Color(0xFFD7E9F9);
+    return Container(
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: tagBg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: tagBorder, width: 0.8),
       ),
-    ),
-  );
+      child: Text(
+        '#$tag',
+        style: const TextStyle(
+          fontSize: 10,
+          color: tagText,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
 
   /// 해시태그 영역: 태그 5개 이하면 1줄, 6개 이상이면 2줄 (가로스크롤)
-  Widget _buildHashtagArea(List<String> tags, Color color) {
+  Widget _buildHashtagArea(List<String> tags, [Color? color]) {
     if (tags.isEmpty) return const SizedBox.shrink();
 
     // 태그가 4개 이하면 1줄
@@ -901,9 +922,9 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   /// 해시태그 목록을 2줄로 나눠서 Row 위젯 리스트로 반환 (구형 호환용)
-  List<Widget> _buildHashtagRows(List<String> tags, Color color) {
+  List<Widget> _buildHashtagRows(List<String> tags, [Color? color]) {
     if (tags.isEmpty) return [];
-    return [_buildHashtagArea(tags, color)];
+    return [_buildHashtagArea(tags)];
   }
 
   Widget _buildBanner() {
@@ -972,7 +993,7 @@ class _HomeScreenState extends State<HomeScreen>
         accentEmoji: '📐',
         lecture: null,
         tabTarget: '수학',
-        imagePath: 'assets/images/banners/banner_math.png',
+        imagePath: 'assets/images/banners/banner_math_new2.jpg',
       ),
       // 배너5: SCIENCE - 과학 강의
       _BannerData(
@@ -985,7 +1006,7 @@ class _HomeScreenState extends State<HomeScreen>
         accentEmoji: '🔬',
         lecture: null,
         tabTarget: '과학',
-        imagePath: 'assets/images/banners/banner_science.png',
+        imagePath: 'assets/images/banners/banner_science_new2.jpg',
       ),
     ];
 
@@ -1183,7 +1204,7 @@ class _HomeScreenState extends State<HomeScreen>
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 3))],
                 image: const DecorationImage(
-                  image: AssetImage('assets/images/banners/banner_math.png'),
+                  image: AssetImage('assets/images/banners/banner_math_new2.jpg'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(Color(0x661A5C2A), BlendMode.multiply),
                 ),
@@ -1236,7 +1257,7 @@ class _HomeScreenState extends State<HomeScreen>
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 3))],
                 image: const DecorationImage(
-                  image: AssetImage('assets/images/banners/banner_science_new.jpg'),
+                  image: AssetImage('assets/images/banners/banner_science_new2.jpg'),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(Color(0x662C0654), BlendMode.multiply),
                 ),
@@ -1666,4 +1687,81 @@ class _BannerData {
     this.tabTarget,
     this.imagePath,
   });
+}
+
+// ── 과목별 강의 목록 화면 (과학 탭 카드 터치 시) ──────────────────────
+class _SubjectLectureListScreen extends StatelessWidget {
+  final String subject;
+  final String sub;
+  final String icon;
+  final Color color;
+  final List<dynamic> lectures;
+  final void Function(dynamic) onTap;
+
+  const _SubjectLectureListScreen({
+    required this.subject,
+    required this.sub,
+    required this.icon,
+    required this.color,
+    required this.lectures,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: AppColors.textPrimary),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(children: [
+          Text(icon, style: const TextStyle(fontSize: 20)),
+          const SizedBox(width: 8),
+          Text('$subject 강의',
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: color.withValues(alpha: 0.3)),
+            ),
+            child: Text('총 ${lectures.length}강',
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+          ),
+        ]),
+      ),
+      body: lectures.isEmpty
+          ? Center(
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(icon, style: const TextStyle(fontSize: 48)),
+                const SizedBox(height: 16),
+                Text('$subject 강의를 준비 중입니다',
+                  style: const TextStyle(fontSize: 16, color: AppColors.textSecondary)),
+                const SizedBox(height: 8),
+                Text(sub, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+              ]),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+              itemCount: lectures.length,
+              itemBuilder: (context, i) {
+                final lec = lectures[i];
+                return LectureCard(
+                  lecture: lec,
+                  isHorizontal: true,
+                  onTap: () {
+                    Navigator.pop(context); // 목록 닫고
+                    onTap(lec);             // 강의 재생
+                  },
+                );
+              },
+            ),
+    );
+  }
 }

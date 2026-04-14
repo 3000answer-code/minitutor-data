@@ -449,12 +449,14 @@ class _SearchScreenState extends State<SearchScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // ── 썸네일: 고정 크기 (72×90) ──────────────
+            // ── 썸네일: 고정 크기 (108×120) ──────────────
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
-              child: SizedBox(
-                width: 72,
-                height: 90,
+              child: Container(
+                width: 108,
+                height: 120,
+                color: Colors.white,
+                alignment: Alignment.center,
                 child: thumbInner,
               ),
             ),
@@ -462,7 +464,7 @@ class _SearchScreenState extends State<SearchScreen>
             // ── 본문 정보 영역 ──────────────────────────
             Expanded(
               child: SizedBox(
-                height: 90,
+                height: 120,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(11, 10, 10, 10),
                   child: Column(
@@ -1311,8 +1313,8 @@ class _SearchScreenState extends State<SearchScreen>
     final lang = context.read<AppState>().selectedLanguage;
     final T = (String key) => AppTranslations.tLang(lang, key);
     final subjects = [
-      {'name': '수학', 'image': 'assets/images/banners/banner_math.png'},
-      {'name': '과학', 'image': 'assets/images/banners/banner_science.png'},
+      {'name': '수학', 'image': 'assets/images/banners/banner_math_new2.jpg'},
+      {'name': '과학', 'image': 'assets/images/banners/banner_science_new2.jpg'},
       {'name': '두번설명', 'image': 'assets/images/banners/banner_twice.png'},
     ];
 
