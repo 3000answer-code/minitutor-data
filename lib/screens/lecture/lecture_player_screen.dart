@@ -413,11 +413,11 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;}
 #player{width:100%;height:100%;}
-/* YouTube 로고/워터마크/버튼/점3개 등 완전 숨김 */
+/* YouTube 로고/워터마크/버튼/점3개/전체화면 등 완전 숨김 */
 .ytp-watermark,.ytp-youtube-button,.ytp-share-button,.ytp-pause-overlay,
 .ytp-gradient-top,.ytp-chrome-top,.ytp-show-cards-title,
 .ytp-overflow-button,.ytp-more-videos-button,.ytp-contextmenu,
-.ytp-settings-button,
+.ytp-settings-button,.ytp-fullscreen-button,.ytp-size-button,
 [class*="ytp-logo"],[class*="watermark"]{
   display:none!important;opacity:0!important;visibility:hidden!important;
 }
@@ -1311,7 +1311,7 @@ function pauseVid(){vid.pause();}
   // ── 상단 바
   Widget _buildPlayerTopBar() {
     return Container(
-      height: 46,
+      height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       color: const Color(0xFFFFFDE7),  // 아이보리/연노란색 (하단과 통일)
       child: Row(children: [
@@ -3460,7 +3460,7 @@ function pauseVid(){vid.pause();}
             final lec = lectures[i];
             final isCurrent = lec.id == widget.lecture.id;
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
               decoration: BoxDecoration(
                 color: isCurrent ? _kOrange.withValues(alpha: 0.06) : Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -3469,7 +3469,7 @@ function pauseVid(){vid.pause();}
                   width: isCurrent ? 1.5 : 0),
               ),
               child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 leading: Stack(children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(7),
