@@ -31,8 +31,8 @@ android {
         applicationId = "com.awsometutor.study"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 20
-        versionName = "1.0.20"
+        versionCode = 21
+        versionName = "1.0.21"
     }
 
     signingConfigs {
