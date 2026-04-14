@@ -209,7 +209,11 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             )
-          else
+          else ...[
+            // ── 수학/과학 탭 섹션 헤더 행 ──
+            SliverToBoxAdapter(child: _buildSubjectTabHeader(tab, lectures.length)),
+            // ── 수학/과학 탭 배경이미지 배너 카드 ──
+            SliverToBoxAdapter(child: _buildSubjectTabBanner(tab, lectures.length)),
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
@@ -223,12 +227,93 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
+          ],
           // ── 최근 본 강의 (추천 탭에만 표시) ──
           if (tab == 'recommend')
             SliverToBoxAdapter(child: _buildRecentLectures(appState)),
 
           const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
         ],
+      ),
+    );
+  }
+
+  /// 수학/과학 탭 섹션 헤더 행 (🔬 과학 강의 ... 총 N개)
+  Widget _buildSubjectTabHeader(String tab, int lectureCount) {
+    final Map<String, Map<String, String>> info = {
+      '수학': {'emoji': '📐', 'label': '수학 강의'},
+      '과학': {'emoji': '🔬', 'label': '과학 강의'},
+    };
+    final d = info[tab] ?? {'emoji': '📚', 'label': '$tab 강의'};
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+      child: Row(children: [
+        Text(d['emoji']!, style: const TextStyle(fontSize: 18)),
+        const SizedBox(width: 6),
+        Text(d['label']!,
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        const Spacer(),
+        Text('총 ${lectureCount}개',
+            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      ]),
+    );
+  }
+
+  /// 수학/과학 탭 강의 목록 상단 헤더 배너 (과학 탭 스타일과 동일)
+  Widget _buildSubjectTabBanner(String tab, int lectureCount) {
+    // 탭별 설정
+    const Map<String, Map<String, dynamic>> info = {
+      '수학': {
+        'emoji': '📐',
+        'title': '수학',
+        'desc': '고등 · 중등 세분화',
+        'image': 'assets/images/banners/banner_math.png',
+        'overlay': Color(0xAA1B5E20), // 진한 초록 오버레이
+      },
+      '과학': {
+        'emoji': '🔬',
+        'title': '과학',
+        'desc': '중등 · 고등 세분화',
+        'image': 'assets/images/banners/banner_science_new.jpg',
+        'overlay': Color(0x886A1B9A), // 진한 보라 오버레이
+      },
+    };
+
+    final d = info[tab] ?? {
+      'emoji': '📚',
+      'title': tab,
+      'desc': '핵심 강의 모음',
+      'image': 'assets/images/banners/banner_study_new.jpg',
+      'overlay': const Color(0x88333366),
+    };
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+      height: 110,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        image: DecorationImage(
+          image: AssetImage(d['image'] as String),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(d['overlay'] as Color, BlendMode.multiply),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        child: Row(children: [
+          Text(d['emoji'] as String, style: const TextStyle(fontSize: 36)),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(d['title'] as String,
+                style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.w900)),
+              const SizedBox(height: 4),
+              Text('${d['desc']}  |  총 ${lectureCount}강',
+                style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
+            ]),
+          ),
+        ]),
       ),
     );
   }
@@ -1308,7 +1393,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       // 가로 스크롤 카드 목록 (화면 78% 너비 → 옆 카드 살짝 보임)
       SizedBox(
-        height: 185,
+        height: 145,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final cardWidth = MediaQuery.of(context).size.width * 0.78;

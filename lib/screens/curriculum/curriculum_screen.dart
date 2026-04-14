@@ -169,6 +169,8 @@ class _CurriculumScreenState extends State<CurriculumScreen>
         children: [
           // 과목 선택 가로 스크롤
           _buildSubjectSelector(),
+          // 과목별 강의 소개 헤더 (탭바 바로 아래)
+          _buildSubjectBanner(),
           // 학년 / 단원 필터
           _buildFilterRow(),
           const Divider(height: 1),
@@ -183,7 +185,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     final subjects = _subjectsByCategory[_selectedCategory] ?? [];
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
       child: SizedBox(
         height: 34,
         child: ListView(
@@ -230,7 +232,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       child: Row(
         children: [
           // 학년 선택 버튼
@@ -320,6 +322,130 @@ class _CurriculumScreenState extends State<CurriculumScreen>
         final unit = units[i];
         return _buildUnitCard(unit, i);
       },
+    );
+  }
+
+  /// 과목 선택 칩 바로 아래 — 과목별 소개 배너
+  Widget _buildSubjectBanner() {
+    const Map<String, Map<String, dynamic>> subjectInfo = {
+      '수학': {
+        'emoji': '📐',
+        'label': '수학 강의',
+        'desc': '개념부터 심화까지, 수학 핵심을 정리해 드려요',
+        'color': Color(0xFF16A34A),
+      },
+      '과학': {
+        'emoji': '🔬',
+        'label': '과학 강의',
+        'desc': '중등·고등 과학의 핵심 개념을 한눈에',
+        'color': Color(0xFF2563EB),
+      },
+      '공통과학': {
+        'emoji': '🌡️',
+        'label': '공통과학 강의',
+        'desc': '공통과학 핵심 개념을 빠르게 이해해요',
+        'color': Color(0xFF0891B2),
+      },
+      '물리': {
+        'emoji': '⚡',
+        'label': '물리 강의',
+        'desc': '물리 법칙과 원리를 쉽게 풀어드려요',
+        'color': Color(0xFF3B82F6),
+      },
+      '화학': {
+        'emoji': '🧪',
+        'label': '화학 강의',
+        'desc': '화학 반응과 원소를 핵심만 정리해요',
+        'color': Color(0xFFF97316),
+      },
+      '생명과학': {
+        'emoji': '🌿',
+        'label': '생명과학 강의',
+        'desc': '생명과학의 원리를 개념별로 배워요',
+        'color': Color(0xFF10B981),
+      },
+      '지구과학': {
+        'emoji': '🌍',
+        'label': '지구과학 강의',
+        'desc': '지구와 우주의 신비를 쉽게 이해해요',
+        'color': Color(0xFF06B6D4),
+      },
+    };
+
+    final info = subjectInfo[_selectedSubject] ?? {
+      'emoji': '📚',
+      'label': '$_selectedSubject 강의',
+      'desc': '$_selectedSubject 핵심 강의를 만나보세요',
+      'color': const Color(0xFF7C3AED),
+    };
+
+    final Color accentColor = info['color'] as Color;
+    final String emoji = info['emoji'] as String;
+    final String label = info['label'] as String;
+    final String desc = info['desc'] as String;
+
+    // 총 강의 수 계산
+    final totalLectures = (_unitsBySubject[_selectedSubject] ?? [])
+        .fold<int>(0, (sum, u) => sum + ((u['lectureCount'] as int?) ?? 0));
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
+      child: Row(
+        children: [
+          // 이모지 원형 배지
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: accentColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+              border: Border.all(color: accentColor.withValues(alpha: 0.30), width: 1.5),
+            ),
+            child: Center(child: Text(emoji, style: const TextStyle(fontSize: 18))),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  Text(label,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w800,
+                      color: accentColor,
+                    )),
+                  if (totalLectures > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: accentColor.withValues(alpha: 0.10),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: accentColor.withValues(alpha: 0.25), width: 1),
+                      ),
+                      child: Text('총 $totalLectures강',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: accentColor,
+                        )),
+                    ),
+                  ],
+                ]),
+                const SizedBox(height: 2),
+                Text(desc,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF94A3B8),
+                    fontWeight: FontWeight.w400,
+                  )),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
