@@ -413,9 +413,11 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;}
 #player{width:100%;height:100%;}
-/* YouTube 로고/워터마크/버튼 등 완전 숨김 */
+/* YouTube 로고/워터마크/버튼/점3개 등 완전 숨김 */
 .ytp-watermark,.ytp-youtube-button,.ytp-share-button,.ytp-pause-overlay,
 .ytp-gradient-top,.ytp-chrome-top,.ytp-show-cards-title,
+.ytp-overflow-button,.ytp-more-videos-button,.ytp-contextmenu,
+.ytp-settings-button,
 [class*="ytp-logo"],[class*="watermark"]{
   display:none!important;opacity:0!important;visibility:hidden!important;
 }
@@ -1549,27 +1551,23 @@ function pauseVid(){vid.pause();}
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildSeekButton(Icons.replay_10_rounded, '-10', () => _seekRelative(-10)),
-              const SizedBox(width: 28),
-              // 재생/정지 버튼
+              // 재생/정지 버튼만 (10초 이동 버튼 삭제)
               GestureDetector(
                 onTap: _togglePlay,
                 child: Container(
-                  width: 48, height: 48,
+                  width: 52, height: 52,
                   decoration: BoxDecoration(
                     color: _kOrange,
                     shape: BoxShape.circle,
                     boxShadow: [BoxShadow(
                       color: _kOrange.withValues(alpha: 0.4),
-                      blurRadius: 12, spreadRadius: 1)],
+                      blurRadius: 14, spreadRadius: 2)],
                   ),
                   child: Icon(
                     _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: Colors.white, size: 28),
+                    color: Colors.white, size: 30),
                 ),
               ),
-              const SizedBox(width: 28),
-              _buildSeekButton(Icons.forward_10_rounded, '+10', () => _seekRelative(10)),
             ],
           ),
         ),
@@ -1633,42 +1631,39 @@ function pauseVid(){vid.pause();}
     const iconColor = Color(0xFF5A5A5A);
     return Container(
       color: const Color(0xFFFFFDE7),  // 아이보리/연노란색
-      padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 3.5,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-            activeTrackColor: _kOrange,
-            inactiveTrackColor: const Color(0xFFCCCCCC),
-            thumbColor: _kOrange,
-            overlayColor: _kOrange.withValues(alpha: 0.25),
-          ),
-          child: Slider(
-            value: progress.clamp(0.0, 1.0),
-            onChanged: _seekTo,
-            onChangeStart: (_) {
-              _controlsTimer?.cancel();
-              setState(() => _showControls = true);
-            },
-            onChangeEnd: (_) => _scheduleHideControls(),
+      padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
+      child: Row(children: [
+        // 슬라이더
+        Expanded(
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              trackHeight: 2.5,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
+              overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+              activeTrackColor: _kOrange,
+              inactiveTrackColor: const Color(0xFFCCCCCC),
+              thumbColor: _kOrange,
+              overlayColor: _kOrange.withValues(alpha: 0.2),
+            ),
+            child: Slider(
+              value: progress.clamp(0.0, 1.0),
+              onChanged: _seekTo,
+              onChangeStart: (_) {
+                _controlsTimer?.cancel();
+                setState(() => _showControls = true);
+              },
+              onChangeEnd: (_) => _scheduleHideControls(),
+            ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(children: [
-            Text(_formatTime(_currentTime),
-              style: const TextStyle(color: timeTextColor, fontSize: 11,
-                fontWeight: FontWeight.w600)),
-            const SizedBox(width: 4),
-            Text('/ ${_formatTime(_totalTime)}',
-              style: const TextStyle(
-                color: Color(0xFF888888), fontSize: 11)),
-            const Spacer(),
-            // 미니플레이어·전체화면 아이콘 제거 (영상 내 우하단으로 이동)
-          ]),
-        ),
+        // 시간 텍스트
+        Text(_formatTime(_currentTime),
+          style: const TextStyle(color: timeTextColor, fontSize: 10,
+            fontWeight: FontWeight.w600)),
+        const Text(' / ', style: TextStyle(color: Color(0xFF999999), fontSize: 10)),
+        Text(_formatTime(_totalTime),
+          style: const TextStyle(color: Color(0xFF999999), fontSize: 10)),
+        const SizedBox(width: 4),
       ]),
     );
   }
