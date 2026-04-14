@@ -199,15 +199,15 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
                         width: 72, height: 72,
-                        color: subjectColor.withValues(alpha: 0.08),
+                        color: Colors.white,
                         child: previewUrl != null
                             ? (previewUrl.startsWith('assets/')
                                 ? Image.asset(previewUrl,
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.contain,
                                     errorBuilder: (_, __, ___) =>
                                         _noteThumbnailFallback(subjectColor))
                                 : Image.network(previewUrl,
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.contain,
                                     errorBuilder: (_, __, ___) =>
                                         _noteThumbnailFallback(subjectColor)))
                             : _noteThumbnailFallback(subjectColor),

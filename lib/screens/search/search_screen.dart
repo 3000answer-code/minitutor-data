@@ -411,14 +411,14 @@ class _SearchScreenState extends State<SearchScreen>
             size: 28, color: subjectColor.withValues(alpha: 0.35))),
       );
     } else if (thumbUrl.startsWith('assets/')) {
-      thumbInner = Image.asset(thumbUrl, fit: BoxFit.cover,
+      thumbInner = Image.asset(thumbUrl, fit: BoxFit.contain,
           errorBuilder: (_, __, ___) => Container(
             color: subjectColor.withValues(alpha: 0.08),
             child: Center(child: Icon(Icons.description_rounded,
                 size: 28, color: subjectColor.withValues(alpha: 0.35))),
           ));
     } else {
-      thumbInner = Image.network(thumbUrl, fit: BoxFit.cover,
+      thumbInner = Image.network(thumbUrl, fit: BoxFit.contain,
           errorBuilder: (_, __, ___) => Container(
             color: subjectColor.withValues(alpha: 0.08),
             child: Center(child: Icon(Icons.description_rounded,
