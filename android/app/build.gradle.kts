@@ -28,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.minitutor.study"
+        applicationId = "com.minitutor.study.build015"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 15
