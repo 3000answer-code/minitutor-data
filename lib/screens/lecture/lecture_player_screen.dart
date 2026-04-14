@@ -1280,6 +1280,22 @@ function pauseVid(){vid.pause();}
                   _buildVideoArea(),
                   if (_showControls) _buildControlOverlay(),
                   if (_showSubtitle && _currentSubtitle.isNotEmpty) _buildSubtitle(),
+                  // 영상 우하단 전체화면 버튼 (항상 표시)
+                  Positioned(
+                    right: 8, bottom: 8,
+                    child: GestureDetector(
+                      onTap: _toggleFullScreen,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Icon(Icons.fullscreen_rounded,
+                          color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ),
                 ]),
               ),
             );
@@ -1295,12 +1311,12 @@ function pauseVid(){vid.pause();}
     return Container(
       height: 46,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      color: const Color(0xFF1A1A1A),  // 거의 검정(탑바는 유지)
+      color: const Color(0xFFFFFDE7),  // 아이보리/연노란색 (하단과 통일)
       child: Row(children: [
         // 뒤로가기
         IconButton(
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: Colors.white, size: 26),
+              color: Color(0xFF333333), size: 26),
           onPressed: () => Navigator.pop(context),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -1310,7 +1326,7 @@ function pauseVid(){vid.pause();}
           child: Text(
             widget.lecture.title,
             style: const TextStyle(
-              color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
+              color: Color(0xFF222222), fontSize: 13, fontWeight: FontWeight.w700),
             maxLines: 1, overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -1319,14 +1335,7 @@ function pauseVid(){vid.pause();}
         const SizedBox(width: 2),
         // 재생속도 칩
         _buildSpeedChip(),
-        const SizedBox(width: 2),
-        // 더보기
-        IconButton(
-          icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 22),
-          onPressed: _showOptionsSheet,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
+        // 점 3개(더보기) 삭제
       ]),
     );
   }
@@ -1338,12 +1347,13 @@ function pauseVid(){vid.pause();}
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         decoration: BoxDecoration(
-          color: _showSubtitle ? _kOrange : Colors.white.withValues(alpha: 0.18),
+          color: _showSubtitle ? _kOrange : const Color(0xFFE0E0E0),
           borderRadius: BorderRadius.circular(4),
         ),
-        child: const Text('CC',
+        child: Text('CC',
           style: TextStyle(
-            color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800,
+            color: _showSubtitle ? Colors.white : const Color(0xFF444444),
+            fontSize: 10, fontWeight: FontWeight.w800,
             letterSpacing: 0.5)),
       ),
     );
@@ -1359,12 +1369,12 @@ function pauseVid(){vid.pause();}
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.18),
+          color: const Color(0xFFE0E0E0),
           borderRadius: BorderRadius.circular(4),
         ),
         child: Text(label,
           style: const TextStyle(
-            color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+            color: Color(0xFF444444), fontSize: 10, fontWeight: FontWeight.w700)),
       ),
     );
   }
@@ -1656,19 +1666,7 @@ function pauseVid(){vid.pause();}
               style: const TextStyle(
                 color: Color(0xFF888888), fontSize: 11)),
             const Spacer(),
-            // 미니 플레이어 아이콘
-            GestureDetector(
-              onTap: _toggleMiniPlayer,
-              child: const Icon(Icons.picture_in_picture_alt_rounded,
-                color: iconColor, size: 18),
-            ),
-            const SizedBox(width: 12),
-            // 전체화면
-            GestureDetector(
-              onTap: _toggleFullScreen,
-              child: const Icon(Icons.fullscreen_rounded,
-                color: iconColor, size: 22),
-            ),
+            // 미니플레이어·전체화면 아이콘 제거 (영상 내 우하단으로 이동)
           ]),
         ),
       ]),
