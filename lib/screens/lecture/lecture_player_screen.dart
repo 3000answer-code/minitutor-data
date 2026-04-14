@@ -1259,7 +1259,7 @@ function pauseVid(){vid.pause();}
     const aspectRatio = 16.0 / 9.0;
 
     return Container(
-      color: Colors.black,
+      color: const Color(0xFFFFFDE7),  // 연한 아이보리/노란색
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _buildPlayerTopBar(),
         // ── AspectRatio로 영상 크기 정확히 맞춤 ──
@@ -1295,7 +1295,7 @@ function pauseVid(){vid.pause();}
     return Container(
       height: 46,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      color: Colors.black,
+      color: const Color(0xFF1A1A1A),  // 거의 검정(탑바는 유지)
       child: Row(children: [
         // 뒤로가기
         IconButton(
@@ -1618,8 +1618,11 @@ function pauseVid(){vid.pause();}
   // ── 진행바
   Widget _buildProgressBar() {
     final progress = _totalTime > 0 ? _currentTime / _totalTime : 0.0;
+    // 아이보리/연노란 배경에 맞는 어두운 텍스트/아이콘 색상
+    const timeTextColor = Color(0xFF4A4A4A);
+    const iconColor = Color(0xFF5A5A5A);
     return Container(
-      color: const Color(0xFF111111),
+      color: const Color(0xFFFFFDE7),  // 아이보리/연노란색
       padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         SliderTheme(
@@ -1628,7 +1631,7 @@ function pauseVid(){vid.pause();}
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
             activeTrackColor: _kOrange,
-            inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
+            inactiveTrackColor: const Color(0xFFCCCCCC),
             thumbColor: _kOrange,
             overlayColor: _kOrange.withValues(alpha: 0.25),
           ),
@@ -1646,25 +1649,25 @@ function pauseVid(){vid.pause();}
           padding: const EdgeInsets.symmetric(horizontal: 6),
           child: Row(children: [
             Text(_formatTime(_currentTime),
-              style: const TextStyle(color: Colors.white, fontSize: 11,
+              style: const TextStyle(color: timeTextColor, fontSize: 11,
                 fontWeight: FontWeight.w600)),
             const SizedBox(width: 4),
             Text('/ ${_formatTime(_totalTime)}',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.45), fontSize: 11)),
+              style: const TextStyle(
+                color: Color(0xFF888888), fontSize: 11)),
             const Spacer(),
             // 미니 플레이어 아이콘
             GestureDetector(
               onTap: _toggleMiniPlayer,
-              child: Icon(Icons.picture_in_picture_alt_rounded,
-                color: Colors.white.withValues(alpha: 0.7), size: 18),
+              child: const Icon(Icons.picture_in_picture_alt_rounded,
+                color: iconColor, size: 18),
             ),
             const SizedBox(width: 12),
             // 전체화면
             GestureDetector(
               onTap: _toggleFullScreen,
               child: const Icon(Icons.fullscreen_rounded,
-                color: Colors.white, size: 22),
+                color: iconColor, size: 22),
             ),
           ]),
         ),
@@ -1689,9 +1692,8 @@ function pauseVid(){vid.pause();}
             controller: _tabController,
             labelColor: _kOrange,
             unselectedLabelColor: const Color(0xFF888888),
-            isScrollable: true,
-            tabAlignment: TabAlignment.fill,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
+            isScrollable: false,
+            labelPadding: EdgeInsets.zero,
             labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
             unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             indicatorColor: _kOrange,
