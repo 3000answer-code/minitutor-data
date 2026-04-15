@@ -8,10 +8,12 @@ import '../../widgets/eraser_widgets.dart';
 
 const Color _kOrange = Color(0xFFF97316);
 
-/// 내 노트 전용 뷰어: 교안 + 필기만, 영상 없음
+/// 내 노트 전용 뷰어: 교안 + 필기 + 하단 미니플레이어 + 이전/다음
 class MyNoteViewerScreen extends StatefulWidget {
   final Lecture lecture;
-  const MyNoteViewerScreen({super.key, required this.lecture});
+  /// 이전/다음 이동을 위한 전체 강의 목록 (없으면 이전/다음 버튼 숨김)
+  final List<Lecture>? lectureList;
+  const MyNoteViewerScreen({super.key, required this.lecture, this.lectureList});
 
   @override
   State<MyNoteViewerScreen> createState() => _MyNoteViewerScreenState();
@@ -35,7 +37,11 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
   List<String> _notePages = [];
   bool _slidesLoading = true;
 
-  String get _strokesKey => 'strokes_${widget.lecture.id}';
+  // ── 미니플레이어 / 이전·다음 ──────────────────
+  bool _miniPlayerVisible = true;    // 하단 미니플레이어 표시 여부
+  late Lecture _currentLecture;      // 현재 보는 강의
+
+  String get _strokesKey => 'strokes_${_currentLecture.id}';
 
   final List<Color> _penColors = [
     const Color(0xFF2563EB),
@@ -48,12 +54,13 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
   @override
   void initState() {
     super.initState();
+    _currentLecture = widget.lecture;
     _loadPages();
     _loadStrokes();
   }
 
   void _loadPages() {
-    final urls = widget.lecture.handoutUrls;
+    final urls = _currentLecture.handoutUrls;
     if (urls.isNotEmpty) {
       setState(() {
         _notePages = urls;
@@ -114,15 +121,15 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
           '${now.year}-${now.month.toString().padLeft(2,'0')}-${now.day.toString().padLeft(2,'0')} '
           '${now.hour.toString().padLeft(2,'0')}:${now.minute.toString().padLeft(2,'0')}';
       await NoteRepository().saveNoteMeta(NoteMetaData(
-        lectureId: widget.lecture.id,
-        lectureTitle: widget.lecture.title,
-        subject: widget.lecture.subject,
-        instructorName: widget.lecture.instructor,
+        lectureId: _currentLecture.id,
+        lectureTitle: _currentLecture.title,
+        subject: _currentLecture.subject,
+        instructorName: _currentLecture.instructor,
         savedAt: savedAt,
         strokeCount: totalStrokes,
         memoCount: 0,
-        handoutUrls: widget.lecture.handoutUrls,
-        thumbnailUrl: widget.lecture.thumbnailUrl,
+        handoutUrls: _currentLecture.handoutUrls,
+        thumbnailUrl: _currentLecture.thumbnailUrl,
       ));
 
       if (mounted) {
@@ -141,19 +148,41 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final allLectures = widget.lectureList;
+    final currentIdx = allLectures?.indexWhere((l) => l.id == _currentLecture.id) ?? -1;
+    final hasPrev = allLectures != null && currentIdx > 0;
+    final hasNext = allLectures != null && currentIdx < allLectures.length - 1;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text('내 노트',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
-          Text(widget.lecture.title,
+          Text(_currentLecture.title,
               style: const TextStyle(fontSize: 11, color: Colors.white70)),
         ]),
         backgroundColor: Colors.black87,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // 영상으로 돌아가기 버튼
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                Icon(Icons.play_circle_outline_rounded, size: 15, color: Colors.white),
+                SizedBox(width: 4),
+                Text('영상', style: TextStyle(fontSize: 12, color: Colors.white, fontWeight: FontWeight.w600)),
+              ]),
+            ),
+          ),
           // 저장 버튼
           GestureDetector(
             onTap: _saveStrokes,
@@ -189,7 +218,202 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
               : Column(children: [
                   _buildToolbar(),
                   Expanded(child: _buildPageList()),
+                  // ── 하단 미니플레이어 + 이전/다음 바 ──
+                  _buildBottomBar(hasPrev: hasPrev, hasNext: hasNext,
+                    onPrev: hasPrev ? () => _navigateLecture(allLectures[currentIdx - 1]) : null,
+                    onNext: hasNext ? () => _navigateLecture(allLectures[currentIdx + 1]) : null,
+                  ),
                 ]),
+    );
+  }
+
+  /// 다른 강의 노트로 이동
+  void _navigateLecture(Lecture lecture) {
+    _saveStrokes();
+    setState(() {
+      _currentLecture = lecture;
+      _notePages = [];
+      _pageStrokes.clear();
+      _currentStroke = [];
+      _slidesLoading = true;
+    });
+    _loadPages();
+    _loadStrokes();
+  }
+
+  /// 하단 미니플레이어 + 이전/다음 버튼 바
+  Widget _buildBottomBar({
+    required bool hasPrev,
+    required bool hasNext,
+    VoidCallback? onPrev,
+    VoidCallback? onNext,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12, offset: const Offset(0, -2))],
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        // ── 미니플레이어 (강의 영상으로 돌아가기) ──
+        if (_miniPlayerVisible)
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(), // 영상 화면으로 복귀
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: const BoxDecoration(
+                color: Color(0xFF1E293B),
+                border: Border(bottom: BorderSide(color: Color(0xFF334155))),
+              ),
+              child: Row(children: [
+                // 썸네일
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    width: 48, height: 36,
+                    color: const Color(0xFF334155),
+                    child: _currentLecture.thumbnailUrl.isNotEmpty
+                        ? Image.network(
+                            _currentLecture.thumbnailUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => const Icon(
+                                Icons.play_circle_rounded,
+                                color: Colors.white54, size: 24),
+                          )
+                        : const Icon(Icons.play_circle_rounded,
+                            color: Colors.white54, size: 24),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // 강의 정보
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_currentLecture.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white)),
+                      Text(_currentLecture.instructor,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.white60)),
+                    ],
+                  ),
+                ),
+                // 컨트롤 버튼들
+                Row(mainAxisSize: MainAxisSize.min, children: [
+                  _miniPlayerBtn(Icons.play_arrow_rounded, '영상 보기', () => Navigator.of(context).pop()),
+                  const SizedBox(width: 4),
+                  _miniPlayerBtn(Icons.close_rounded, '닫기', () {
+                    setState(() => _miniPlayerVisible = false);
+                  }),
+                ]),
+              ]),
+            ),
+          ),
+        // ── 이전 / 다음 강의 버튼 ──
+        if (hasPrev || hasNext)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(children: [
+              // 이전 버튼
+              Expanded(
+                child: GestureDetector(
+                  onTap: onPrev,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: hasPrev
+                          ? const Color(0xFFF1F5F9)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: hasPrev
+                              ? const Color(0xFFCBD5E1)
+                              : const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.skip_previous_rounded,
+                            size: 18,
+                            color: hasPrev
+                                ? const Color(0xFF475569)
+                                : const Color(0xFFCBD5E1)),
+                        const SizedBox(width: 4),
+                        Text('이전',
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: hasPrev
+                                    ? const Color(0xFF475569)
+                                    : const Color(0xFFCBD5E1))),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // 다음 버튼
+              Expanded(
+                child: GestureDetector(
+                  onTap: onNext,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: hasNext
+                          ? const Color(0xFF0EA5E9)
+                          : const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                          color: hasNext
+                              ? const Color(0xFF0EA5E9)
+                              : const Color(0xFFE2E8F0)),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text('다음',
+                            style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: hasNext
+                                    ? Colors.white
+                                    : const Color(0xFFCBD5E1))),
+                        const SizedBox(width: 4),
+                        Icon(Icons.skip_next_rounded,
+                            size: 18,
+                            color: hasNext
+                                ? Colors.white
+                                : const Color(0xFFCBD5E1)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ]),
+          ),
+      ]),
+    );
+  }
+
+  Widget _miniPlayerBtn(IconData icon, String tooltip, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36, height: 36,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Icon(icon, color: Colors.white, size: 18),
+      ),
     );
   }
 
@@ -202,7 +426,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
         const Text('교안이 없는 강의입니다',
             style: TextStyle(fontSize: 15, color: AppColors.textSecondary)),
         const SizedBox(height: 8),
-        Text(widget.lecture.title,
+        Text(_currentLecture.title,
             style: const TextStyle(fontSize: 13, color: AppColors.textHint)),
       ]),
     );

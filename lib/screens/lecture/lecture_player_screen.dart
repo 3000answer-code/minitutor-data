@@ -21,6 +21,7 @@ import '../../theme/app_theme.dart';
 import '../../config.dart';
 import '../../widgets/drive_web_player.dart';
 import '../../widgets/eraser_widgets.dart';
+import '../profile/my_activity_screen.dart';
 
 const Color _kOrange = Color(0xFFF97316);
 const String _kOrangeHex = '#F97316';
@@ -1210,6 +1211,9 @@ function pauseVid(){vid.pause();}
   Widget _buildNormalLayout() {
     return Scaffold(
       backgroundColor: Colors.white,
+      // ── (교안) 내 노트 플로팅 버튼 ──
+      floatingActionButton: _buildNoteViewerFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: SafeArea(
         child: Column(children: [
           // ① 플레이어 영역 (상단 바 + 영상 + 진행바)
@@ -1229,6 +1233,49 @@ function pauseVid(){vid.pause();}
               ],
             ),
           ),
+        ]),
+      ),
+    );
+  }
+
+  /// 교안 내 노트 플로팅 버튼
+  Widget _buildNoteViewerFAB() {
+    // 교안이 없으면 버튼 숨김
+    if (widget.lecture.handoutUrls.isEmpty) return const SizedBox.shrink();
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => MyActivityScreen(
+              initialTab: 1,          // 탭 1 = 내 노트
+              highlightLectureId: widget.lecture.id,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        height: 48,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0EA5E9),           // 스카이블루
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0EA5E9).withValues(alpha: 0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: const [
+          Icon(Icons.menu_book_rounded, color: Colors.white, size: 20),
+          SizedBox(width: 6),
+          Text('내 노트',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3)),
         ]),
       ),
     );

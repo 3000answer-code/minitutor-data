@@ -1082,7 +1082,7 @@ class AppTranslations {
       'ko': '최근 영상', 'en': 'Recent', 'ja': '最近', 'zh': '最近', 'es': 'Reciente',
     },
     'tab_notes': {
-      'ko': '노트 목록', 'en': 'Notes', 'ja': 'ノート', 'zh': '笔记', 'es': 'Notas',
+      'ko': '내 노트', 'en': 'Notes', 'ja': 'ノート', 'zh': '笔记', 'es': 'Notas',
     },
     'tab_my_qa': {
       'ko': '강의 Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',

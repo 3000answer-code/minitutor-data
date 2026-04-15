@@ -10,7 +10,8 @@ import 'my_note_viewer_screen.dart';
 
 class MyActivityScreen extends StatefulWidget {
   final int initialTab;
-  const MyActivityScreen({super.key, this.initialTab = 0});
+  final String? highlightLectureId;   // 강의플레이어에서 바로 이동 시 해당 강의 강조
+  const MyActivityScreen({super.key, this.initialTab = 0, this.highlightLectureId});
 
   @override
   State<MyActivityScreen> createState() => _MyActivityScreenState();
@@ -157,13 +158,29 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           Icons.note_alt_outlined, T('empty_notes'), T('empty_notes_sub'))),
       ]);
     }
+
+    // highlightLectureId가 있으면 해당 노트를 맨 앞으로 정렬
+    List<NoteMetaData> sortedNotes;
+    if (widget.highlightLectureId != null) {
+      sortedNotes = List<NoteMetaData>.from(notes);
+      sortedNotes.sort((a, b) {
+        if (a.lectureId == widget.highlightLectureId) return -1;
+        if (b.lectureId == widget.highlightLectureId) return 1;
+        return 0;
+      });
+    } else {
+      sortedNotes = notes;
+    }
+
     return RefreshIndicator(
       onRefresh: _loadNotes,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
-        itemCount: notes.length,
+        itemCount: sortedNotes.length,
         itemBuilder: (_, i) {
-          final note = notes[i];
+          final note = sortedNotes[i];
+          final isHighlighted = widget.highlightLectureId != null &&
+              note.lectureId == widget.highlightLectureId;
             final subjectColor = _subjectColor(note.subject);
             // 교안 첫 페이지 이미지 (있으면 미리보기)
             final previewUrl = note.handoutUrls.isNotEmpty
@@ -175,9 +192,15 @@ class _MyActivityScreenState extends State<MyActivityScreen>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: isHighlighted
+                    ? Border.all(color: const Color(0xFF0EA5E9), width: 2)
+                    : null,
                 boxShadow: [BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 8, offset: const Offset(0, 2))],
+                  color: isHighlighted
+                      ? const Color(0xFF0EA5E9).withValues(alpha: 0.18)
+                      : Colors.black.withValues(alpha: 0.04),
+                  blurRadius: isHighlighted ? 16 : 8,
+                  offset: const Offset(0, 2))],
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
@@ -186,8 +209,15 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                       .where((l) => l.id == note.lectureId)
                       .firstOrNull;
                   if (lecture != null) {
+                    // 교안이 있는 강의들만 필터링 (이전/다음 이동용)
+                    final lecturesWithHandouts = appState.allLectures
+                        .where((l) => l.handoutUrls.isNotEmpty)
+                        .toList();
                     Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => MyNoteViewerScreen(lecture: lecture)))
+                      builder: (_) => MyNoteViewerScreen(
+                        lecture: lecture,
+                        lectureList: lecturesWithHandouts,
+                      )))
                     .then((_) => _loadNotes());
                   }
                 },

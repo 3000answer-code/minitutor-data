@@ -405,7 +405,7 @@ class _NoteCanvasScreenState extends State<NoteCanvasScreen> {
                 Text(widget.lecture.title,
                   style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
                   maxLines: 1, overflow: TextOverflow.ellipsis),
-                Text('필기 ${_strokes.length}획 · 나의 활동 > 노트 목록에 저장됨',
+                Text('필기 ${_strokes.length}획 · 나의 활동 > 내 노트에 저장됨',
                   style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
               ])),
             ]),
