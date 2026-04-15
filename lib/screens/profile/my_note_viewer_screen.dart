@@ -44,6 +44,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
 
   final Map<int, List<_StrokeData>> _pageStrokes = {};
   List<Offset?> _currentStroke = [];
+  int _activePageIdx = -1;   // ← 현재 필기 중인 페이지 인덱스 (-1이면 비활성)
 
   List<String> _notePages = [];
   bool _slidesLoading = true;
@@ -251,6 +252,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
       _notePages = [];
       _pageStrokes.clear();
       _currentStroke = [];
+      _activePageIdx = -1;
       _slidesLoading = true;
     });
     _loadPages();
@@ -639,26 +641,66 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
   }
 
   void _clearCurrentPage() {
-    // 현재 보이는 페이지 전체 삭제 (모든 페이지 초기화)
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('전체 필기 초기화'),
-        content: const Text('모든 페이지의 필기를 삭제할까요?\n삭제된 필기는 복구할 수 없습니다.'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('취소')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _pageStrokes.clear();
-                _currentStroke.clear();
-                _strokesSaved = false;
-              });
-            },
-            child: const Text('삭제')),
-        ],
+      barrierColor: Colors.black.withValues(alpha: 0.45),
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 48, vertical: 0),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 18, 18, 12),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            // 아이콘 + 제목
+            Row(children: const [
+              Icon(Icons.delete_sweep_outlined, size: 18, color: Colors.red),
+              SizedBox(width: 6),
+              Text('필기 전체 초기화',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+            ]),
+            const SizedBox(height: 8),
+            const Text('모든 페이지 필기를 삭제합니다.\n복구할 수 없습니다.',
+                style: TextStyle(fontSize: 12, color: Color(0xFF64748B), height: 1.4)),
+            const SizedBox(height: 14),
+            // 버튼 행
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+              GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const Text('취소',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600,
+                          color: Color(0xFF475569))),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  setState(() {
+                    _pageStrokes.clear();
+                    _currentStroke.clear();
+                    _activePageIdx = -1;
+                    _strokesSaved = false;
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                  child: const Text('삭제',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
+                          color: Colors.white)),
+                ),
+              ),
+            ]),
+          ]),
+        ),
       ),
     );
   }
@@ -692,6 +734,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
                     ? GestureDetector(
                         onPanStart: (d) {
                           setState(() {
+                            _activePageIdx = pageIdx;   // ← 이 페이지만 활성화
                             _currentStroke = [d.localPosition];
                             _strokesSaved = false;
                             if (_isEraser) {
@@ -701,6 +744,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
                           });
                         },
                         onPanUpdate: (d) {
+                          if (_activePageIdx != pageIdx) return; // ← 다른 페이지 무시
                           setState(() {
                             _currentStroke.add(d.localPosition);
                             if (_isEraser) {
@@ -710,6 +754,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
                           });
                         },
                         onPanEnd: (_) {
+                          if (_activePageIdx != pageIdx) return; // ← 다른 페이지 무시
                           if (!_isEraser && _currentStroke.isNotEmpty) {
                             setState(() {
                               _pageStrokes.putIfAbsent(pageIdx, () => [])
@@ -719,11 +764,13 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
                                     width: _strokeWidth,
                                   ));
                               _currentStroke = [];
+                              _activePageIdx = -1;    // ← 활성 페이지 해제
                               _strokesSaved = false;
                             });
                           } else {
                             setState(() {
                               _currentStroke = [];
+                              _activePageIdx = -1;    // ← 활성 페이지 해제
                               _showEraserCursor = false;
                               _eraserPosition = null;
                             });
@@ -733,6 +780,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
                           _buildPageContent(pageIdx, pageUrl, strokes, w),
                           // 지우개 커서: 페이지 Stack 내부에 배치 → 스크롤 좌표 정확히 일치
                           if (_isEraser && _showEraserCursor &&
+                              _activePageIdx == pageIdx &&  // ← 이 페이지에만 표시
                               _eraserPosition != null)
                             Positioned(
                               left: _eraserPosition!.dx - 16,
@@ -771,6 +819,8 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
   }
 
   Widget _buildPageContent(int pageIdx, String pageUrl, List<_StrokeData> strokes, double w) {
+    // ← 현재 필기 중인 페이지에만 currentStroke 전달, 나머지 페이지는 빈 리스트
+    final activeStroke = (_activePageIdx == pageIdx) ? _currentStroke : <Offset?>[];
     return SizedBox(
       width: w,
       child: Stack(children: [
@@ -785,7 +835,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
           child: CustomPaint(
             painter: _StrokePainter(
               strokes: strokes,
-              currentStroke: _currentStroke,
+              currentStroke: activeStroke,   // ← 해당 페이지에만 진행 중인 획 표시
               penColor: _penColor,
               strokeWidth: _strokeWidth,
               isEraser: _isEraser,
