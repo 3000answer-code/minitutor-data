@@ -1316,7 +1316,7 @@ function pauseVid(){vid.pause();}
   // ── 상단 바
   Widget _buildPlayerTopBar() {
     return Container(
-      height: 38,
+      height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       color: const Color(0xFFFFFDE7),  // 아이보리/연노란색 (하단과 통일)
       child: Row(children: [
@@ -1337,9 +1337,10 @@ function pauseVid(){vid.pause();}
             maxLines: 1, overflow: TextOverflow.ellipsis,
           ),
         ),
-        const SizedBox(width: 2),
-        // 재생속도 칩
-        _buildSpeedChip(),
+        const SizedBox(width: 6),
+        // 재생속도 칩 (세로화면 - 주황 테두리로 눈에 띄게)
+        _buildSpeedChip(highlighted: true),
+        const SizedBox(width: 6),
         // 점 3개(더보기) 삭제
       ]),
     );
@@ -1364,44 +1365,50 @@ function pauseVid(){vid.pause();}
     );
   }
 
-  Widget _buildSpeedChip({bool onDark = false}) {
+  Widget _buildSpeedChip({bool onDark = false, bool highlighted = false}) {
     final label = _playbackSpeed == 1.0 ? '1x'
         : _playbackSpeed == 1.5 ? '1.5x'
         : _playbackSpeed == 2.0 ? '2x'
         : '${_playbackSpeed}x';
     final isNonDefault = _playbackSpeed != 1.0;
+    // highlighted=true(세로화면 상단): 기본속도라도 주황 테두리로 눈에 띄게
+    final bgColor = isNonDefault
+        ? _kOrange
+        : highlighted
+            ? const Color(0xFFFFF3E0)  // 연한 주황 배경
+            : onDark
+                ? Colors.white.withValues(alpha: 0.18)
+                : const Color(0xFFE8E8E8);
+    final borderColor = isNonDefault
+        ? _kOrange
+        : highlighted
+            ? _kOrange  // 주황 테두리
+            : onDark ? Colors.white30 : const Color(0xFFCCCCCC);
+    final textColor = isNonDefault
+        ? Colors.white
+        : highlighted
+            ? _kOrange  // 주황 텍스트
+            : onDark ? Colors.white : const Color(0xFF333333);
     return GestureDetector(
       onTap: _showSpeedSheet,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
-          color: isNonDefault
-              ? _kOrange
-              : (onDark
-                  ? Colors.white.withValues(alpha: 0.18)
-                  : const Color(0xFFE8E8E8)),
+          color: bgColor,
           borderRadius: BorderRadius.circular(6),
-          border: isNonDefault
-              ? null
-              : Border.all(
-                  color: onDark ? Colors.white30 : const Color(0xFFCCCCCC),
-                  width: 0.8),
+          border: Border.all(color: borderColor, width: isNonDefault ? 0 : 1.2),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.speed_rounded,
-              size: 11,
-              color: isNonDefault
-                  ? Colors.white
-                  : (onDark ? Colors.white70 : const Color(0xFF555555))),
+              size: 12,
+              color: textColor),
             const SizedBox(width: 3),
             Text(label,
               style: TextStyle(
-                color: isNonDefault
-                    ? Colors.white
-                    : (onDark ? Colors.white : const Color(0xFF333333)),
-                fontSize: 11, fontWeight: FontWeight.w800)),
+                color: textColor,
+                fontSize: 12, fontWeight: FontWeight.w800)),
           ],
         ),
       ),
@@ -5057,8 +5064,6 @@ function pauseVid(){vid.pause();}
                     final totalW = constraints.maxWidth;
                     // 영상: 16:9 비율, 최대 높이 72%
                     final videoH = (totalW * 9 / 16).clamp(0.0, totalH * 0.72);
-                    const progressH = 28.0;
-                    final infoH = (totalH - videoH - progressH).clamp(40.0, totalH);
 
                     return Column(
                       children: [
@@ -5086,140 +5091,108 @@ function pauseVid(){vid.pause();}
                         ),
                         // ② 진행바
                         _buildProgressBar(),
-                        // ③ 강의정보 (항상 표시 / 탭·스와이프로 상세 펼침)
-                        SizedBox(
-                          height: infoH,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onVerticalDragEnd: (d) {
-                              if (d.primaryVelocity != null) {
-                                if (d.primaryVelocity! < -50) setState(() => _isLandscapeInfoExpanded = true);
-                                else if (d.primaryVelocity! > 50) setState(() => _isLandscapeInfoExpanded = false);
-                              }
-                            },
-                            onTap: () => setState(() => _isLandscapeInfoExpanded = !_isLandscapeInfoExpanded),
-                            child: Container(
-                              width: double.infinity,
-                              color: const Color(0xFF1A1A2E),
-                              child: SingleChildScrollView(
-                                physics: const NeverScrollableScrollPhysics(),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // 제목 + 토글 아이콘
+                        // ③ 강의정보 (항상 표시 / 탭하면 세로모드로 전환하여 상세 탭 영역 확인)
+                        Expanded(
+                          child: Container(
+                            color: const Color(0xFF1A1A2E),
+                            child: SingleChildScrollView(
+                              physics: const ClampingScrollPhysics(),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 강의 제목
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 7, 10, 3),
+                                    child: Text(lec.title,
+                                      style: const TextStyle(color: Colors.white,
+                                          fontSize: 12, fontWeight: FontWeight.w700),
+                                      maxLines: 2, overflow: TextOverflow.ellipsis),
+                                  ),
+                                  // 배지 + 강사
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
+                                    child: Row(children: [
+                                      _buildLandscapeBadge(lec.gradeText),
+                                      const SizedBox(width: 3),
+                                      _buildLandscapeBadge(lec.subject),
+                                      const SizedBox(width: 5),
+                                      Expanded(child: Text(lec.instructor,
+                                        style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                        maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                    ]),
+                                  ),
+                                  // 시리즈 (있는 경우)
+                                  if (lec.series.isNotEmpty)
                                     Padding(
-                                      padding: const EdgeInsets.fromLTRB(10, 6, 10, 2),
+                                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
                                       child: Row(children: [
-                                        Expanded(child: Text(lec.title,
-                                          style: const TextStyle(color: Colors.white,
-                                              fontSize: 12, fontWeight: FontWeight.w700),
-                                          maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                        Icon(
-                                          _isLandscapeInfoExpanded
-                                              ? Icons.keyboard_arrow_down_rounded
-                                              : Icons.keyboard_arrow_up_rounded,
-                                          color: Colors.white54, size: 16),
-                                      ]),
-                                    ),
-                                    // 배지 + 강사 + 전환버튼
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-                                      child: Row(children: [
-                                        _buildLandscapeBadge(lec.gradeText),
+                                        const Icon(Icons.list_rounded, color: Colors.white38, size: 11),
                                         const SizedBox(width: 3),
-                                        _buildLandscapeBadge(lec.subject),
-                                        const SizedBox(width: 4),
-                                        Expanded(child: Text(lec.instructor,
-                                          style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                        Expanded(child: Text(lec.series,
+                                          style: const TextStyle(color: Colors.white54, fontSize: 10),
                                           maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                        // 세로화면 버튼
-                                        GestureDetector(
-                                          onTap: _toggleLandscapeMode,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(5),
-                                              border: Border.all(color: Colors.white30, width: 0.8)),
-                                            child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                                              Icon(Icons.screen_rotation_rounded, color: Colors.white70, size: 12),
-                                              SizedBox(width: 2),
-                                              Text('세로', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
-                                            ]),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        // 전체화면 버튼
-                                        GestureDetector(
-                                          onTap: _toggleFullScreen,
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: _kOrange.withValues(alpha: 0.85),
-                                              borderRadius: BorderRadius.circular(5)),
-                                            child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                                              Icon(Icons.fullscreen_rounded, color: Colors.white, size: 12),
-                                              SizedBox(width: 2),
-                                              Text('전체', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
-                                            ]),
-                                          ),
-                                        ),
                                       ]),
                                     ),
-                                    // 확장 상세정보
-                                    if (_isLandscapeInfoExpanded) ...[
-                                      const Divider(color: Colors.white12, height: 1),
-                                      if (lec.series.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(10, 4, 10, 2),
-                                          child: Row(children: [
-                                            const Icon(Icons.list_rounded, color: Colors.white38, size: 12),
-                                            const SizedBox(width: 4),
-                                            Expanded(child: Text(lec.series,
-                                              style: const TextStyle(color: Colors.white60, fontSize: 10),
-                                              maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                          ]),
-                                        ),
-                                      Padding(
-                                        padding: const EdgeInsets.fromLTRB(10, 2, 10, 4),
-                                        child: SingleChildScrollView(
-                                          scrollDirection: Axis.horizontal,
-                                          child: Row(children: [
-                                            _buildLandscapeBadge(lec.gradeText),
-                                            const SizedBox(width: 3),
-                                            _buildLandscapeBadge('All'),
-                                            const SizedBox(width: 3),
-                                            _buildLandscapeBadge(lec.subject),
-                                            const SizedBox(width: 6),
-                                            Text(lec.instructor, style: const TextStyle(color: Colors.white70, fontSize: 10)),
-                                          ]),
-                                        ),
+                                  // 해시태그 (있는 경우)
+                                  if (lec.hashtags.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
+                                      child: Wrap(
+                                        spacing: 4,
+                                        runSpacing: 3,
+                                        children: lec.hashtags.map((tag) => Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEEF4FF),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: const Color(0xFFC3D4F0), width: 0.8)),
+                                          child: Text('#$tag', style: const TextStyle(
+                                              color: Color(0xFF5E8ED6), fontSize: 9, fontWeight: FontWeight.w600)),
+                                        )).toList(),
                                       ),
-                                      if (lec.hashtags.isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
-                                          child: SingleChildScrollView(
-                                            scrollDirection: Axis.horizontal,
-                                            child: Row(
-                                              children: lec.hashtags.map((tag) => Padding(
-                                                padding: const EdgeInsets.only(right: 5),
-                                                child: Container(
-                                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(0xFFEEF4FF),
-                                                    borderRadius: BorderRadius.circular(20),
-                                                    border: Border.all(color: const Color(0xFFC3D4F0), width: 0.8)),
-                                                  child: Text('#$tag', style: const TextStyle(
-                                                      color: Color(0xFF5E8ED6), fontSize: 9, fontWeight: FontWeight.w600)),
-                                                ),
-                                              )).toList(),
+                                    ),
+                                  const Divider(color: Colors.white12, height: 1),
+                                  // 탭하면 세로모드로 전환하여 상세 내용 확인
+                                  GestureDetector(
+                                    onTap: _toggleLandscapeMode,
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.screen_rotation_rounded,
+                                            color: Colors.white54, size: 12),
+                                          const SizedBox(width: 5),
+                                          const Text('터치하여 노트·Q&A·문제풀이 보기',
+                                            style: TextStyle(
+                                              color: Colors.white54,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w500,
+                                            )),
+                                          const Spacer(),
+                                          // 전체화면 버튼
+                                          GestureDetector(
+                                            onTap: _toggleFullScreen,
+                                            behavior: HitTestBehavior.opaque,
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                              decoration: BoxDecoration(
+                                                color: _kOrange.withValues(alpha: 0.85),
+                                                borderRadius: BorderRadius.circular(5)),
+                                              child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                                                Icon(Icons.fullscreen_rounded, color: Colors.white, size: 12),
+                                                SizedBox(width: 2),
+                                                Text('전체', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
+                                              ]),
                                             ),
                                           ),
-                                        ),
-                                    ],
-                                  ],
-                                ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
