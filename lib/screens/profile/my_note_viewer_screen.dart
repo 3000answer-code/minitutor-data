@@ -392,7 +392,8 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
               ),
             ),
         ],
-        if (hasPrev || hasNext)
+        // 이전/다음 버튼: lectureList가 있으면 항상 표시 (활성/비활성만 다름)
+        if (widget.lectureList != null)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(children: [

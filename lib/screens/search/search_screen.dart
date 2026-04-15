@@ -471,62 +471,90 @@ class _SearchScreenState extends State<SearchScreen>
 
             // ── 본문 정보 영역 ──────────────────────────
             Expanded(
-              child: SizedBox(
-                height: 120,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(11, 10, 10, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 1행: 과목 배지 + 쪽수
-                      Row(children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: subjectColor,
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          child: Text(lec.subject,
-                              style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 0.2)),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(11, 10, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 1행: 과목 배지 + 쪽수
+                    Row(children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: subjectColor,
+                          borderRadius: BorderRadius.circular(5),
                         ),
-                        if (pageCount > 0) ...[
-                          const SizedBox(width: 6),
-                          Text('$pageCount쪽',
+                        child: Text(lec.subject,
+                            style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: 0.2)),
+                      ),
+                      if (pageCount > 0) ...[
+                        const SizedBox(width: 6),
+                        Text('$pageCount쪽',
+                            style: const TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFFAAAAAA),
+                                fontWeight: FontWeight.w400)),
+                      ],
+                    ]),
+
+                    const SizedBox(height: 5),
+
+                    // 2행: 강의 제목 (가장 크게, 가장 중요)
+                    Text(lec.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF1A1A2E),
+                            height: 1.35)),
+
+                    const SizedBox(height: 4),
+
+                    // 3행: 시리즈명(있으면) 또는 학년+연도 배지 + 강사명
+                    if (lec.series.isNotEmpty)
+                      Row(children: [
+                        const Icon(Icons.playlist_play_rounded,
+                            size: 11, color: Color(0xFFAAAAAA)),
+                        const SizedBox(width: 3),
+                        Expanded(
+                          child: Text(lec.series,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                  fontSize: 10,
-                                  color: Color(0xFFAAAAAA),
-                                  fontWeight: FontWeight.w400)),
-                        ],
+                                  fontSize: 10.5,
+                                  color: Color(0xFF888888),
+                                  fontWeight: FontWeight.w500)),
+                        ),
+                      ])
+                    else
+                      Row(children: [
+                        _miniNoteBadge(lec.gradeText, subjectColor),
+                        const SizedBox(width: 4),
+                        _miniNoteBadge(
+                          lec.gradeYear.isEmpty || lec.gradeYear == 'All'
+                              ? 'All'
+                              : '${lec.gradeYear}학년',
+                          const Color(0xFFF97316),
+                        ),
                       ]),
 
-                      const SizedBox(height: 5),
+                    const SizedBox(height: 3),
 
-                      // 2행: 강의 제목 (가장 크게, 가장 중요)
-                      Expanded(
-                        child: Text(lec.title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF1A1A2E),
-                                height: 1.35)),
-                      ),
-
-                      // 3행: 선생님 이름
-                      Text(lec.instructor,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                              fontSize: 11,
-                              color: Color(0xFF9E9E9E),
-                              fontWeight: FontWeight.w400)),
-                    ],
-                  ),
+                    // 4행: 강사명
+                    Text(lec.instructor,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF9E9E9E),
+                            fontWeight: FontWeight.w400)),
+                  ],
                 ),
               ),
             ),
@@ -578,6 +606,19 @@ class _SearchScreenState extends State<SearchScreen>
       ),
     );
   }
+
+  // ── 노트 검색 카드 미니 배지 헬퍼 ──────────────────────
+  Widget _miniNoteBadge(String label, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.12),
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: color.withValues(alpha: 0.25), width: 0.8),
+    ),
+    child: Text(label,
+        style: TextStyle(
+            fontSize: 9.5, color: color, fontWeight: FontWeight.w700)),
+  );
 
   Widget _buildNoteEmptyState(String message) {
     return Center(
