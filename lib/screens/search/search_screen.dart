@@ -77,6 +77,7 @@ class _SearchScreenState extends State<SearchScreen>
     if (query.isEmpty) return;
     final appState = context.read<AppState>();
     appState.addRecentSearch(query);
+    appState.incrementSearchCount();  // 검색수 자동 증가
     setState(() {
       _searchResult = query;
       _isSearching = true;
@@ -90,6 +91,7 @@ class _SearchScreenState extends State<SearchScreen>
     final appState = context.read<AppState>();
     if (keyword.isNotEmpty) {
       appState.addRecentSearch(keyword);
+      appState.incrementSearchCount();  // 검색수 자동 증가
     }
     setState(() {
       _searchResult = keyword; // 빈 문자열이면 전체 표시
@@ -411,19 +413,25 @@ class _SearchScreenState extends State<SearchScreen>
             size: 28, color: subjectColor.withValues(alpha: 0.35))),
       );
     } else if (thumbUrl.startsWith('assets/')) {
-      thumbInner = Image.asset(thumbUrl, fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => Container(
-            color: subjectColor.withValues(alpha: 0.08),
-            child: Center(child: Icon(Icons.description_rounded,
-                size: 28, color: subjectColor.withValues(alpha: 0.35))),
-          ));
+      thumbInner = Center(
+        child: Image.asset(thumbUrl,
+            fit: BoxFit.contain,
+            alignment: Alignment.center,
+            errorBuilder: (_, __, ___) => Container(
+              color: subjectColor.withValues(alpha: 0.08),
+              child: Center(child: Icon(Icons.description_rounded,
+                  size: 28, color: subjectColor.withValues(alpha: 0.35))),
+            )));
     } else {
-      thumbInner = Image.network(thumbUrl, fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => Container(
-            color: subjectColor.withValues(alpha: 0.08),
-            child: Center(child: Icon(Icons.description_rounded,
-                size: 28, color: subjectColor.withValues(alpha: 0.35))),
-          ));
+      thumbInner = Center(
+        child: Image.network(thumbUrl,
+            fit: BoxFit.contain,
+            alignment: Alignment.center,
+            errorBuilder: (_, __, ___) => Container(
+              color: subjectColor.withValues(alpha: 0.08),
+              child: Center(child: Icon(Icons.description_rounded,
+                  size: 28, color: subjectColor.withValues(alpha: 0.35))),
+            )));
     }
 
     return GestureDetector(

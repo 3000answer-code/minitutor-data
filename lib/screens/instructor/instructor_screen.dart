@@ -353,6 +353,21 @@ class _InstructorScreenState extends State<InstructorScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
                     child: Row(children: [
+                      // ── 뒤로가기(닫기) 버튼 ──
+                      GestureDetector(
+                        onTap: () => Navigator.of(sheetCtx).pop(),
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.divider),
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded,
+                              size: 16, color: AppColors.textPrimary),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
                       Container(
                         width: 6, height: 24,
                         decoration: BoxDecoration(

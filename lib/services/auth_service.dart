@@ -16,6 +16,7 @@ class AuthService {
   static const String _keyTotalStudyMinutes = 'totalStudyMinutes';
   static const String _keyTodayStudyMinutes = 'todayStudyMinutes';
   static const String _keyCompletedLectures = 'completedLectures';
+  static const String _keySearchCount = 'searchCount';
   static const String _keyFavoriteIds = 'favoriteIds';
   static const String _keyRecentViewedIds = 'recentViewedIds';
   static const String _keyRecentSearches = 'recentSearches';
@@ -157,6 +158,7 @@ class AuthService {
       totalStudyMinutes: prefs.getInt('$prefix$_keyTotalStudyMinutes') ?? 0,
       todayStudyMinutes: _getTodayStudyMinutes(prefs, prefix),
       completedLectures: prefs.getInt('$prefix$_keyCompletedLectures') ?? 0,
+      searchCount: prefs.getInt('$prefix$_keySearchCount') ?? 0,
     );
   }
 
@@ -207,6 +209,14 @@ class AuthService {
   Future<void> incrementCompletedLectures(String userId) async {
     final prefs = await SharedPreferences.getInstance();
     final key = '${userId}_$_keyCompletedLectures';
+    final current = prefs.getInt(key) ?? 0;
+    await prefs.setInt(key, current + 1);
+  }
+
+  /// 검색수 1 증가 후 SharedPreferences에 저장
+  Future<void> incrementSearchCount(String userId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = '${userId}_$_keySearchCount';
     final current = prefs.getInt(key) ?? 0;
     await prefs.setInt(key, current + 1);
   }
@@ -367,11 +377,13 @@ class UserStats {
   final int totalStudyMinutes;
   final int todayStudyMinutes;
   final int completedLectures;
+  final int searchCount;
 
   const UserStats({
     required this.streakDays,
     required this.totalStudyMinutes,
     required this.todayStudyMinutes,
     required this.completedLectures,
+    this.searchCount = 0,
   });
 }

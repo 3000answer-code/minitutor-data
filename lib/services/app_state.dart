@@ -189,6 +189,7 @@ class AppState extends ChangeNotifier {
       _totalStudyMinutes = stats.totalStudyMinutes;
       _todayStudyMinutes = stats.todayStudyMinutes;
       _completedLectures = stats.completedLectures;
+      _searchCount = stats.searchCount;  // 검색수 복원
 
       // 3. 즐겨찾기 / 최근 본 강의 / 검색어
       _favoriteIds = await _authService.loadFavoriteIds(session.userId);
@@ -223,6 +224,7 @@ class AppState extends ChangeNotifier {
     _totalStudyMinutes = stats.totalStudyMinutes;
     _todayStudyMinutes = stats.todayStudyMinutes;
     _completedLectures = stats.completedLectures;
+    _searchCount = stats.searchCount;  // 검색수 복원
 
     // 즐겨찾기 / 최근 본 강의 / 검색어 불러오기
     _favoriteIds = await _authService.loadFavoriteIds(userId);
@@ -493,8 +495,21 @@ class AppState extends ChangeNotifier {
     _searchQuery = query;
     if (query.isNotEmpty) {
       _searchCount++;  // 검색 시 조회수 증가
+      // SharedPreferences에도 저장 (비동기, 로그인 시에만)
+      if (_isLoggedIn) {
+        _authService.incrementSearchCount(_userId);
+      }
     }
     notifyListeners();
+  }
+
+  /// 검색수 직접 증가 (search_screen._search() 등에서 호출)
+  void incrementSearchCount() {
+    _searchCount++;
+    notifyListeners();
+    if (_isLoggedIn) {
+      _authService.incrementSearchCount(_userId);
+    }
   }
 
   Future<void> addRecentSearch(String query) async {
