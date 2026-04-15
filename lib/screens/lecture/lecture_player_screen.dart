@@ -22,6 +22,7 @@ import '../../config.dart';
 import '../../widgets/drive_web_player.dart';
 import '../../widgets/eraser_widgets.dart';
 import '../profile/my_activity_screen.dart';
+import '../profile/my_note_viewer_screen.dart';
 
 const Color _kOrange = Color(0xFFF97316);
 const String _kOrangeHex = '#F97316';
@@ -1238,45 +1239,67 @@ function pauseVid(){vid.pause();}
     );
   }
 
-  /// 교안 내 노트 플로팅 버튼
+  /// 교안 내 노트 플로팅 버튼 (작고 샤프한 스타일)
   Widget _buildNoteViewerFAB() {
-    // 교안이 없으면 버튼 숨김
     if (widget.lecture.handoutUrls.isEmpty) return const SizedBox.shrink();
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => MyActivityScreen(
-              initialTab: 1,          // 탭 1 = 내 노트
-              highlightLectureId: widget.lecture.id,
-            ),
-          ),
-        );
-      },
+      onTap: _openInlineNoteViewer,
       child: Container(
-        height: 48,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFF0EA5E9),           // 스카이블루
-          borderRadius: BorderRadius.circular(24),
+          color: const Color(0xFF0EA5E9),
+          borderRadius: BorderRadius.circular(6),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0EA5E9).withValues(alpha: 0.4),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF0EA5E9).withValues(alpha: 0.35),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: const [
-          Icon(Icons.menu_book_rounded, color: Colors.white, size: 20),
-          SizedBox(width: 6),
+          Icon(Icons.menu_book_rounded, color: Colors.white, size: 14),
+          SizedBox(width: 4),
           Text('내 노트',
               style: TextStyle(
                   color: Colors.white,
-                  fontSize: 14,
+                  fontSize: 12,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3)),
+                  letterSpacing: -0.2)),
         ]),
+      ),
+    );
+  }
+
+  /// 교안 인라인 뷰어 (DraggableScrollableSheet)
+  void _openInlineNoteViewer() {
+    final allLectures = widget.autoPlayList;
+    final lecturesWithHandouts = allLectures != null
+        ? allLectures.where((l) => l.handoutUrls.isNotEmpty).toList()
+        : <Lecture>[];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useRootNavigator: true,
+      builder: (_) => DraggableScrollableSheet(
+        initialChildSize: 0.88,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (ctx, scrollController) {
+          return ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: MyNoteViewerScreen(
+              lecture: widget.lecture,
+              lectureList: lecturesWithHandouts.isNotEmpty ? lecturesWithHandouts : null,
+              fromPlayer: true,          // 플레이어에서 열린 경우
+              scrollController: scrollController,
+            ),
+          );
+        },
       ),
     );
   }
