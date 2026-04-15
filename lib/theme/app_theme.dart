@@ -40,9 +40,9 @@ class AppColors {
   static const Color error = Color(0xFFEF4444);
 
   // Grade badges
-  static const Color elementary = Color(0xFF34D399);
-  static const Color middle = Color(0xFF60A5FA);
-  static const Color high = Color(0xFFA78BFA);
+  static const Color elementary = Color(0xFF34D399);   // 연두 (초등)
+  static const Color middle = Color(0xFF059669);        // 에메랄드 그린 (중등)
+  static const Color high = Color(0xFFA78BFA);          // 보라 (고등)
 }
 
 class AppTheme {

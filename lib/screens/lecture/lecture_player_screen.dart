@@ -4940,48 +4940,66 @@ function pauseVid(){vid.pause();}
       context: context,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 36, height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 14),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text('재생 속도',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 3, shrinkWrap: true,
-            mainAxisSpacing: 10, crossAxisSpacing: 10,
-            childAspectRatio: 2.2,
-            children: List.generate(speeds.length, (i) {
-              final selected = _playbackSpeed == speeds[i];
-              return GestureDetector(
-                onTap: () {
-                  _setPlaybackSpeed(speeds[i]);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: selected ? _kOrange : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(8),
-                    border: selected
-                        ? null
-                        : Border.all(color: const Color(0xFFEEEEEE))),
-                  child: Center(
-                    child: Text(labels[i],
-                      style: TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700,
-                        color: selected ? Colors.white : AppColors.textPrimary)),
-                  ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => StatefulBuilder(
+        builder: (ctx, setS) => Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            // 드래그 핸들
+            Container(width: 32, height: 3,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2))),
+            const SizedBox(height: 10),
+            // 제목
+            const Align(
+              alignment: Alignment.centerLeft,
+              child: Text('재생 속도',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
+            const SizedBox(height: 10),
+            // 버튼 2행
+            ...List.generate(2, (row) {
+              final rowSpeeds = speeds.sublist(row * 3, row * 3 + 3);
+              final rowLabels = labels.sublist(row * 3, row * 3 + 3);
+              return Padding(
+                padding: EdgeInsets.only(bottom: row == 0 ? 8 : 0),
+                child: Row(
+                  children: List.generate(3, (col) {
+                    final speed = rowSpeeds[col];
+                    final label = rowLabels[col];
+                    final selected = _playbackSpeed == speed;
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(left: col > 0 ? 6 : 0),
+                        child: GestureDetector(
+                          onTap: () {
+                            _setPlaybackSpeed(speed);
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: selected ? _kOrange : const Color(0xFFF5F5F5),
+                              borderRadius: BorderRadius.circular(8),
+                              border: selected
+                                  ? null
+                                  : Border.all(color: const Color(0xFFE8E8E8))),
+                            child: Center(
+                              child: Text(label,
+                                style: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w700,
+                                  color: selected ? Colors.white : AppColors.textPrimary)),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               );
             }),
-          ),
-        ]),
+          ]),
+        ),
       ),
     );
   }
