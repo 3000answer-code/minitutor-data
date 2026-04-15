@@ -1027,7 +1027,12 @@ function pauseVid(){vid.pause();}
                       children: widget.lecture.hashtags.take(4).map((tag) => GestureDetector(
                         onTap: () {
                           final appState = context.read<AppState>();
-                          appState.activatePip(widget.lecture, startSeconds: _currentTime);
+                          // 이미 다른 강의가 PIP로 재생 중이면 activatePip 호출 안 함 (PIP 유지)
+                          if (!appState.pipActive ||
+                              appState.pipLecture == null ||
+                              appState.pipLecture!.id == widget.lecture.id) {
+                            appState.activatePip(widget.lecture, startSeconds: _currentTime);
+                          }
                           appState.setSearchQuery(tag);
                           appState.setNavIndex(3);
                           if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
@@ -2587,8 +2592,12 @@ function pauseVid(){vid.pause();}
 
     Widget tagChip(String tag) => GestureDetector(
       onTap: () {
-        // 현재 강의를 PIP로 전환
-        appState.activatePip(widget.lecture, startSeconds: _currentTime);
+        // 이미 다른 강의가 PIP로 재생 중이면 activatePip 호출 안 함 (PIP 유지)
+        if (!appState.pipActive ||
+            appState.pipLecture == null ||
+            appState.pipLecture!.id == widget.lecture.id) {
+          appState.activatePip(widget.lecture, startSeconds: _currentTime);
+        }
         // 검색어 설정 후 검색 탭으로 이동
         appState.setSearchQuery(tag);
         appState.setNavIndex(3);
@@ -2672,8 +2681,12 @@ function pauseVid(){vid.pause();}
 
     Widget tagChip(String tag) => GestureDetector(
       onTap: () {
-        // PIP 활성화 후 검색화면으로 이동
-        appState.activatePip(widget.lecture, startSeconds: _currentTime);
+        // 이미 다른 강의가 PIP로 재생 중이면 activatePip 호출 안 함 (PIP 유지)
+        if (!appState.pipActive ||
+            appState.pipLecture == null ||
+            appState.pipLecture!.id == widget.lecture.id) {
+          appState.activatePip(widget.lecture, startSeconds: _currentTime);
+        }
         appState.setSearchQuery(tag);
         appState.setNavIndex(3);
         if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
