@@ -361,7 +361,21 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
       baseUrl = AppConfig.baseUrl.isNotEmpty ? AppConfig.baseUrl : 'about:blank';
     }
 
-    final controller = WebViewController()
+    final controller = WebViewController();
+
+    // Android: 자동재생 허용 - 컨트롤러 설정 전에 먼저 적용 (로딩 속도 향상)
+    if (!kIsWeb) {
+      try {
+        final androidCtrl = controller.platform;
+        if (androidCtrl is AndroidWebViewController) {
+          androidCtrl.setMediaPlaybackRequiresUserGesture(false);
+          // 미디어 캐시 활성화 (재방문 시 빠른 로딩)
+          AndroidWebViewController.enableDebugging(false);
+        }
+      } catch (_) {}
+    }
+
+    controller
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       ..setUserAgent(userAgent)
@@ -373,28 +387,15 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
         onPageFinished: (_) {
           if (mounted) {
             setState(() => _webViewLoading = false);
-            // 페이지 로딩 완료 후 컨트롤 자동 숨김 타이머 재시작
             _scheduleHideControls();
           }
         },
         onWebResourceError: (err) {
           if (mounted) setState(() => _webViewLoading = false);
         },
-        onNavigationRequest: (req) {
-          return NavigationDecision.navigate;
-        },
+        onNavigationRequest: (req) => NavigationDecision.navigate,
       ))
       ..loadHtmlString(html, baseUrl: baseUrl);
-
-    // Android: 자동재생 허용 필수
-    if (!kIsWeb) {
-      try {
-        final androidCtrl = controller.platform;
-        if (androidCtrl is AndroidWebViewController) {
-          androidCtrl.setMediaPlaybackRequiresUserGesture(false);
-        }
-      } catch (_) {}
-    }
 
     if (kDebugMode) {
       controller.setOnConsoleMessage(
@@ -536,7 +537,7 @@ video::cue{display:none!important;visibility:hidden!important;opacity:0!importan
 </head>
 <body>
 <div id="load"><div class="spin"></div><p>영상 불러오는 중...</p></div>
-<video id="vid" playsinline preload="auto" controls></video>
+<video id="vid" playsinline preload="auto" x-webkit-airplay="allow"></video>
 <div id="err">
   <div class="icon">⚠️</div>
   <p>영상을 불러올 수 없습니다.<br><small>파일이 공개 설정인지 확인해주세요.</small></p>
@@ -548,20 +549,25 @@ var load=document.getElementById("load");
 var err=document.getElementById("err");
 var lastTime=-1;
 var retryCount=0;
-// 직접 스트림 URL 설정
 vid.src="$streamUrl";
-vid.oncanplay=function(){load.classList.add("hide");vid.play().catch(function(){});}
-vid.oncanplaythrough=function(){load.classList.add("hide");}
+// 메타데이터 로드 즉시 재생 (canplay 대기 시간 단축)
+vid.onloadedmetadata=function(){
+  load.classList.add("hide");
+  vid.play().catch(function(){});
+  if(window.FlutterBridge) FlutterBridge.postMessage("dur:"+vid.duration.toFixed(0));
+}
+vid.oncanplay=function(){ load.classList.add("hide"); vid.play().catch(function(){}); }
+vid.oncanplaythrough=function(){ load.classList.add("hide"); }
 vid.onerror=function(){
   if(retryCount<2){
     retryCount++;
-    setTimeout(function(){vid.load();},1500);
+    setTimeout(function(){ vid.load(); }, 1000);
   }else{
     load.classList.add("hide");
     err.classList.add("show");
   }
 }
-vid.onwaiting=function(){load.classList.remove("hide");}
+vid.onwaiting=function(){ /* 버퍼링 중 깜빡임 방지 - 로딩 표시 생략 */ }
 vid.onplaying=function(){
   load.classList.add("hide");
   if(window.FlutterBridge) FlutterBridge.postMessage("play");
@@ -575,31 +581,6 @@ vid.ontimeupdate=function(){
     if(window.FlutterBridge) FlutterBridge.postMessage("time:"+t.toFixed(1));
   }
 }
-vid.onloadedmetadata=function(){
-  if(window.FlutterBridge) FlutterBridge.postMessage("dur:"+vid.duration.toFixed(0));
-  // 자막 트랙 전부 비활성화
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-}
-vid.addEventListener('loadeddata',function(){
-  // 로드 후에도 자막 트랙 비활성화
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-});
-// 주기적으로 자막 트랙 비활성화 (브라우저가 재활성화하는 경우 대비)
-setInterval(function(){
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      if(vid.textTracks[i].mode!='disabled') vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-},500);
 function retry(){retryCount=0;err.classList.remove("show");load.classList.remove("hide");vid.load();vid.play().catch(function(){});}
 function setSpeed(s){vid.playbackRate=s;}
 function seekTo(t){vid.currentTime=t;}
@@ -717,7 +698,7 @@ video::cue{display:none!important;visibility:hidden!important;opacity:0!importan
 </head>
 <body>
 <div id="load"><div class="spin"></div><p>영상 불러오는 중...</p></div>
-<video id="vid" playsinline preload="auto" src="$videoUrl#t=0.001"></video>
+<video id="vid" playsinline preload="auto" src="$videoUrl" x-webkit-airplay="allow"></video>
 <div id="err">
   <div class="icon">⚠️</div>
   <p>영상을 불러올 수 없습니다.<br><small>네트워크를 확인하거나 잠시 후 다시 시도해주세요.</small></p>
@@ -731,17 +712,19 @@ var lastTime=-1;
 vid.playbackRate=$speedVal;
 
 // 재생 준비 완료 시 자동 재생 시도
-vid.oncanplay=function(){
+// 메타데이터 로드되면 즉시 재생 시도 (canplay 대기 불필요)
+vid.onloadedmetadata=function(){
   load.classList.add("hide");
   vid.play().catch(function(){});
+  if(window.FlutterBridge) FlutterBridge.postMessage("dur:"+vid.duration.toFixed(0));
+  try{ for(var i=0;i<vid.textTracks.length;i++) vid.textTracks[i].mode='disabled'; }catch(e){}
 }
-vid.oncanplaythrough=function(){load.classList.add("hide");}
-vid.onerror=function(){load.classList.add("hide");err.classList.add("show");}
-vid.onwaiting=function(){load.classList.remove("hide");}
+vid.oncanplay=function(){ load.classList.add("hide"); vid.play().catch(function(){}); }
+vid.oncanplaythrough=function(){ load.classList.add("hide"); }
+vid.onerror=function(){ load.classList.add("hide"); err.classList.add("show"); }
+vid.onwaiting=function(){ /* 버퍼링 중 로딩 표시 생략 - 깜빡임 방지 */ }
 vid.onstalled=function(){
-  load.classList.remove("hide");
-  // 스톨 시 재시도
-  setTimeout(function(){vid.load();vid.play().catch(function(){});},1000);
+  setTimeout(function(){ vid.load(); vid.play().catch(function(){}); }, 800);
 }
 vid.onplaying=function(){
   load.classList.add("hide");
@@ -761,29 +744,11 @@ vid.ontimeupdate=function(){
   }
 }
 vid.onloadedmetadata=function(){
+  load.classList.add("hide");
+  vid.play().catch(function(){});
   if(window.FlutterBridge) FlutterBridge.postMessage("dur:"+vid.duration.toFixed(0));
-  // 자막 트랙 전부 비활성화
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
+  try{ for(var i=0;i<vid.textTracks.length;i++) vid.textTracks[i].mode='disabled'; }catch(e){}
 }
-vid.addEventListener('loadeddata',function(){
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-});
-// 주기적으로 자막 트랙 비활성화
-setInterval(function(){
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      if(vid.textTracks[i].mode!='disabled') vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-},500);
 function retry(){err.classList.remove("show");load.classList.remove("hide");vid.load();vid.play().catch(function(){});}
 // 외부에서 제어할 수 있는 함수들
 function setSpeed(s){vid.playbackRate=s;}
@@ -909,41 +874,52 @@ function pauseVid(){vid.pause();}
   }
 
   void _toggleFullScreen() {
-    setState(() => _isFullScreen = !_isFullScreen);
     if (_isFullScreen) {
+      // 전체화면 → 이전 모드로 복귀
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted) setState(() { _isFullScreen = false; _isLandscape = false; });
+      });
+    } else {
+      // 세로 → 전체화면
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    } else {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted) setState(() { _isFullScreen = true; _isLandscape = false; });
+      });
     }
   }
 
   // 가로화면+사이드패널 모드 토글
   void _toggleLandscapeMode() {
-    setState(() {
-      _isLandscape = !_isLandscape;
-    });
     if (_isLandscape) {
-      // 가로화면으로 전환
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    } else {
-      // 세로화면으로 복귀
+      // 가로 → 세로 복귀
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      // 방향 전환 후 setState (딜레이로 블랙아웃 방지)
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted) setState(() => _isLandscape = false);
+      });
+    } else {
+      // 세로 → 가로 전환
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      Future.delayed(const Duration(milliseconds: 150), () {
+        if (mounted) setState(() => _isLandscape = true);
+      });
     }
   }
 
@@ -5023,105 +4999,171 @@ function pauseVid(){vid.pause();}
   // 🌄 가로화면 + 사이드패널 모드
   // ─────────────────────────────────────────────
   Widget _buildLandscapeWithSidePanel() {
+    final lec = widget.lecture;
+    // 블랙아웃 방지: 가로화면에서 WebView를 직접 사용
+    Widget videoWidget;
+    if (!kIsWeb && _webViewController != null) {
+      videoWidget = WebViewWidget(controller: _webViewController!);
+    } else {
+      videoWidget = _buildGradientPlaceholder();
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Row(
           children: [
-            // ── 왼쪽: 영상 영역 (화면의 약 55%)
+            // ── 왼쪽: 영상 + 강의안내 + 진행바 (Column)
             Expanded(
-              flex: 55,
-              child: GestureDetector(
-                onTap: _onTapPlayer,
-                child: Stack(
-                  fit: StackFit.expand,
+              flex: 52,
+              child: Container(
+                color: Colors.black,
+                child: Column(
                   children: [
-                    // 영상
-                    _buildVideoArea(),
-                    // 컨트롤 오버레이
-                    if (_showControls) _buildControlOverlay(),
-                    if (_showSubtitle && _currentSubtitle.isNotEmpty) _buildSubtitle(),
-                    // 상단 좌측: 세로화면 복귀 버튼
-                    Positioned(
-                      top: 8, left: 8,
+                    // ① 영상 (16:9 비율 고정)
+                    AspectRatio(
+                      aspectRatio: 16 / 9,
                       child: GestureDetector(
-                        onTap: _toggleLandscapeMode,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(mainAxisSize: MainAxisSize.min, children: const [
-                            Icon(Icons.screen_rotation_rounded,
-                              color: Colors.white, size: 14),
-                            SizedBox(width: 4),
-                            Text('세로화면',
-                              style: TextStyle(color: Colors.white, fontSize: 11,
-                                fontWeight: FontWeight.w600)),
-                          ]),
+                        onTap: _onTapPlayer,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            videoWidget,
+                            if (_showControls) _buildControlOverlay(),
+                          ],
                         ),
                       ),
                     ),
-                    // 우하단: 전체화면 전환 버튼
-                    Positioned(
-                      right: 8, bottom: 8,
-                      child: GestureDetector(
-                        onTap: _toggleFullScreen,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.55),
-                            borderRadius: BorderRadius.circular(4),
+                    // ② 진행바
+                    _buildProgressBar(),
+                    // ③ 강의 안내 영역 (106번 내용 - 영상 아래)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      color: const Color(0xFF1A1A2E),
+                      child: Row(
+                        children: [
+                          // 강의 제목
+                          Expanded(
+                            child: Text(
+                              lec.title,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          child: const Icon(Icons.fullscreen_rounded,
-                            color: Colors.white, size: 20),
-                        ),
+                          const SizedBox(width: 8),
+                          // 과목 배지
+                          _buildLandscapeBadge(lec.subject),
+                          const SizedBox(width: 4),
+                          // 강사명
+                          Text(
+                            lec.instructor,
+                            style: const TextStyle(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          // ④ 세로화면 복귀 버튼
+                          GestureDetector(
+                            onTap: _toggleLandscapeMode,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(5),
+                                border: Border.all(
+                                    color: Colors.white30, width: 0.8),
+                              ),
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.screen_rotation_rounded,
+                                        color: Colors.white70, size: 13),
+                                    SizedBox(width: 3),
+                                    Text('세로',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600)),
+                                  ]),
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          // ⑤ 전체화면 전환 버튼
+                          GestureDetector(
+                            onTap: _toggleFullScreen,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _kOrange.withValues(alpha: 0.85),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: const [
+                                    Icon(Icons.fullscreen_rounded,
+                                        color: Colors.white, size: 13),
+                                    SizedBox(width: 3),
+                                    Text('전체',
+                                        style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600)),
+                                  ]),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    // 하단 진행바
-                    Positioned(
-                      bottom: 0, left: 0, right: 0,
-                      child: _buildProgressBar(),
-                    ),
+                    // 나머지 빈 공간 (검은 배경)
+                    const Expanded(child: SizedBox()),
                   ],
                 ),
               ),
             ),
-            // ── 오른쪽: 사이드 패널 (화면의 약 45%)
+            // ── 오른쪽: 사이드 패널
             Expanded(
-              flex: 45,
+              flex: 48,
               child: Container(
                 color: Colors.white,
                 child: Column(
                   children: [
-                    // 사이드 탭바
+                    // 탭바 (균등 간격)
                     Container(
                       color: Colors.white,
                       decoration: const BoxDecoration(
-                        border: Border(bottom: BorderSide(
-                          color: Color(0xFFEEEEEE), width: 1)),
+                        border: Border(
+                            bottom: BorderSide(
+                                color: Color(0xFFEEEEEE), width: 1)),
                       ),
                       child: TabBar(
                         controller: _tabController,
                         labelColor: _kOrange,
                         unselectedLabelColor: const Color(0xFF888888),
-                        isScrollable: true,
-                        tabAlignment: TabAlignment.start,
-                        labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+                        isScrollable: false,
+                        labelPadding: const EdgeInsets.symmetric(horizontal: 2),
                         labelStyle: const TextStyle(
-                          fontSize: 11, fontWeight: FontWeight.w700),
+                            fontSize: 11, fontWeight: FontWeight.w700),
                         unselectedLabelStyle: const TextStyle(
-                          fontSize: 11, fontWeight: FontWeight.w500),
+                            fontSize: 11, fontWeight: FontWeight.w500),
                         indicatorColor: _kOrange,
                         indicatorWeight: 2.5,
                         indicatorSize: TabBarIndicatorSize.tab,
                         dividerColor: Colors.transparent,
                         tabs: const [
-                          Tab(text: '노트 보기'),
-                          Tab(text: '강의 Q&A'),
-                          Tab(text: '재생 목록'),
-                          Tab(text: '문제풀이'),
+                          Tab(height: 36, child: Text('노트 보기', textAlign: TextAlign.center)),
+                          Tab(height: 36, child: Text('강의 Q&A', textAlign: TextAlign.center)),
+                          Tab(height: 36, child: Text('재생 목록', textAlign: TextAlign.center)),
+                          Tab(height: 36, child: Text('문제풀이', textAlign: TextAlign.center)),
                         ],
                       ),
                     ),
@@ -5148,49 +5190,143 @@ function pauseVid(){vid.pause();}
     );
   }
 
+  // 가로화면 강의 안내용 배지
+  Widget _buildLandscapeBadge(String label) {
+    Color color;
+    switch (label) {
+      case '수학':     color = const Color(0xFF2563EB); break;
+      case '과학':     color = const Color(0xFF16A34A); break;
+      case '공통과학': color = const Color(0xFF7C3AED); break;
+      case '물리':     color = const Color(0xFF0EA5E9); break;
+      case '화학':     color = const Color(0xFFFF6B35); break;
+      case '생명과학': color = const Color(0xFF22C55E); break;
+      case '지구과학': color = const Color(0xFF6366F1); break;
+      case '국어':     color = const Color(0xFFDC2626); break;
+      case '영어':     color = const Color(0xFF0891B2); break;
+      default:          color = _kOrange;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 0.7),
+      ),
+      child: Text(label,
+          style: TextStyle(
+              fontSize: 10, color: color, fontWeight: FontWeight.w700)),
+    );
+  }
+
   // ─────────────────────────────────────────────
   // 📺 전체화면 모드
   // ─────────────────────────────────────────────
   Widget _buildFullScreenScaffold() {
+    // 블랙아웃 방지: WebView를 직접 사용
+    Widget videoWidget;
+    if (!kIsWeb && _webViewController != null) {
+      videoWidget = WebViewWidget(controller: _webViewController!);
+    } else {
+      videoWidget = _buildGradientPlaceholder();
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: _onTapPlayer,
         child: Stack(children: [
-          // 영상
-          if (_webViewController != null && !kIsWeb)
-            WebViewWidget(controller: _webViewController!)
-          else
-            _buildGradientPlaceholder(),
+          // 영상 (전체화면)
+          Positioned.fill(child: videoWidget),
           // 컨트롤
           if (_showControls) ...[
+            // 상단 바: 전체화면 종료 + 제목
             Positioned(
               top: 0, left: 0, right: 0,
               child: Container(
-                padding: const EdgeInsets.fromLTRB(8, 36, 8, 8),
+                padding: const EdgeInsets.fromLTRB(4, 32, 8, 8),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                    colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent])),
+                    colors: [Colors.black.withValues(alpha: 0.75), Colors.transparent])),
                 child: Row(children: [
+                  // 세로화면 복귀
                   IconButton(
                     icon: const Icon(Icons.fullscreen_exit_rounded,
                       color: Colors.white, size: 26),
                     onPressed: _toggleFullScreen,
+                    tooltip: '전체화면 종료',
                   ),
                   Expanded(
                     child: Text(widget.lecture.title,
                       style: const TextStyle(color: Colors.white, fontSize: 14,
                         fontWeight: FontWeight.w600),
                       maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  IconButton(
-                    icon: const Icon(Icons.more_vert_rounded,
-                      color: Colors.white, size: 22),
-                    onPressed: _showOptionsSheet,
+                  // 가로화면+사이드패널로 전환
+                  GestureDetector(
+                    onTap: () {
+                      // 전체화면 종료 후 가로화면+사이드패널로
+                      setState(() {
+                        _isFullScreen = false;
+                        _isLandscape = true;
+                      });
+                      SystemChrome.setPreferredOrientations([
+                        DeviceOrientation.landscapeLeft,
+                        DeviceOrientation.landscapeRight,
+                      ]);
+                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white30, width: 0.8),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                        Icon(Icons.view_sidebar_rounded, color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text('사이드패널',
+                          style: TextStyle(color: Colors.white, fontSize: 10,
+                            fontWeight: FontWeight.w600)),
+                      ]),
+                    ),
+                  ),
+                  // 세로화면 복귀
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isFullScreen = false;
+                        _isLandscape = false;
+                      });
+                      SystemChrome.setPreferredOrientations([
+                        DeviceOrientation.portraitUp,
+                        DeviceOrientation.portraitDown,
+                      ]);
+                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                      margin: const EdgeInsets.only(right: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white30, width: 0.8),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                        Icon(Icons.stay_current_portrait_rounded,
+                          color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text('세로화면',
+                          style: TextStyle(color: Colors.white, fontSize: 10,
+                            fontWeight: FontWeight.w600)),
+                      ]),
+                    ),
                   ),
                 ]),
               ),
             ),
+            // 중앙 재생 컨트롤
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -5216,6 +5352,7 @@ function pauseVid(){vid.pause();}
                 ],
               ),
             ),
+            // 하단 진행바
             Positioned(
               bottom: 0, left: 0, right: 0,
               child: Container(

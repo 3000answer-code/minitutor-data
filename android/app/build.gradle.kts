@@ -14,7 +14,7 @@ if (keyPropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.minitutor.study"
+    namespace = "com.awsometutor.study"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -28,11 +28,11 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.minitutor.study"
+        applicationId = "com.awsometutor.study"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 22
-        versionName = "1.0.22"
+        versionCode = 25
+        versionName = "1.0.25"
     }
 
     signingConfigs {
