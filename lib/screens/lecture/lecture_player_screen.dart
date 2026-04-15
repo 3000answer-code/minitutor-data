@@ -68,6 +68,7 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
 
   // ── 가로화면 + 사이드패널 모드
   bool _isLandscape = false;
+  bool _isLandscapeInfoExpanded = false; // 가로화면 강의정보 확장/축소
 
   // ── 자동 재생 (재생 목록)
   bool _autoPlay = false;
@@ -1121,46 +1122,24 @@ function pauseVid(){vid.pause();}
       }
     }
 
-    // ── 재생 전 썸네일 + 탭-투-플레이 버튼
-    final playBtn = Column(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-        width: isShortsStyle ? 76 : 64,
-        height: isShortsStyle ? 76 : 64,
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.6),
-            blurRadius: 28, spreadRadius: 4)],
-        ),
-        child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: isShortsStyle ? 48 : 40),
-      ),
-      const SizedBox(height: 14),
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 0.8),
-        ),
-        child: const Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.play_circle_rounded, color: Colors.white60, size: 15),
-          SizedBox(width: 7),
-          Text('탭하여 재생', style: TextStyle(
-            color: Colors.white, fontSize: 14,
-            fontWeight: FontWeight.w600, letterSpacing: 0.3)),
+    // ── 재생 전: 로딩 스피너만 표시 (탭-투-플레이 버튼 없음)
+    // Drive 영상은 자동으로 _startDriveInlinePlayer가 호출됨
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_drivePlayerActive) {
+        _startDriveInlinePlayer(fileId);
+      }
+    });
+    return Container(
+      color: Colors.black,
+      child: const Center(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          SizedBox(
+            width: 40, height: 40,
+            child: CircularProgressIndicator(color: _kOrange, strokeWidth: 2.5)),
+          SizedBox(height: 12),
+          Text('영상 불러오는 중...', style: TextStyle(color: Colors.white54, fontSize: 12)),
         ]),
       ),
-    ]);
-
-    return GestureDetector(
-      onTap: () => _startDriveInlinePlayer(fileId),
-      child: Stack(fit: StackFit.expand, children: [
-        _buildGradientPlaceholder(),
-        isShortsStyle
-            ? Positioned(left: 0, right: 0, top: 0, bottom: 160, child: Center(child: playBtn))
-            : Center(child: playBtn),
-      ]),
     );
   }
 
@@ -1830,60 +1809,7 @@ function pauseVid(){vid.pause();}
             const SizedBox(height: 5),
             _buildMetaHashtags(lec.hashtags, subjectColor),
           ],
-          // 행 5: B강의(관련강의) PIP 버튼
-          if (lec.relatedLectureId != null &&
-              lec.relatedLectureId!.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            _buildRelatedLecturePipButton(lec.relatedLectureId!, subjectColor),
-          ],
         ],
-      ),
-    );
-  }
-
-  /// 관련 강의를 PIP로 띄우는 버튼
-  Widget _buildRelatedLecturePipButton(String relatedId, Color accentColor) {
-    final appState = context.read<AppState>();
-    final allLectures = appState.apiLectures;
-    final related = allLectures.cast<Lecture?>()
-        .firstWhere((l) => l?.id == relatedId, orElse: () => null);
-    if (related == null) return const SizedBox.shrink();
-
-    return GestureDetector(
-      onTap: () {
-        // 관련 강의를 PIP로 활성화
-        appState.activatePip(related, startSeconds: 0);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.picture_in_picture_alt_rounded,
-                size: 13, color: accentColor),
-            const SizedBox(width: 5),
-            Flexible(
-              child: Text(
-                'B강의: ${related.title}',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: accentColor,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.play_circle_outline_rounded,
-                size: 13, color: accentColor),
-          ],
-        ),
       ),
     );
   }
@@ -5045,112 +4971,220 @@ function pauseVid(){vid.pause();}
                           ),
                           // 컨트롤 오버레이 (항상 렌더, opacity/ignorePointer로 제어)
                           _buildControlOverlay(),
+                          // CC + 속도 버튼 (우측 상단, 항상 표시)
+                          Positioned(
+                            top: 6, right: 6,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                _buildCCButton(),
+                                const SizedBox(width: 4),
+                                _buildSpeedChip(),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     // ② 진행바
                     _buildProgressBar(),
-                    // ③ 강의 안내 영역 (48번과 동일한 전체 메타정보)
-                    Container(
-                      color: const Color(0xFF1A1A2E),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // 제목 + 시리즈
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 8, 10, 4),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    lec.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
+                    // ③ 강의 안내 영역 (슬라이드 업/다운 토글)
+                    GestureDetector(
+                      onVerticalDragEnd: (details) {
+                        // 위로 슬라이드 → 확장, 아래로 슬라이드 → 축소
+                        if (details.primaryVelocity != null) {
+                          if (details.primaryVelocity! < -50) {
+                            setState(() => _isLandscapeInfoExpanded = true);
+                          } else if (details.primaryVelocity! > 50) {
+                            setState(() => _isLandscapeInfoExpanded = false);
+                          }
+                        }
+                      },
+                      onTap: () => setState(() =>
+                          _isLandscapeInfoExpanded = !_isLandscapeInfoExpanded),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                        color: const Color(0xFF1A1A2E),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 첫 번째 줄: 제목 + 토글 화살표
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 6, 10, 2),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      lec.title,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                  Icon(
+                                    _isLandscapeInfoExpanded
+                                        ? Icons.keyboard_arrow_down_rounded
+                                        : Icons.keyboard_arrow_up_rounded,
+                                    color: Colors.white54,
+                                    size: 16,
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                          // 학제·과목 배지 + 강사명 + 전환 버튼
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-                            child: Row(
-                              children: [
-                                _buildLandscapeBadge(lec.gradeText),
-                                const SizedBox(width: 3),
-                                _buildLandscapeBadge(lec.subject),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    lec.instructor,
-                                    style: const TextStyle(
-                                        color: Colors.white60, fontSize: 11),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                // 세로화면 복귀 버튼
-                                GestureDetector(
-                                  onTap: _toggleLandscapeMode,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(5),
-                                      border: Border.all(
-                                          color: Colors.white30, width: 0.8),
+                            // 두 번째 줄: 배지 + 강사명 + 전환 버튼 (항상 표시)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 0, 10, 6),
+                              child: Row(
+                                children: [
+                                  _buildLandscapeBadge(lec.gradeText),
+                                  const SizedBox(width: 3),
+                                  _buildLandscapeBadge(lec.subject),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      lec.instructor,
+                                      style: const TextStyle(
+                                          color: Colors.white60, fontSize: 10),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: const [
-                                          Icon(Icons.screen_rotation_rounded,
-                                              color: Colors.white70, size: 13),
-                                          SizedBox(width: 3),
-                                          Text('세로',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w600)),
-                                        ]),
                                   ),
-                                ),
-                                const SizedBox(width: 6),
-                                // 전체화면 전환 버튼
-                                GestureDetector(
-                                  onTap: _toggleFullScreen,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 5),
-                                    decoration: BoxDecoration(
-                                      color: _kOrange.withValues(alpha: 0.85),
-                                      borderRadius: BorderRadius.circular(5),
+                                  // 세로화면 복귀 버튼
+                                  GestureDetector(
+                                    onTap: _toggleLandscapeMode,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 7, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(5),
+                                        border: Border.all(
+                                            color: Colors.white30, width: 0.8),
+                                      ),
+                                      child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: const [
+                                            Icon(Icons.screen_rotation_rounded,
+                                                color: Colors.white70, size: 12),
+                                            SizedBox(width: 2),
+                                            Text('세로',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w600)),
+                                          ]),
                                     ),
-                                    child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: const [
-                                          Icon(Icons.fullscreen_rounded,
-                                              color: Colors.white, size: 13),
-                                          SizedBox(width: 3),
-                                          Text('전체',
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w600)),
-                                        ]),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 4),
+                                  // 전체화면 전환 버튼
+                                  GestureDetector(
+                                    onTap: _toggleFullScreen,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 7, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: _kOrange.withValues(alpha: 0.85),
+                                        borderRadius: BorderRadius.circular(5),
+                                      ),
+                                      child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: const [
+                                            Icon(Icons.fullscreen_rounded,
+                                                color: Colors.white, size: 12),
+                                            SizedBox(width: 2),
+                                            Text('전체',
+                                                style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 9,
+                                                    fontWeight: FontWeight.w600)),
+                                          ]),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
+                            // 확장 영역: 시리즈명 + 상세 배지 + 해시태그
+                            if (_isLandscapeInfoExpanded) ...[
+                              const Divider(color: Colors.white12, height: 1),
+                              // 시리즈명
+                              if (lec.series.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(10, 5, 10, 2),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.list_rounded,
+                                          color: Colors.white38, size: 12),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          lec.series,
+                                          style: const TextStyle(
+                                              color: Colors.white60,
+                                              fontSize: 10),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              // 상세 배지 행 (학제 + All + 과목 + 강사명들)
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(10, 2, 10, 4),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: [
+                                      _buildLandscapeBadge(lec.gradeText),
+                                      const SizedBox(width: 3),
+                                      _buildLandscapeBadge('All'),
+                                      const SizedBox(width: 3),
+                                      _buildLandscapeBadge(lec.subject),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        lec.instructor,
+                                        style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 10),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // 해시태그
+                              if (lec.hashtags.isNotEmpty)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.fromLTRB(10, 0, 10, 6),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: lec.hashtags
+                                          .map((tag) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                    right: 5),
+                                                child: Text(
+                                                  '#$tag',
+                                                  style: const TextStyle(
+                                                      color: Colors.white54,
+                                                      fontSize: 9),
+                                                ),
+                                              ))
+                                          .toList(),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ],
+                        ),
                       ),
                     ),
+
                     // 나머지 빈 공간
                     const Expanded(child: SizedBox()),
                   ],
@@ -5304,6 +5338,12 @@ function pauseVid(){vid.pause();}
                       style: const TextStyle(color: Colors.white, fontSize: 14,
                         fontWeight: FontWeight.w600),
                       maxLines: 1, overflow: TextOverflow.ellipsis)),
+                  // CC 버튼 (전체화면)
+                  _buildCCButton(),
+                  const SizedBox(width: 4),
+                  // 속도 버튼 (전체화면)
+                  _buildSpeedChip(),
+                  const SizedBox(width: 6),
                   // 가로화면+사이드패널로 전환
                   GestureDetector(
                     onTap: () {
