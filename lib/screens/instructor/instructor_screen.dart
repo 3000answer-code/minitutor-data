@@ -19,6 +19,22 @@ class InstructorScreen extends StatefulWidget {
 class _InstructorScreenState extends State<InstructorScreen> {
   String _selectedSubject = '전체'; // 과목 필터
 
+  // 학제별 과목 목록
+  static const Map<String, List<String>> _subjectsByGrade = {
+    'pre_middle': ['전체', '수학', '과학'],
+    'middle':     ['전체', '수학', '과학'],
+    'high':       ['전체', '수학', '과학', '공통과학', '물리', '화학', '생명과학', '지구과학'],
+  };
+
+  // 학제 변경 시 과목 필터 리셋
+  void _onGradeChanged(String grade, AppState appState) {
+    appState.setInstructorGrade(grade);
+    final subjects = _subjectsByGrade[grade] ?? ['전체'];
+    if (!subjects.contains(_selectedSubject)) {
+      setState(() => _selectedSubject = '전체');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -26,10 +42,11 @@ class _InstructorScreenState extends State<InstructorScreen> {
     final T = (String key) => AppTranslations.tLang(lang, key);
     // ✅ 강의 데이터 기반 동적 강사 목록 (새 콘텐츠 업로드 시 자동 반영)
     final allInstructors = appState.dynamicInstructors;
-    final gradeMap = {'elementary': T('grade_elementary'), 'middle': T('grade_middle'), 'high': T('grade_high')};
+    final gradeMap = {'pre_middle': T('grade_pre_middle'), 'middle': T('grade_middle'), 'high': T('grade_high')};
 
     var filtered = allInstructors
-        .where((i) => i.grade == appState.instructorGrade)
+        .where((i) => i.grade == appState.instructorGrade ||
+            (appState.instructorGrade == 'pre_middle' && i.grade == 'elementary'))
         .toList();
 
     // 과목 필터
@@ -61,9 +78,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
             color: Colors.white,
             child: Column(children: [
               // 학제 탭
-              Row(children: ['elementary', 'middle', 'high'].map((g) =>
+              Row(children: ['pre_middle', 'middle', 'high'].map((g) =>
                 Expanded(child: GestureDetector(
-                  onTap: () => appState.setInstructorGrade(g),
+                  onTap: () => _onGradeChanged(g, appState),
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
@@ -85,7 +102,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  children: ['전체', '수학', '과학', '공통과학', '물리', '화학', '생명과학', '지구과학'].map((s) => Padding(
+                  children: (_subjectsByGrade[appState.instructorGrade] ?? ['전체', '수학', '과학']).map((s) => Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
                       onTap: () => setState(() => _selectedSubject = s),

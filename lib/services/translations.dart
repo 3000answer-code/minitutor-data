@@ -467,6 +467,13 @@ class AppTranslations {
       'zh': '小学',
       'es': 'Primaria',
     },
+    'grade_pre_middle': {
+      'ko': '예비중',
+      'en': 'Pre-Middle',
+      'ja': '中学準備',
+      'zh': '初中预备',
+      'es': 'Pre-Secundaria',
+    },
     'grade_middle': {
       'ko': '중등',
       'en': 'Middle',
