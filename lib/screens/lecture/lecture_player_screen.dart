@@ -4970,67 +4970,73 @@ function pauseVid(){vid.pause();}
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
+      // 시스템 네비게이션 바 위로 팝업 띄우기
+      useRootNavigator: false,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => StatefulBuilder(
-        builder: (ctx, setS) => Padding(
-          padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            // 드래그 핸들
-            Container(width: 32, height: 3,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2))),
-            const SizedBox(height: 10),
-            // 제목
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text('재생 속도',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
-            const SizedBox(height: 10),
-            // 버튼 2행
-            ...List.generate(2, (row) {
-              final rowSpeeds = speeds.sublist(row * 3, row * 3 + 3);
-              final rowLabels = labels.sublist(row * 3, row * 3 + 3);
-              return Padding(
-                padding: EdgeInsets.only(bottom: row == 0 ? 8 : 0),
-                child: Row(
-                  children: List.generate(3, (col) {
-                    final speed = rowSpeeds[col];
-                    final label = rowLabels[col];
-                    final selected = _playbackSpeed == speed;
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(left: col > 0 ? 6 : 0),
-                        child: GestureDetector(
-                          onTap: () {
-                            _setPlaybackSpeed(speed);
-                            Navigator.pop(context);
-                          },
-                          child: Container(
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: selected ? _kOrange : const Color(0xFFF5F5F5),
-                              borderRadius: BorderRadius.circular(8),
-                              border: selected
-                                  ? null
-                                  : Border.all(color: const Color(0xFFE8E8E8))),
-                            child: Center(
-                              child: Text(label,
-                                style: TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w700,
-                                  color: selected ? Colors.white : AppColors.textPrimary)),
+        builder: (ctx, setS) {
+          // 하단 시스템 바 높이만큼 추가 패딩
+          final bottomPad = MediaQuery.of(ctx).viewPadding.bottom + 12;
+          return Padding(
+            padding: EdgeInsets.fromLTRB(16, 10, 16, bottomPad),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              // 드래그 핸들
+              Container(width: 32, height: 3,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2))),
+              const SizedBox(height: 10),
+              // 제목
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text('재생 속도',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))),
+              const SizedBox(height: 10),
+              // 버튼 2행
+              ...List.generate(2, (row) {
+                final rowSpeeds = speeds.sublist(row * 3, row * 3 + 3);
+                final rowLabels = labels.sublist(row * 3, row * 3 + 3);
+                return Padding(
+                  padding: EdgeInsets.only(bottom: row == 0 ? 8 : 0),
+                  child: Row(
+                    children: List.generate(3, (col) {
+                      final speed = rowSpeeds[col];
+                      final label = rowLabels[col];
+                      final selected = _playbackSpeed == speed;
+                      return Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.only(left: col > 0 ? 6 : 0),
+                          child: GestureDetector(
+                            onTap: () {
+                              _setPlaybackSpeed(speed);
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: selected ? _kOrange : const Color(0xFFF5F5F5),
+                                borderRadius: BorderRadius.circular(8),
+                                border: selected
+                                    ? null
+                                    : Border.all(color: const Color(0xFFE8E8E8))),
+                              child: Center(
+                                child: Text(label,
+                                  style: TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.w700,
+                                    color: selected ? Colors.white : AppColors.textPrimary)),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  }),
-                ),
-              );
-            }),
-          ]),
-        ),
+                      );
+                    }),
+                  ),
+                );
+              }),
+            ]),
+          );
+        },
       ),
     );
   }
@@ -5153,43 +5159,58 @@ function pauseVid(){vid.pause();}
                                       ),
                                     ),
                                   const Divider(color: Colors.white12, height: 1),
-                                  // 탭하면 세로모드로 전환하여 상세 내용 확인
-                                  GestureDetector(
-                                    onTap: _toggleLandscapeMode,
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.screen_rotation_rounded,
-                                            color: Colors.white54, size: 12),
-                                          const SizedBox(width: 5),
-                                          const Text('터치하여 노트·Q&A·문제풀이 보기',
-                                            style: TextStyle(
-                                              color: Colors.white54,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w500,
-                                            )),
-                                          const Spacer(),
-                                          // 전체화면 버튼
-                                          GestureDetector(
-                                            onTap: _toggleFullScreen,
-                                            behavior: HitTestBehavior.opaque,
+                                  // 하단 버튼 행: 세로화면 전환 버튼 + 전체화면 버튼
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                                    child: Row(
+                                      children: [
+                                        // ★ 세로화면 전환 버튼 (눈에 잘 띄게)
+                                        Expanded(
+                                          child: GestureDetector(
+                                            onTap: _toggleLandscapeMode,
                                             child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                              padding: const EdgeInsets.symmetric(vertical: 8),
                                               decoration: BoxDecoration(
-                                                color: _kOrange.withValues(alpha: 0.85),
-                                                borderRadius: BorderRadius.circular(5)),
-                                              child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                                                Icon(Icons.fullscreen_rounded, color: Colors.white, size: 12),
-                                                SizedBox(width: 2),
-                                                Text('전체', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w600)),
-                                              ]),
+                                                color: Colors.white.withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(8),
+                                                border: Border.all(
+                                                  color: Colors.white38, width: 1.0)),
+                                              child: const Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Icon(Icons.stay_primary_portrait_rounded,
+                                                    color: Colors.white, size: 14),
+                                                  SizedBox(width: 5),
+                                                  Text('세로화면',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.w700,
+                                                    )),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        // 전체화면 버튼
+                                        GestureDetector(
+                                          onTap: _toggleFullScreen,
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: _kOrange,
+                                              borderRadius: BorderRadius.circular(8)),
+                                            child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                                              Icon(Icons.fullscreen_rounded, color: Colors.white, size: 14),
+                                              SizedBox(width: 4),
+                                              Text('전체화면', style: TextStyle(
+                                                color: Colors.white, fontSize: 11,
+                                                fontWeight: FontWeight.w700)),
+                                            ]),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
