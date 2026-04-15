@@ -70,6 +70,9 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   bool _isLandscape = false;
   bool _isLandscapeInfoExpanded = false; // 가로화면 강의정보 확장/축소
 
+  // ── 세로화면 메타바 접힘/펼침
+  bool _isMetaBarCollapsed = false; // true = 접힘(영상 정보 숨김)
+
   // ── 자동 재생 (재생 목록)
   bool _autoPlay = false;
 
@@ -1261,7 +1264,8 @@ function pauseVid(){vid.pause();}
                 onTap: _onTapPlayer,
                 child: Stack(fit: StackFit.expand, children: [
                   _buildVideoArea(),
-                  if (_showControls) _buildControlOverlay(),
+                  // 로딩 중에는 컨트롤 오버레이(플레이 버튼) 숨김
+                  if (_showControls && !_webViewLoading) _buildControlOverlay(),
                   if (_showSubtitle && _currentSubtitle.isNotEmpty) _buildSubtitle(),
                   // 영상 우하단 전체화면 버튼 (항상 표시) + 가로화면 전환 버튼
                   Positioned(
@@ -1333,8 +1337,6 @@ function pauseVid(){vid.pause();}
             maxLines: 1, overflow: TextOverflow.ellipsis,
           ),
         ),
-        // CC 자막 토글
-        _buildCCButton(),
         const SizedBox(width: 2),
         // 재생속도 칩
         _buildSpeedChip(),
@@ -1705,9 +1707,61 @@ function pauseVid(){vid.pause();}
             ],
           ),
         ),
-        // ── 강의 메타 정보 영역 (탭바 바로 아래, 필기 도구 바로 위) ──
-        _buildLectureMetaBar(),
+        // ── 강의 메타 정보 영역 (터치 시 접힘/펼침) ──
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () => setState(() => _isMetaBarCollapsed = !_isMetaBarCollapsed),
+          onVerticalDragEnd: (details) {
+            // 위로 슬라이드 → 접힘(영상 공간 확보), 아래로 슬라이드 → 펼침
+            if (details.primaryVelocity != null) {
+              if (details.primaryVelocity! < -50) {
+                setState(() => _isMetaBarCollapsed = true);
+              } else if (details.primaryVelocity! > 50) {
+                setState(() => _isMetaBarCollapsed = false);
+              }
+            }
+          },
+          child: AnimatedCrossFade(
+            duration: const Duration(milliseconds: 250),
+            firstChild: _buildLectureMetaBar(),
+            secondChild: _buildCollapsedMetaBar(),
+            crossFadeState: _isMetaBarCollapsed
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+          ),
+        ),
       ],
+    );
+  }
+
+  /// 접힌 상태 메타바 (제목 한 줄 + 펼침 화살표)
+  Widget _buildCollapsedMetaBar() {
+    final lec = widget.lecture;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1)),
+      ),
+      child: Row(children: [
+        Expanded(
+          child: Text(
+            lec.title,
+            style: const TextStyle(
+              fontSize: 13, fontWeight: FontWeight.w700,
+              color: Color(0xFF111827)),
+            maxLines: 1, overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        const SizedBox(width: 6),
+        // 펼침 힌트
+        const Icon(Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF9CA3AF), size: 18),
+        const SizedBox(width: 2),
+        const Text('강의 정보',
+            style: TextStyle(fontSize: 10, color: Color(0xFF9CA3AF))),
+      ]),
     );
   }
 
@@ -1730,9 +1784,9 @@ function pauseVid(){vid.pause();}
       default:          subjectColor = _kOrange;
     }
     switch (lec.grade) {
-      case 'elementary': gradeColor = const Color(0xFFFF6B35); break;
-      case 'middle':     gradeColor = const Color(0xFF2563EB); break;
-      default:           gradeColor = const Color(0xFF7C3AED);
+      case 'elementary': gradeColor = const Color(0xFFFF6B35); break;  // 주황
+      case 'middle':     gradeColor = const Color(0xFF059669); break;  // 에메랄드 (해시태그 파랑과 구분)
+      default:           gradeColor = const Color(0xFF7C3AED);          // 보라 (고등)
     }
 
     Widget badge(String label, Color color) => Container(
@@ -2424,6 +2478,10 @@ function pauseVid(){vid.pause();}
   /// 메타바 해시태그: 터치 → PIP 전환 + 검색화면 이동 (2줄 이내 + 좌우 스크롤)
   Widget _buildMetaHashtags(List<String> tags, Color accentColor) {
     if (tags.isEmpty) return const SizedBox.shrink();
+    // 해시태그 색상 고정 (앱 전체 통일: 890 화면 기준)
+    const tagBg     = Color(0xFFEEF4FF);
+    const tagBorder = Color(0xFFC3D4F0);
+    const tagText   = Color(0xFF5E8ED6);
     final appState = context.read<AppState>();
 
     Widget tagChip(String tag) => GestureDetector(
@@ -2438,17 +2496,17 @@ function pauseVid(){vid.pause();}
       },
       child: Container(
         margin: const EdgeInsets.only(right: 4, bottom: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accentColor.withValues(alpha: 0.25), width: 0.8),
+          color: tagBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: tagBorder, width: 0.8),
         ),
         child: Text(
           '#$tag',
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 10,
-            color: accentColor,
+            color: tagText,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -2505,6 +2563,10 @@ function pauseVid(){vid.pause();}
   /// 태그 수에 따라 1줄 / 2줄 / 2줄+좌우스크롤 자동 조절
   Widget _buildDetailHashtags(List<String> tags) {
     if (tags.isEmpty) return const SizedBox.shrink();
+    // 해시태그 색상 고정 (앱 전체 통일: 890 화면 기준)
+    const tagBg     = Color(0xFFEEF4FF);
+    const tagBorder = Color(0xFFC3D4F0);
+    const tagText   = Color(0xFF5E8ED6);
     final appState = context.read<AppState>();
 
     Widget tagChip(String tag) => GestureDetector(
@@ -2519,12 +2581,12 @@ function pauseVid(){vid.pause();}
         margin: const EdgeInsets.only(right: 6, bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: _kOrange.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _kOrange.withValues(alpha: 0.25))),
+          color: tagBg,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: tagBorder, width: 0.8)),
         child: Text('#$tag',
           style: const TextStyle(
-            fontSize: 12, color: _kOrange, fontWeight: FontWeight.w600)),
+            fontSize: 12, color: tagText, fontWeight: FontWeight.w600)),
       ),
     );
 
@@ -4971,17 +5033,10 @@ function pauseVid(){vid.pause();}
                           ),
                           // 컨트롤 오버레이 (항상 렌더, opacity/ignorePointer로 제어)
                           _buildControlOverlay(),
-                          // CC + 속도 버튼 (우측 상단, 항상 표시)
+                          // 속도 버튼 (우측 상단, 항상 표시)
                           Positioned(
                             top: 6, right: 6,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                _buildCCButton(),
-                                const SizedBox(width: 4),
-                                _buildSpeedChip(),
-                              ],
-                            ),
+                            child: _buildSpeedChip(),
                           ),
                         ],
                       ),
@@ -5168,11 +5223,20 @@ function pauseVid(){vid.pause();}
                                           .map((tag) => Padding(
                                                 padding: const EdgeInsets.only(
                                                     right: 5),
-                                                child: Text(
-                                                  '#$tag',
-                                                  style: const TextStyle(
-                                                      color: Colors.white54,
-                                                      fontSize: 9),
+                                                child: Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                                  decoration: BoxDecoration(
+                                                    color: const Color(0xFFEEF4FF),
+                                                    borderRadius: BorderRadius.circular(20),
+                                                    border: Border.all(color: const Color(0xFFC3D4F0), width: 0.8),
+                                                  ),
+                                                  child: Text(
+                                                    '#$tag',
+                                                    style: const TextStyle(
+                                                        color: Color(0xFF5E8ED6),
+                                                        fontSize: 9,
+                                                        fontWeight: FontWeight.w600),
+                                                  ),
                                                 ),
                                               ))
                                           .toList(),
@@ -5338,9 +5402,7 @@ function pauseVid(){vid.pause();}
                       style: const TextStyle(color: Colors.white, fontSize: 14,
                         fontWeight: FontWeight.w600),
                       maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  // CC 버튼 (전체화면)
-                  _buildCCButton(),
-                  const SizedBox(width: 4),
+                  // CC 버튼 제거 (모든 강의에 자막 있어 불필요)
                   // 속도 버튼 (전체화면)
                   _buildSpeedChip(),
                   const SizedBox(width: 6),

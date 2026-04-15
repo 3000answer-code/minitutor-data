@@ -415,10 +415,19 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
                     else { useRow2 = true; row2.add(t); }
                   } else { row2.add(t); }
                 }
-                Widget chip(String tag) => Text('#$tag',
-                  style: TextStyle(
-                    color: AppColors.primary.withValues(alpha: 0.85),
-                    fontSize: 11, fontWeight: FontWeight.w500));
+                Widget chip(String tag) => Container(
+                  margin: const EdgeInsets.only(right: 5, bottom: 3),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEEF4FF),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFC3D4F0), width: 0.8),
+                  ),
+                  child: Text('#$tag',
+                    style: const TextStyle(
+                      color: Color(0xFF5E8ED6),
+                      fontSize: 10, fontWeight: FontWeight.w600)),
+                );
                 Widget buildRow(List<String> ts) => Wrap(spacing: 6, children: ts.map(chip).toList());
                 if (row2.isEmpty) return buildRow(row1);
                 double row2W = row2.fold(0.0, (s, t) => s + estimateW(t) + 6);

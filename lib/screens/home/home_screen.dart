@@ -740,9 +740,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   /// 해시태그 칩 위젯
   Widget _hashtagChip(String tag, [Color? color]) {
-    const tagBg     = Color(0xFFEAF6FF);
-    const tagText   = Color(0xFF42A8F0);
-    const tagBorder = Color(0xFFD7E9F9);
+    const tagBg     = Color(0xFFEEF4FF);
+    const tagText   = Color(0xFF5E8ED6);
+    const tagBorder = Color(0xFFC3D4F0);
     return Container(
       margin: const EdgeInsets.only(right: 6),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
