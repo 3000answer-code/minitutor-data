@@ -3605,20 +3605,58 @@ function pauseVid(){vid.pause();}
                     fontSize: 13, fontWeight: FontWeight.w600,
                     color: isCurrent ? _kOrange : AppColors.textPrimary),
                   maxLines: 2, overflow: TextOverflow.ellipsis),
-                subtitle: Row(children: [
-                  Text(lec.instructor,
-                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
-                      borderRadius: BorderRadius.circular(3)),
-                    child: Text(lec.durationText,
-                      style: const TextStyle(fontSize: 10, color: AppColors.primary,
-                        fontWeight: FontWeight.w600)),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 줄1: 시리즈명 (있을 때만)
+                      if (lec.series.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
+                          child: Row(children: [
+                            const Icon(Icons.playlist_play_rounded,
+                              size: 11, color: AppColors.textSecondary),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(lec.series,
+                                style: const TextStyle(fontSize: 10.5,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500),
+                                maxLines: 1, overflow: TextOverflow.ellipsis),
+                            ),
+                          ]),
+                        ),
+                      // 줄2: 학년 배지 + 과목 배지 + 강사명
+                      Row(children: [
+                        _buildMiniGradeBadge(lec.gradeText),
+                        const SizedBox(width: 4),
+                        _buildMiniSubjectBadge(lec.subject),
+                        if (lec.gradeYear.isNotEmpty && lec.gradeYear != 'All') ...[
+                          const SizedBox(width: 4),
+                          _buildMiniChip(lec.gradeYear),
+                        ],
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(lec.instructor,
+                            style: const TextStyle(fontSize: 10.5,
+                              color: AppColors.textSecondary),
+                            maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEEF2FF),
+                            borderRadius: BorderRadius.circular(3)),
+                          child: Text(lec.durationText,
+                            style: const TextStyle(fontSize: 10, color: AppColors.primary,
+                              fontWeight: FontWeight.w600)),
+                        ),
+                      ]),
+                    ],
                   ),
-                ]),
+                ),
                 onTap: isCurrent ? null : () {
                   // 재생목록 탭에서 강의 선택 → 자동재생 목록 유지
                   Navigator.pushReplacement(
@@ -3638,6 +3676,73 @@ function pauseVid(){vid.pause();}
         ),
       ),
     ]);
+  }
+
+  // ── 재생목록/홈 카드용 미니 배지 헬퍼 ──────────────
+  static Color _subjectBadgeColor(String subject) {
+    switch (subject) {
+      case '수학':     return const Color(0xFF2563EB);
+      case '과학':     return const Color(0xFF16A34A);
+      case '공통과학': return const Color(0xFF7C3AED);
+      case '물리':     return const Color(0xFF0EA5E9);
+      case '화학':     return const Color(0xFFFF6B35);
+      case '생명과학': return const Color(0xFF22C55E);
+      case '지구과학': return const Color(0xFF6366F1);
+      case '국어':     return const Color(0xFFDC2626);
+      case '영어':     return const Color(0xFF0891B2);
+      default:         return const Color(0xFFF97316);
+    }
+  }
+
+  static Color _gradeBadgeColor(String grade) {
+    switch (grade) {
+      case 'elementary': return const Color(0xFFFF6B35);
+      case 'middle':     return const Color(0xFF059669);
+      default:           return const Color(0xFF7C3AED);
+    }
+  }
+
+  Widget _buildMiniSubjectBadge(String subject) {
+    final color = _subjectBadgeColor(subject);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.7),
+      ),
+      child: Text(subject,
+        style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w700)),
+    );
+  }
+
+  Widget _buildMiniGradeBadge(String gradeText) {
+    final color = gradeText.contains('고') ? const Color(0xFF7C3AED)
+        : gradeText.contains('중') ? const Color(0xFF059669)
+        : const Color(0xFFFF6B35);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.7),
+      ),
+      child: Text(gradeText,
+        style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+    );
+  }
+
+  Widget _buildMiniChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(label,
+        style: const TextStyle(fontSize: 10, color: Color(0xFF64748B),
+            fontWeight: FontWeight.w600)),
+    );
   }
 
   Widget _buildThumbSmall(Lecture lec) {
