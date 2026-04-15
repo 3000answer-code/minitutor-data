@@ -31,8 +31,8 @@ android {
         applicationId = "com.awsometutor.study"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = 25
-        versionName = "1.0.25"
+        versionCode = 27
+        versionName = "1.0.27"
     }
 
     signingConfigs {
@@ -56,6 +56,7 @@ android {
 flutter {
     source = "../.."
 }
+
 
 
 
