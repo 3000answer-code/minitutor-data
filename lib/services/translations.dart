@@ -1086,7 +1086,7 @@ class AppTranslations {
       'ko': '나의 활동', 'en': 'My Activity', 'ja': '活動履歴', 'zh': '我的活动', 'es': 'Mi Actividad',
     },
     'tab_recent': {
-      'ko': '최근 영상', 'en': 'Recent', 'ja': '最近', 'zh': '最近', 'es': 'Reciente',
+      'ko': '최근 본 강의', 'en': 'Recent', 'ja': '最近', 'zh': '最近', 'es': 'Reciente',
     },
     'tab_notes': {
       'ko': '내 노트', 'en': 'Notes', 'ja': 'ノート', 'zh': '笔记', 'es': 'Notas',
@@ -1107,7 +1107,7 @@ class AppTranslations {
       'ko': '전체 삭제', 'en': 'Delete All', 'ja': '全削除', 'zh': '全部删除', 'es': 'Borrar Todo',
     },
     'delete_recent_title': {
-      'ko': '최근 영상 삭제', 'en': 'Delete History', 'ja': '履歴削除', 'zh': '删除历史', 'es': 'Borrar Historial',
+      'ko': '최근 본 강의 삭제', 'en': 'Delete History', 'ja': '履歴削除', 'zh': '删除历史', 'es': 'Borrar Historial',
     },
     'delete_recent_content': {
       'ko': '시청 기록을 모두 삭제하시겠습니까?', 'en': 'Delete all watch history?', 'ja': '視聴履歴をすべて削除しますか？', 'zh': '确认删除所有观看记录？', 'es': '¿Borrar todo el historial?',
