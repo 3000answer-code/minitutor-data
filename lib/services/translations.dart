@@ -1092,7 +1092,7 @@ class AppTranslations {
       'ko': '내 노트', 'en': 'Notes', 'ja': 'ノート', 'zh': '笔记', 'es': 'Notas',
     },
     'tab_my_qa': {
-      'ko': '강의 Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
+      'ko': '나의 Q&A', 'en': 'My Q&A', 'ja': 'マイQ&A', 'zh': '我的Q&A', 'es': 'Mi Q&A',
     },
     'tab_expert': {
       'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',

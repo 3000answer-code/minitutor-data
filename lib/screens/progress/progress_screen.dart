@@ -139,8 +139,9 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   color: Colors.white,
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                   child: Column(children: [
-                    Row(children: [
-                      const SizedBox(width: 0),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
                       ...List.generate(
                           grades.length,
                           (i) => Padding(
@@ -173,11 +174,13 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       height: 36,
                       child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: subjects.map((sub) {
+                          children: subjects.asMap().entries.map((entry) {
+                            final sub = entry.value;
+                            final isLast = entry.key == subjects.length - 1;
                             final isSelected =
                                 appState.progressSubject == sub;
                             return Padding(
-                              padding: const EdgeInsets.only(right: 8),
+                              padding: EdgeInsets.only(right: isLast ? 0 : 12),
                               child: FilterChip(
                                 label: Text(sub),
                                 selected: isSelected,
