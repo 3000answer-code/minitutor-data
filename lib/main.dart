@@ -47,6 +47,14 @@ class AsomeTutorApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           home: const _AppRootScreen(),
+          // ── Navigator 전체 위에 PIP 오버레이 렌더링 (어떤 화면에서도 항상 보임)
+          builder: (context, child) => Stack(
+            children: [
+              child ?? const SizedBox.shrink(),
+              if (appState.pipActive && appState.pipLecture != null)
+                _PipOverlay(lecture: appState.pipLecture!),
+            ],
+          ),
         ),
       ),
     );
@@ -297,9 +305,7 @@ class MainShell extends StatelessWidget {
               index: appState.currentNavIndex,
               children: _screens,
             ),
-            // ── PIP 오버레이 ──
-            if (appState.pipActive && appState.pipLecture != null)
-              _PipOverlay(lecture: appState.pipLecture!),
+            // PIP 오버레이는 MaterialApp builder에서 처리 (Navigator 위에 렌더링)
           ],
         ),
         bottomNavigationBar: _buildBottomNavTranslated(context, appState),
