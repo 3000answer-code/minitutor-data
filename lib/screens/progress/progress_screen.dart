@@ -126,52 +126,50 @@ class _ProgressScreenState extends State<ProgressScreen> {
           const SizedBox(width: 4),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(42),
-          child: SizedBox(
-            width: double.infinity,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: subjects.map((sub) {
-                    final isSelected = appState.progressSubject == sub;
-                    return GestureDetector(
-                      onTap: () {
-                        appState.setProgressSubject(sub);
-                        _loadLectureProgress();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: isSelected ? AppColors.primary : Colors.transparent,
-                              width: 2.5,
-                            ),
-                          ),
-                        ),
-                        child: Text(
-                          sub,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                            color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                          ),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                Container(color: AppColors.divider, height: 1),
-              ],
-            ),
-          ),
+          preferredSize: const Size.fromHeight(1),
+          child: Container(color: AppColors.divider, height: 1),
         ),
       ),
       body: !appState.isLoggedIn
           ? _buildLoginPrompt(T)
           : Column(
               children: [
+                // ─── 수학/과학 탭 (화면 전체 너비 중앙) ───
+                Container(
+                  color: Colors.white,
+                  width: double.infinity,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: subjects.map((sub) {
+                      final isSelected = appState.progressSubject == sub;
+                      return GestureDetector(
+                        onTap: () {
+                          appState.setProgressSubject(sub);
+                          _loadLectureProgress();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+                          decoration: BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: isSelected ? AppColors.primary : Colors.transparent,
+                                width: 2.5,
+                              ),
+                            ),
+                          ),
+                          child: Text(
+                            sub,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
                 // ─── 필터 영역 ───
                 Container(
                   color: Colors.white,
