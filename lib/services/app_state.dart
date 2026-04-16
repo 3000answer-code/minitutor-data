@@ -570,6 +570,14 @@ class AppState extends ChangeNotifier {
     }
   }
 
+  void removeRecentSearch(String query) {
+    _recentSearches.remove(query);
+    notifyListeners();
+    if (_isLoggedIn) {
+      _authService.saveRecentSearches(_userId, _recentSearches);
+    }
+  }
+
   void setProgressSubject(String subject) {
     _progressSubject = subject;
     notifyListeners();

@@ -1260,8 +1260,9 @@ class _SearchScreenState extends State<SearchScreen>
               children: [
                 _buildKeywordList(appState.popularSearches, isPopular: true),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  // '최근 검색' / '전체 삭제' 헤더를 최상단에 바짝 붙임
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                    padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
                     child: Row(children: [
                       Text(T('search_recent_label'),
                           style: const TextStyle(
@@ -1269,13 +1270,18 @@ class _SearchScreenState extends State<SearchScreen>
                               fontWeight: FontWeight.w600,
                               color: AppColors.textSecondary)),
                       const Spacer(),
-                      TextButton(
-                          onPressed: appState.clearRecentSearches,
+                      GestureDetector(
+                        onTap: appState.clearRecentSearches,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           child: Text(T('search_clear_all'),
                               style: const TextStyle(
-                                  fontSize: 12, color: AppColors.textHint))),
+                                  fontSize: 12, color: AppColors.textHint)),
+                        ),
+                      ),
                     ]),
                   ),
+                  const Divider(height: 1, indent: 16, endIndent: 16, color: Color(0xFFEEEEEE)),
                   Expanded(
                       child: _buildKeywordList(appState.recentSearches,
                           isPopular: false)),
@@ -1301,30 +1307,55 @@ class _SearchScreenState extends State<SearchScreen>
       itemCount: keywords.length.clamp(0, 8),
       separatorBuilder: (_, __) =>
           const Divider(height: 0, indent: 16, endIndent: 16),
-      itemBuilder: (_, i) => ListTile(
-        dense: true,
-        leading: isPopular
-            ? Text('${i + 1}',
-                style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: i < 3 ? _kOrange : AppColors.textSecondary))
-            : const Icon(Icons.history_rounded,
-                size: 18, color: AppColors.textHint),
-        title:
-            Text(keywords[i], style: const TextStyle(fontSize: 14)),
-        trailing: !isPopular
-            ? IconButton(
-                icon: const Icon(Icons.close,
-                    size: 16, color: AppColors.textHint),
-                onPressed: () {},
-              )
-            : null,
-        onTap: () {
-          _controller.text = keywords[i];
-          _search(keywords[i]);
-        },
-      ),
+      itemBuilder: (_, i) {
+        return InkWell(
+          onTap: () {
+            _controller.text = keywords[i];
+            _search(keywords[i]);
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Row(
+              children: [
+                // 왼쪽 아이콘/번호
+                SizedBox(
+                  width: 28,
+                  child: isPopular
+                      ? Text('${i + 1}',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: i < 3 ? _kOrange : AppColors.textSecondary))
+                      : const Icon(Icons.history_rounded,
+                          size: 18, color: AppColors.textHint),
+                ),
+                // 검색어: 중앙 배치
+                Expanded(
+                  child: Text(
+                    keywords[i],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                  ),
+                ),
+                // 오른쪽: 삭제 버튼 또는 동일 너비 빈 공간
+                SizedBox(
+                  width: 28,
+                  child: !isPopular
+                      ? GestureDetector(
+                          onTap: () {
+                            context.read<AppState>().removeRecentSearch(keywords[i]);
+                          },
+                          child: const Icon(Icons.close,
+                              size: 16, color: AppColors.textHint),
+                        )
+                      : null,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
