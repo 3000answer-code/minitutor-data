@@ -1318,44 +1318,56 @@ class _SearchScreenState extends State<SearchScreen>
           },
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Row(
-              children: [
-                // 왼쪽 아이콘/번호
-                SizedBox(
-                  width: 28,
-                  child: isPopular
-                      ? Text('${i + 1}',
+            child: isPopular
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        child: Text('${i + 1}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: i < 3 ? _kOrange : AppColors.textSecondary)),
+                      ),
+                      const SizedBox(width: 16),
+                      SizedBox(
+                        width: 120,
+                        child: Text(
+                          keywords[i],
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: i < 3 ? _kOrange : AppColors.textSecondary))
-                      : const Icon(Icons.history_rounded,
-                          size: 18, color: AppColors.textHint),
-                ),
-                // 검색어: 중앙 배치
-                Expanded(
-                  child: Text(
-                    keywords[i],
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
-                  ),
-                ),
-                // 오른쪽: 삭제 버튼 또는 동일 너비 빈 공간
-                SizedBox(
-                  width: 28,
-                  child: !isPopular
-                      ? GestureDetector(
+                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                        ),
+                      ),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      const SizedBox(
+                        width: 28,
+                        child: Icon(Icons.history_rounded,
+                            size: 18, color: AppColors.textHint),
+                      ),
+                      Expanded(
+                        child: Text(
+                          keywords[i],
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 28,
+                        child: GestureDetector(
                           onTap: () {
                             context.read<AppState>().removeRecentSearch(keywords[i]);
                           },
                           child: const Icon(Icons.close,
                               size: 16, color: AppColors.textHint),
-                        )
-                      : null,
-                ),
-              ],
-            ),
+                        ),
+                      ),
+                    ],
+                  ),
           ),
         );
       },
