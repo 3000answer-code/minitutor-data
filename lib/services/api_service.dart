@@ -255,6 +255,15 @@ class ApiService {
       'description': '에라토스테네스의 방법으로 지구의 크기를 측정하는 원리를 두 번 설명으로 완벽하게 이해합니다.',
       'isFavorite': false, 'series': '태양계', 'lectureNumber': 10,
       'uploadDate': '2026-04-10', 'relatedLectureId': '',
+      'handoutUrls': [
+        'assets/handouts/earth_size_p1.png',
+        'assets/handouts/earth_size_p2.png',
+        'assets/handouts/earth_size_p3.png',
+        'assets/handouts/earth_size_p4.png',
+        'assets/handouts/earth_size_p5.png',
+        'assets/handouts/earth_size_p6.png',
+        'assets/handouts/earth_size_p7.png',
+      ],
     },
     // ── 일반 강의 (구글 드라이브) ──
     {
@@ -272,6 +281,10 @@ class ApiService {
       'description': '숫자, 수, 기수, 서수의 개념을 기초부터 이해합니다.',
       'isFavorite': false, 'series': '수학 기초', 'lectureNumber': 1,
       'uploadDate': '2026-04-05', 'relatedLectureId': 'gd_math_002',
+      'handoutUrls': [
+        'assets/handouts/math_num_001_p1.png',
+        'assets/handouts/math_num_001_p2.png',
+      ],
     },
     {
       'id': 'gd_math_002',
@@ -288,6 +301,10 @@ class ApiService {
       'description': '자릿값, 수 읽기, 수 쓰기를 기초부터 이해합니다.',
       'isFavorite': false, 'series': '수학 기초', 'lectureNumber': 2,
       'uploadDate': '2026-04-05', 'relatedLectureId': 'gd_math_001',
+      'handoutUrls': [
+        'assets/handouts/math_place_001_p1.png',
+        'assets/handouts/math_place_001_p2.png',
+      ],
     },
     {
       'id': 'gd_math_003',
@@ -304,6 +321,10 @@ class ApiService {
       'description': '고등 수학 - 지수함수의 뜻을 기초부터 이해합니다.',
       'isFavorite': false, 'series': '지수함수와 로그함수', 'lectureNumber': 1,
       'uploadDate': '2026-04-05', 'relatedLectureId': 'gd_math_004',
+      'handoutUrls': [
+        'assets/handouts/math_exp_001_p1.png',
+        'assets/handouts/math_exp_001_p2.png',
+      ],
     },
     {
       'id': 'gd_math_004',
@@ -320,6 +341,10 @@ class ApiService {
       'description': '고등 수학 - y = aˣ 꼴 지수함수의 핵심 성질을 정리합니다.',
       'isFavorite': false, 'series': '지수함수와 로그함수', 'lectureNumber': 2,
       'uploadDate': '2026-04-05', 'relatedLectureId': 'gd_math_003',
+      'handoutUrls': [
+        'assets/handouts/math_exp_002_p1.png',
+        'assets/handouts/math_exp_002_p2.png',
+      ],
     },
     // ── 화학 강의 (고광윤 / 화학과 우리생활 시리즈) ──
     {
