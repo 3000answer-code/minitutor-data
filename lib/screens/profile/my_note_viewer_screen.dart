@@ -153,6 +153,8 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
             Text('내 노트가 저장되었습니다'),
           ]),
           backgroundColor: const Color(0xFF2563EB),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
           duration: const Duration(seconds: 2),
         ));
       }
