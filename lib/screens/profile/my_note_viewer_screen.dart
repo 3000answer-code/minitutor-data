@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/lecture.dart';
+import '../../services/app_state.dart';
 import '../../services/note_repository.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/eraser_widgets.dart';
@@ -245,6 +247,10 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
       Navigator.of(context).pop();
     } else {
       // MyActivityScreen 탭에서 열린 경우 → 강의 플레이어로 push
+      final appState = context.read<AppState>();
+      if (appState.pipActive && appState.pipLecture?.id != _currentLecture.id) {
+        appState.deactivatePip();
+      }
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => LecturePlayerScreen(lecture: _currentLecture),

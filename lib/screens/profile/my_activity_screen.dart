@@ -133,6 +133,9 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                     lecture: recent[i], isHorizontal: true,
                     onTap: () {
                       appState.addRecentView(recent[i].id);
+                      if (appState.pipActive && appState.pipLecture?.id != recent[i].id) {
+                        appState.deactivatePip();
+                      }
                       Navigator.push(context, MaterialPageRoute(
                         builder: (_) => LecturePlayerScreen(lecture: recent[i])));
                     },

@@ -988,13 +988,19 @@ class _UnitDetailScreenState extends State<_UnitDetailScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: GestureDetector(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => LecturePlayerScreen(
-                        lecture: lec,
-                        autoPlayList: _autoPlay ? lectures : null,
-                        autoPlayIndex: _autoPlay ? i : 0,
-                      ),
-                    )),
+                    onTap: () {
+                      final appState = context.read<AppState>();
+                      if (appState.pipActive && appState.pipLecture?.id != lec.id) {
+                        appState.deactivatePip();
+                      }
+                      Navigator.push(context, MaterialPageRoute(
+                        builder: (_) => LecturePlayerScreen(
+                          lecture: lec,
+                          autoPlayList: _autoPlay ? lectures : null,
+                          autoPlayIndex: _autoPlay ? i : 0,
+                        ),
+                      ));
+                    },
                     child: Stack(
                       children: [
                         LectureCard(lecture: lec),

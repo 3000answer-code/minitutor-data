@@ -286,6 +286,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
                   lecture: l,
                   onTap: () {
                     appState.addRecentView(l.id);
+                    if (appState.pipActive && appState.pipLecture?.id != l.id) {
+                      appState.deactivatePip();
+                    }
                     Navigator.push(context, MaterialPageRoute(
                       builder: (_) => LecturePlayerScreen(lecture: l)));
                   },
@@ -427,6 +430,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
                       },
                       onTap: () {
                         appState.addRecentView(lec.id);
+                        if (appState.pipActive && appState.pipLecture?.id != lec.id) {
+                          appState.deactivatePip();
+                        }
                         Navigator.pop(sheetCtx);
                         Navigator.push(context, MaterialPageRoute(
                           builder: (_) => LecturePlayerScreen(
