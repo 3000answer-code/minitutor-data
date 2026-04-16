@@ -65,10 +65,17 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           controller: _tabController,
           isScrollable: false,
           tabs: [
+<<<<<<< Updated upstream
             Tab(child: Text(T('tab_recent'), style: const TextStyle(fontSize: 13))),
             Tab(child: Text(T('tab_notes'), style: const TextStyle(fontSize: 13))),
             Tab(child: Text(T('tab_my_qa'), style: const TextStyle(fontSize: 13))),
             Tab(child: Text(T('tab_expert'), style: const TextStyle(fontSize: 13))),
+=======
+            Tab(text: T('tab_recent')),
+            Tab(text: T('tab_notes')),
+            Tab(text: T('tab_my_qa')),
+            Tab(text: T('tab_expert')),
+>>>>>>> Stashed changes
           ],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
@@ -76,7 +83,12 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           dividerColor: AppColors.divider,
           labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+<<<<<<< Updated upstream
           labelPadding: EdgeInsets.zero,
+=======
+          labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+>>>>>>> Stashed changes
         ),
       ),
       body: TabBarView(
@@ -161,6 +173,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           Icons.note_alt_outlined, T('empty_notes'), T('empty_notes_sub'))),
       ]);
     }
+<<<<<<< Updated upstream
 
     // highlightLectureId가 있으면 해당 노트를 맨 앞으로 정렬
     List<NoteMetaData> sortedNotes;
@@ -175,15 +188,23 @@ class _MyActivityScreenState extends State<MyActivityScreen>
       sortedNotes = notes;
     }
 
+=======
+>>>>>>> Stashed changes
     return RefreshIndicator(
       onRefresh: _loadNotes,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+<<<<<<< Updated upstream
         itemCount: sortedNotes.length,
         itemBuilder: (_, i) {
           final note = sortedNotes[i];
           final isHighlighted = widget.highlightLectureId != null &&
               note.lectureId == widget.highlightLectureId;
+=======
+        itemCount: notes.length,
+        itemBuilder: (_, i) {
+          final note = notes[i];
+>>>>>>> Stashed changes
             final subjectColor = _subjectColor(note.subject);
             // 교안 첫 페이지 이미지 (있으면 미리보기)
             final previewUrl = note.handoutUrls.isNotEmpty
@@ -195,6 +216,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+<<<<<<< Updated upstream
                 border: isHighlighted
                     ? Border.all(color: const Color(0xFF0EA5E9), width: 2)
                     : null,
@@ -204,6 +226,11 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                       : Colors.black.withValues(alpha: 0.04),
                   blurRadius: isHighlighted ? 16 : 8,
                   offset: const Offset(0, 2))],
+=======
+                boxShadow: [BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8, offset: const Offset(0, 2))],
+>>>>>>> Stashed changes
               ),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
@@ -212,6 +239,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                       .where((l) => l.id == note.lectureId)
                       .firstOrNull;
                   if (lecture != null) {
+<<<<<<< Updated upstream
                     // 교안이 있는 강의들만 필터링 (이전/다음 이동용)
                     final lecturesWithHandouts = appState.allLectures
                         .where((l) => l.handoutUrls.isNotEmpty)
@@ -221,6 +249,10 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                         lecture: lecture,
                         lectureList: lecturesWithHandouts,
                       )))
+=======
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => MyNoteViewerScreen(lecture: lecture)))
+>>>>>>> Stashed changes
                     .then((_) => _loadNotes());
                   }
                 },
@@ -231,6 +263,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
+<<<<<<< Updated upstream
                         width: 100, height: 100,
                         color: Colors.white,
                         alignment: Alignment.center,
@@ -242,6 +275,18 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                                         _noteThumbnailFallback(subjectColor))
                                 : Image.network(previewUrl,
                                     fit: BoxFit.contain,
+=======
+                        width: 72, height: 72,
+                        color: subjectColor.withValues(alpha: 0.08),
+                        child: previewUrl != null
+                            ? (previewUrl.startsWith('assets/')
+                                ? Image.asset(previewUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        _noteThumbnailFallback(subjectColor))
+                                : Image.network(previewUrl,
+                                    fit: BoxFit.cover,
+>>>>>>> Stashed changes
                                     errorBuilder: (_, __, ___) =>
                                         _noteThumbnailFallback(subjectColor)))
                             : _noteThumbnailFallback(subjectColor),

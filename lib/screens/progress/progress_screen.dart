@@ -305,6 +305,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 ),
               ],
             ),
+<<<<<<< Updated upstream
     );
   }
 
@@ -465,6 +466,110 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
+=======
+    );
+  }
+
+  Widget _buildLoginPrompt(Function(String) T) {
+    return Center(
+      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        const Icon(Icons.lock_outline_rounded,
+            size: 64, color: AppColors.textSecondary),
+        const SizedBox(height: 16),
+        Text(T('login_required'),
+            style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textSecondary)),
+        const SizedBox(height: 8),
+        Text('로그인하면 나의 학습 진도를 확인할 수 있어요!',
+            style: const TextStyle(
+                fontSize: 13, color: AppColors.textSecondary)),
+        const SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: () => Navigator.pushNamed(context, '/login'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding:
+                const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text('로그인하기',
+              style: TextStyle(fontWeight: FontWeight.w700)),
+        ),
+      ]),
+    );
+  }
+
+  Widget _buildOverallCard(AppState appState, double overallRate,
+      int completedLectures, int totalLectures, List<String> gradeTexts, List<String> grades) {
+    final gradeIdx = grades.indexOf(appState.progressGrade);
+    final gradeText = gradeIdx >= 0 ? gradeTexts[gradeIdx] : appState.progressGrade;
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [
+              _subjectColor(appState.progressSubject),
+              _subjectColor(appState.progressSubject).withValues(alpha: 0.7)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(children: [
+        CircularPercentIndicator(
+          radius: 52,
+          lineWidth: 8,
+          percent: overallRate.clamp(0.0, 1.0),
+          center: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            Text('${(overallRate * 100).toInt()}%',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900)),
+            const Text('달성',
+                style: TextStyle(color: Colors.white70, fontSize: 11)),
+          ]),
+          progressColor: Colors.white,
+          backgroundColor: Colors.white.withValues(alpha: 0.3),
+          circularStrokeCap: CircularStrokeCap.round,
+        ),
+        const SizedBox(width: 20),
+        Expanded(
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+              Text('${appState.progressSubject} · $gradeText',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800)),
+              const SizedBox(height: 8),
+              Text('$completedLectures / $totalLectures 강의 완료',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600)),
+              const SizedBox(height: 4),
+              Text('${totalLectures - completedLectures}개 강의 남음',
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12)),
+              const SizedBox(height: 12),
+              Row(children: [
+                _buildStatChip('🔥 ${appState.streakDays}일 연속'),
+                const SizedBox(width: 8),
+                _buildStatChip('⏱️ ${appState.totalStudyMinutes}분 학습'),
+              ]),
+            ])),
+      ]),
+    );
+  }
+
+>>>>>>> Stashed changes
   Widget _buildChapterCard(BuildContext context, String chapter,
       List<dynamic> lectures, String subject) {
     final totalCount = lectures.length;
@@ -1294,6 +1399,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
+<<<<<<< Updated upstream
   // ─────────────────────────────────────────────────────────────
   // 기간별 학습 통계 그래프 (프리미엄 디자인 + 사실적 데이터)
   // ─────────────────────────────────────────────────────────────
@@ -1505,11 +1611,112 @@ class _ProgressScreenState extends State<ProgressScreen> {
           const SizedBox(height: 18),
           // 그래프
           child,
+=======
+  // 기간별 학습 통계 그래프 (임시 데이터)
+  Widget _buildPeriodStatsChart() {
+    // 임시 데이터 (1일, 3일, 7일, 15일, 30일)
+    final periods = ['1일', '3일', '7일', '15일', '30일'];
+    final studyMinutes = [45, 120, 280, 580, 950]; // 임시 학습 시간 (분)
+    final completedCount = [2, 5, 12, 24, 38]; // 임시 완료 강의 수
+    
+    final maxMinutes = studyMinutes.reduce((a, b) => a > b ? a : b);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 그래프 헤더
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildLegendItem(Icons.access_time_rounded, '학습시간', const Color(0xFF667EEA)),
+              _buildLegendItem(Icons.check_circle_rounded, '완료강의', const Color(0xFF11998E)),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // 막대 그래프
+          SizedBox(
+            height: 200,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(periods.length, (index) {
+                final height = (studyMinutes[index] / maxMinutes * 160).clamp(20.0, 160.0);
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // 수치 표시
+                    Text(
+                      '${studyMinutes[index]}분',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF667EEA),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    
+                    // 막대
+                    Container(
+                      width: 50,
+                      height: height,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF667EEA),
+                            const Color(0xFF667EEA).withValues(alpha: 0.6),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${completedCount[index]}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // 기간 라벨
+                    Text(
+                      periods[index],
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ),
+>>>>>>> Stashed changes
         ],
       ),
     );
   }
 
+<<<<<<< Updated upstream
   // ── 범례 아이템 ─────────────────────────────────────────────
   Widget _chartLegend(Color color, String label) {
     return Padding(
@@ -1533,6 +1740,126 @@ class _ProgressScreenState extends State<ProgressScreen> {
       const SizedBox(width: 4),
       Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
     ]);
+=======
+  Widget _buildLegendItem(IconData icon, String label, Color color) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 16),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // 기간별 검색 조회수 통계 그래프 (임시 데이터)
+  Widget _buildSearchStatsChart() {
+    // 임시 데이터 (1일, 3일, 7일, 15일, 30일)
+    final periods = ['1일', '3일', '7일', '15일', '30일'];
+    final searchCounts = [15, 42, 98, 203, 387]; // 임시 검색 조회수
+    final uniqueSearches = [8, 24, 56, 121, 245]; // 임시 순수 검색어 수
+    
+    final maxCount = searchCounts.reduce((a, b) => a > b ? a : b);
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // 그래프 헤더
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildLegendItem(Icons.manage_search_rounded, '총 검색', const Color(0xFFF59E0B)),
+              _buildLegendItem(Icons.search_rounded, '순수 검색어', const Color(0xFFEC4899)),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // 막대 그래프
+          SizedBox(
+            height: 200,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(periods.length, (index) {
+                final height = (searchCounts[index] / maxCount * 160).clamp(20.0, 160.0);
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // 수치 표시
+                    Text(
+                      '${searchCounts[index]}회',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFF59E0B),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    
+                    // 막대
+                    Container(
+                      width: 50,
+                      height: height,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFFF59E0B),
+                            const Color(0xFFF59E0B).withValues(alpha: 0.6),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${uniqueSearches[index]}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    
+                    // 기간 라벨
+                    Text(
+                      periods[index],
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+>>>>>>> Stashed changes
   }
 }
 

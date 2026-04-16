@@ -66,14 +66,22 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
+<<<<<<< Updated upstream
           tabs: const [Tab(text: '내 일정'), Tab(text: 'Asome Tutor 행사/이벤트')],
+=======
+          tabs: const [Tab(text: '내 일정'), Tab(text: 'miniTutor 이벤트')],
+>>>>>>> Stashed changes
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
           dividerColor: AppColors.divider,
         ),
       ),
+<<<<<<< Updated upstream
       // FAB: 'Asome Tutor 행사/이벤트' 탭(index=1)에서는 완전히 숨김
+=======
+      // FAB: 'miniTutor 이벤트' 탭(index=1)에서는 완전히 숨김
+>>>>>>> Stashed changes
       floatingActionButton: _tabController.index == 1
           ? const SizedBox.shrink()
           : FloatingActionButton.extended(
@@ -335,7 +343,11 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(20)),
+<<<<<<< Updated upstream
                     child: const Text('어썸튜터 이벤트',
+=======
+                    child: const Text('미니튜터 이벤트',
+>>>>>>> Stashed changes
                       style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
                   ),
                   const SizedBox(height: 6),

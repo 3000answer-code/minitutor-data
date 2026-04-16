@@ -56,31 +56,51 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
 
   static const Map<String, Map<String, String>> _i18n = {
     'ko': {
+<<<<<<< Updated upstream
       'title': 'Asome Tutor',
+=======
+      'title': 'miniTutor',
+>>>>>>> Stashed changes
       'subtitle': '합격을 향한 키워드 학습',
       'desc': '언어를 선택하세요',
       'btn': '시작하기',
     },
     'en': {
+<<<<<<< Updated upstream
       'title': 'Asome Tutor',
+=======
+      'title': 'miniTutor',
+>>>>>>> Stashed changes
       'subtitle': 'Keyword Learning to Pass',
       'desc': 'Select your language',
       'btn': 'Get Started',
     },
     'ja': {
+<<<<<<< Updated upstream
       'title': 'Asome Tutor',
+=======
+      'title': 'miniTutor',
+>>>>>>> Stashed changes
       'subtitle': '合格へのキーワード学習',
       'desc': '言語を選択してください',
       'btn': 'はじめる',
     },
     'zh': {
+<<<<<<< Updated upstream
       'title': 'Asome Tutor',
+=======
+      'title': 'miniTutor',
+>>>>>>> Stashed changes
       'subtitle': '关键词学习到通过',
       'desc': '请选择语言',
       'btn': '开始',
     },
     'es': {
+<<<<<<< Updated upstream
       'title': 'Asome Tutor',
+=======
+      'title': 'miniTutor',
+>>>>>>> Stashed changes
       'subtitle': 'Aprendizaje Clave para Pasar',
       'desc': 'Selecciona tu idioma',
       'btn': 'Comenzar',
@@ -240,7 +260,11 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
         const SizedBox(height: 10),
         // 앱 이름
         const Text(
+<<<<<<< Updated upstream
           'Asome Tutor',
+=======
+          'miniTutor',
+>>>>>>> Stashed changes
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,

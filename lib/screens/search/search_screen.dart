@@ -91,7 +91,10 @@ class _SearchScreenState extends State<SearchScreen>
     final appState = context.read<AppState>();
     if (keyword.isNotEmpty) {
       appState.addRecentSearch(keyword);
+<<<<<<< Updated upstream
       appState.incrementSearchCount();  // 검색수 자동 증가
+=======
+>>>>>>> Stashed changes
     }
     setState(() {
       _searchResult = keyword; // 빈 문자열이면 전체 표시
@@ -241,7 +244,11 @@ class _SearchScreenState extends State<SearchScreen>
       controller: _tabController,
       tabs: const [
         Tab(text: '동영상'),
+<<<<<<< Updated upstream
         Tab(text: '내 상담'),
+=======
+        Tab(text: '전문가 상담'),
+>>>>>>> Stashed changes
         Tab(text: '노트 검색'),
       ],
       labelColor: _kOrange,
@@ -413,6 +420,7 @@ class _SearchScreenState extends State<SearchScreen>
             size: 28, color: subjectColor.withValues(alpha: 0.35))),
       );
     } else if (thumbUrl.startsWith('assets/')) {
+<<<<<<< Updated upstream
       thumbInner = Center(
         child: Image.asset(thumbUrl,
             fit: BoxFit.contain,
@@ -432,6 +440,21 @@ class _SearchScreenState extends State<SearchScreen>
               child: Center(child: Icon(Icons.description_rounded,
                   size: 28, color: subjectColor.withValues(alpha: 0.35))),
             )));
+=======
+      thumbInner = Image.asset(thumbUrl, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: subjectColor.withValues(alpha: 0.08),
+            child: Center(child: Icon(Icons.description_rounded,
+                size: 28, color: subjectColor.withValues(alpha: 0.35))),
+          ));
+    } else {
+      thumbInner = Image.network(thumbUrl, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            color: subjectColor.withValues(alpha: 0.08),
+            child: Center(child: Icon(Icons.description_rounded,
+                size: 28, color: subjectColor.withValues(alpha: 0.35))),
+          ));
+>>>>>>> Stashed changes
     }
 
     return GestureDetector(
@@ -457,6 +480,7 @@ class _SearchScreenState extends State<SearchScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
+<<<<<<< Updated upstream
             // ── 썸네일: 고정 크기 (108×120) ──────────────
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
@@ -465,12 +489,21 @@ class _SearchScreenState extends State<SearchScreen>
                 height: 120,
                 color: Colors.white,
                 alignment: Alignment.center,
+=======
+            // ── 썸네일: 고정 크기 (72×90) ──────────────
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+              child: SizedBox(
+                width: 72,
+                height: 90,
+>>>>>>> Stashed changes
                 child: thumbInner,
               ),
             ),
 
             // ── 본문 정보 영역 ──────────────────────────
             Expanded(
+<<<<<<< Updated upstream
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(11, 10, 10, 10),
                 child: Column(
@@ -555,6 +588,64 @@ class _SearchScreenState extends State<SearchScreen>
                             color: Color(0xFF9E9E9E),
                             fontWeight: FontWeight.w400)),
                   ],
+=======
+              child: SizedBox(
+                height: 90,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(11, 10, 10, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 1행: 과목 배지 + 쪽수
+                      Row(children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: subjectColor,
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(lec.subject,
+                              style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 0.2)),
+                        ),
+                        if (pageCount > 0) ...[
+                          const SizedBox(width: 6),
+                          Text('$pageCount쪽',
+                              style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFFAAAAAA),
+                                  fontWeight: FontWeight.w400)),
+                        ],
+                      ]),
+
+                      const SizedBox(height: 5),
+
+                      // 2행: 강의 제목 (가장 크게, 가장 중요)
+                      Expanded(
+                        child: Text(lec.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1A1A2E),
+                                height: 1.35)),
+                      ),
+
+                      // 3행: 선생님 이름
+                      Text(lec.instructor,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 11,
+                              color: Color(0xFF9E9E9E),
+                              fontWeight: FontWeight.w400)),
+                    ],
+                  ),
+>>>>>>> Stashed changes
                 ),
               ),
             ),
@@ -607,6 +698,7 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
+<<<<<<< Updated upstream
   // ── 노트 검색 카드 미니 배지 헬퍼 ──────────────────────
   Widget _miniNoteBadge(String label, Color color) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
@@ -620,6 +712,8 @@ class _SearchScreenState extends State<SearchScreen>
             fontSize: 9.5, color: color, fontWeight: FontWeight.w700)),
   );
 
+=======
+>>>>>>> Stashed changes
   Widget _buildNoteEmptyState(String message) {
     return Center(
       child: Column(
@@ -715,7 +809,11 @@ class _SearchScreenState extends State<SearchScreen>
           ),
           const SizedBox(height: 18),
           const Text(
+<<<<<<< Updated upstream
             '내 상담 검색',
+=======
+            '전문가 상담 검색',
+>>>>>>> Stashed changes
             style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w800,
@@ -817,7 +915,11 @@ class _SearchScreenState extends State<SearchScreen>
                       style: const TextStyle(
                           fontSize: 13, color: AppColors.textSecondary),
                       children: [
+<<<<<<< Updated upstream
                         const TextSpan(text: '전체 내 상담 '),
+=======
+                        const TextSpan(text: '전체 전문가 상담 '),
+>>>>>>> Stashed changes
                         TextSpan(
                           text: '${results.length}건',
                           style: const TextStyle(
@@ -1362,8 +1464,13 @@ class _SearchScreenState extends State<SearchScreen>
     final lang = context.read<AppState>().selectedLanguage;
     final T = (String key) => AppTranslations.tLang(lang, key);
     final subjects = [
+<<<<<<< Updated upstream
       {'name': '수학', 'image': 'assets/images/banners/banner_math_new2.jpg'},
       {'name': '과학', 'image': 'assets/images/banners/banner_science_new2.jpg'},
+=======
+      {'name': '수학', 'image': 'assets/images/banners/banner_math.png'},
+      {'name': '과학', 'image': 'assets/images/banners/banner_science.png'},
+>>>>>>> Stashed changes
       {'name': '두번설명', 'image': 'assets/images/banners/banner_twice.png'},
     ];
 
@@ -1479,7 +1586,11 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
+<<<<<<< Updated upstream
   // ── 검색 결과 화면 (Asome Tutor 스타일)
+=======
+  // ── 검색 결과 화면 (공만세 스타일)
+>>>>>>> Stashed changes
   Widget _buildSearchResults(AppState appState) {
     String normalize(String s) =>
         s.replaceAll(RegExp(r'[\s_\-]+'), '').toLowerCase();
@@ -1527,7 +1638,11 @@ class _SearchScreenState extends State<SearchScreen>
     return Column(children: [
       // ── 검색 컨텍스트 배너 (카테고리 진입 시)
       if (_categoryFilter.isNotEmpty) _buildCategoryBanner(nq),
+<<<<<<< Updated upstream
       // ── Asome Tutor 스타일 필터 영역
+=======
+      // ── 공만세 스타일 필터 영역
+>>>>>>> Stashed changes
       _buildGongmansaeFilterBar(),
       // ── 결과 헤더: 총 N개 + 정렬
       _buildResultHeader(results.length),
@@ -1665,7 +1780,11 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
+<<<<<<< Updated upstream
   // ── Asome Tutor 스타일 필터바 (학년 + 과목)
+=======
+  // ── 공만세 스타일 필터바 (학년 + 과목)
+>>>>>>> Stashed changes
   Widget _buildGongmansaeFilterBar() {
     const grades = [
       {'value': '', 'label': '전체'},
@@ -1759,7 +1878,11 @@ class _SearchScreenState extends State<SearchScreen>
     );
   }
 
+<<<<<<< Updated upstream
   // 총 N개 | 관련순▼ | 자동재생 토글 (Asome Tutor 캡처 그대로)
+=======
+  // 총 N개 | 관련순▼ | 자동재생 토글 (공만세 캡처 그대로)
+>>>>>>> Stashed changes
   Widget _buildResultHeader(int count) {
     return Container(
       color: Colors.white,
@@ -1798,7 +1921,11 @@ class _SearchScreenState extends State<SearchScreen>
           ]),
         ),
         const Spacer(),
+<<<<<<< Updated upstream
         // 자동재생 토글 (Asome Tutor 스타일)
+=======
+        // 자동재생 토글 (공만세 스타일)
+>>>>>>> Stashed changes
         Row(children: [
           const Text('자동 재생',
               style: TextStyle(

@@ -872,6 +872,9 @@ class AppTranslations {
     'my_consult': {
       'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
     },
+    'my_consult': {
+      'ko': '나의 상담', 'en': 'My Consult', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+    },
     'favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',
     },
@@ -1095,7 +1098,11 @@ class AppTranslations {
       'ko': '강의 Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
     },
     'tab_expert': {
+<<<<<<< Updated upstream
       'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+=======
+      'ko': '나의 상담', 'en': 'My Consult', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+>>>>>>> Stashed changes
     },
     'tab_favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',
@@ -1193,7 +1200,7 @@ class AppTranslations {
     // 교과서 진도 화면
     // ────────────────────────────────────────────
     'curriculum_title': {
-      'ko': '교과서 진도학습', 'en': 'Textbook Progress', 'ja': '教科書進度学習', 'zh': '教科书进度学习', 'es': 'Progreso Libro',
+      'ko': '진도학습', 'en': 'Progress', 'ja': '進度学習', 'zh': '进度学习', 'es': 'Progreso',
     },
     'select_grade': {
       'ko': '학년 선택', 'en': 'Select Grade', 'ja': '学年選択', 'zh': '选择年级', 'es': 'Seleccionar Grado',

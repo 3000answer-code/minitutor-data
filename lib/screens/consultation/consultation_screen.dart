@@ -254,7 +254,11 @@ class ConsultationScreen extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+<<<<<<< Updated upstream
                     Text(c.answerAuthor ?? '내 상담',
+=======
+                    Text(c.answerAuthor ?? '전문가',
+>>>>>>> Stashed changes
                         style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -419,7 +423,11 @@ class ConsultationScreen extends StatelessWidget {
                     const Icon(Icons.check_circle_rounded,
                         size: 14, color: AppColors.success),
                     const SizedBox(width: 5),
+<<<<<<< Updated upstream
                     Text(c.answerAuthor ?? '내 상담',
+=======
+                    Text(c.answerAuthor ?? '전문가',
+>>>>>>> Stashed changes
                         style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
@@ -606,7 +614,11 @@ class ConsultationScreen extends StatelessWidget {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                           content:
+<<<<<<< Updated upstream
                               Text('질문이 등록되었습니다! 곧 답변드릴게요.')));
+=======
+                              Text('질문이 등록되었습니다! 전문가가 곧 답변드릴게요.')));
+>>>>>>> Stashed changes
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
