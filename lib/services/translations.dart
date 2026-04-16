@@ -33,7 +33,7 @@ class AppTranslations {
       'es': 'Inicio',
     },
     'nav_progress': {
-      'ko': '교과서',
+      'ko': '진도학습',
       'en': 'Progress',
       'ja': '進度',
       'zh': '进度',
@@ -525,7 +525,7 @@ class AppTranslations {
     // 진도 화면
     // ────────────────────────────────────────────
     'progress_title': {
-      'ko': '교과서',
+      'ko': '진도학습',
       'en': 'My Progress',
       'ja': '進度学習',
       'zh': '学习进度',
