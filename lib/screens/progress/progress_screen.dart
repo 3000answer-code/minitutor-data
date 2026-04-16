@@ -126,8 +126,43 @@ class _ProgressScreenState extends State<ProgressScreen> {
           const SizedBox(width: 4),
         ],
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(color: AppColors.divider, height: 1),
+          preferredSize: const Size.fromHeight(42),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: subjects.map((sub) {
+                  final isSelected = appState.progressSubject == sub;
+                  return GestureDetector(
+                    onTap: () {
+                      appState.setProgressSubject(sub);
+                      _loadLectureProgress();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: isSelected ? AppColors.primary : Colors.transparent,
+                            width: 2.5,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        sub,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              Container(color: AppColors.divider, height: 1),
+            ],
+          ),
         ),
       ),
       body: !appState.isLoggedIn
@@ -169,43 +204,6 @@ class _ProgressScreenState extends State<ProgressScreen> {
                                 ),
                               )),
                     ]),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 36,
-                      child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: subjects.asMap().entries.map((entry) {
-                            final sub = entry.value;
-                            final isLast = entry.key == subjects.length - 1;
-                            final isSelected =
-                                appState.progressSubject == sub;
-                            return Padding(
-                              padding: EdgeInsets.only(right: isLast ? 0 : 12),
-                              child: FilterChip(
-                                label: Text(sub),
-                                selected: isSelected,
-                                onSelected: (_) {
-                                  appState.setProgressSubject(sub);
-                                  _loadLectureProgress();
-                                },
-                                selectedColor:
-                                    _subjectColor(sub).withValues(alpha: 0.15),
-                                checkmarkColor: _subjectColor(sub),
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? _subjectColor(sub)
-                                      : AppColors.textSecondary,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  fontSize: 13,
-                                ),
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                              ),
-                            );
-                          }).toList()),
-                    ),
                   ]),
                 ),
 
