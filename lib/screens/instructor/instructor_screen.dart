@@ -23,7 +23,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
   static const Map<String, List<String>> _subjectsByGrade = {
     'pre_middle': ['전체', '수학', '과학'],
     'middle':     ['전체', '수학', '과학'],
-    'high':       ['전체', '수학', '과학', '공통과학', '물리', '화학', '생명과학', '지구과학'],
+    'high':       ['전체', '수학', '공통과학', '물리', '화학', '생명과학', '지구과학'],
   };
 
   // 학제 변경 시 과목 필터 리셋

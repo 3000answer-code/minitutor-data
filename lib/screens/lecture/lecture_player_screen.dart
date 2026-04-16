@@ -1224,6 +1224,8 @@ function pauseVid(){vid.pause();}
         child: Column(children: [
           // ① 플레이어 영역 (상단 바 + 영상 + 진행바)
           _buildPlayerSection(),
+          // ① - 스크롤 힌트 문구
+          _buildScrollHint(),
           // ② 탭바
           _buildTabBar(),
           // ③ 탭 컨텐츠
@@ -1320,7 +1322,7 @@ function pauseVid(){vid.pause();}
     const aspectRatio = 16.0 / 9.0;
 
     return Container(
-      color: const Color(0xFFFFFDE7),  // 연한 아이보리/노란색
+      color: Colors.white,  // 흰색 배경
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _buildPlayerTopBar(),
         // ── AspectRatio로 영상 크기 정확히 맞춤 ──
@@ -1393,7 +1395,7 @@ function pauseVid(){vid.pause();}
     return Container(
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      color: const Color(0xFFFFFDE7),  // 아이보리/연노란색 (하단과 통일)
+      color: Colors.white,
       child: Row(children: [
         // 뒤로가기
         IconButton(
@@ -1742,7 +1744,7 @@ function pauseVid(){vid.pause();}
     const timeTextColor = Color(0xFF4A4A4A);
     const iconColor = Color(0xFF5A5A5A);
     return Container(
-      color: const Color(0xFFFFFDE7),  // 아이보리/연노란색
+      color: Colors.white,
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
       child: Row(children: [
         // 슬라이더
@@ -1777,6 +1779,35 @@ function pauseVid(){vid.pause();}
           style: const TextStyle(color: Color(0xFF999999), fontSize: 10)),
         const SizedBox(width: 4),
       ]),
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // 💡 스크롤 힌트 문구 (영상 아래)
+  // ─────────────────────────────────────────────
+  Widget _buildScrollHint() {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.keyboard_arrow_down_rounded,
+              size: 14, color: Colors.grey[400]),
+          const SizedBox(width: 4),
+          Text(
+            '아래로 스크롤하여 강의 정보를 확인하세요',
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[450],
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(Icons.keyboard_arrow_down_rounded,
+              size: 14, color: Colors.grey[400]),
+        ],
+      ),
     );
   }
 
