@@ -1224,8 +1224,6 @@ function pauseVid(){vid.pause();}
         child: Column(children: [
           // ① 플레이어 영역 (상단 바 + 영상 + 진행바)
           _buildPlayerSection(),
-          // ① - 스크롤 힌트 문구
-          _buildScrollHint(),
           // ② 탭바
           _buildTabBar(),
           // ③ 탭 컨텐츠
@@ -1322,7 +1320,7 @@ function pauseVid(){vid.pause();}
     const aspectRatio = 16.0 / 9.0;
 
     return Container(
-      color: Colors.white,  // 흰색 배경
+      color: Colors.black,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _buildPlayerTopBar(),
         // ── AspectRatio로 영상 크기 정확히 맞춤 ──
@@ -1744,7 +1742,7 @@ function pauseVid(){vid.pause();}
     const timeTextColor = Color(0xFF4A4A4A);
     const iconColor = Color(0xFF5A5A5A);
     return Container(
-      color: Colors.white,
+      color: Colors.black,
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
       child: Row(children: [
         // 슬라이더
@@ -1779,35 +1777,6 @@ function pauseVid(){vid.pause();}
           style: const TextStyle(color: Color(0xFF999999), fontSize: 10)),
         const SizedBox(width: 4),
       ]),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // 💡 스크롤 힌트 문구 (영상 아래)
-  // ─────────────────────────────────────────────
-  Widget _buildScrollHint() {
-    return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.keyboard_arrow_down_rounded,
-              size: 14, color: Colors.grey[400]),
-          const SizedBox(width: 4),
-          Text(
-            '아래로 스크롤하여 강의 정보를 확인하세요',
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[450],
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Icon(Icons.keyboard_arrow_down_rounded,
-              size: 14, color: Colors.grey[400]),
-        ],
-      ),
     );
   }
 
@@ -5274,7 +5243,7 @@ function pauseVid(){vid.pause();}
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Row(
           children: [
@@ -5282,7 +5251,7 @@ function pauseVid(){vid.pause();}
             Expanded(
               flex: 52,
               child: Container(
-                color: Colors.black,
+                color: Colors.white,
                 child: LayoutBuilder(
                   builder: (ctx, constraints) {
                     final totalH = constraints.maxHeight;
@@ -5316,10 +5285,34 @@ function pauseVid(){vid.pause();}
                         ),
                         // ② 진행바
                         _buildProgressBar(),
+                        // ② - 스크롤 힌트 문구 (가로화면)
+                        Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.keyboard_arrow_down_rounded,
+                                  size: 13, color: Colors.grey[400]),
+                              const SizedBox(width: 3),
+                              Text(
+                                '아래로 스크롤하여 강의 정보를 확인하세요',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey[500],
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              const SizedBox(width: 3),
+                              Icon(Icons.keyboard_arrow_down_rounded,
+                                  size: 13, color: Colors.grey[400]),
+                            ],
+                          ),
+                        ),
                         // ③ 강의정보 (항상 표시 / 탭하면 세로모드로 전환하여 상세 탭 영역 확인)
                         Expanded(
                           child: Container(
-                            color: const Color(0xFF1A1A2E),
+                            color: const Color(0xFFF8F9FA),
                             child: SingleChildScrollView(
                               physics: const ClampingScrollPhysics(),
                               child: Column(
@@ -5330,7 +5323,7 @@ function pauseVid(){vid.pause();}
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(10, 7, 10, 3),
                                     child: Text(lec.title,
-                                      style: const TextStyle(color: Colors.white,
+                                      style: const TextStyle(color: Color(0xFF1A1A2E),
                                           fontSize: 12, fontWeight: FontWeight.w700),
                                       maxLines: 2, overflow: TextOverflow.ellipsis),
                                   ),
@@ -5343,7 +5336,7 @@ function pauseVid(){vid.pause();}
                                       _buildLandscapeBadge(lec.subject),
                                       const SizedBox(width: 5),
                                       Expanded(child: Text(lec.instructor,
-                                        style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                        style: const TextStyle(color: Color(0xFF666666), fontSize: 10),
                                         maxLines: 1, overflow: TextOverflow.ellipsis)),
                                     ]),
                                   ),
@@ -5352,10 +5345,10 @@ function pauseVid(){vid.pause();}
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
                                       child: Row(children: [
-                                        const Icon(Icons.list_rounded, color: Colors.white38, size: 11),
+                                        const Icon(Icons.list_rounded, color: Color(0xFF999999), size: 11),
                                         const SizedBox(width: 3),
                                         Expanded(child: Text(lec.series,
-                                          style: const TextStyle(color: Colors.white54, fontSize: 10),
+                                          style: const TextStyle(color: Color(0xFF888888), fontSize: 10),
                                           maxLines: 1, overflow: TextOverflow.ellipsis)),
                                       ]),
                                     ),
@@ -5377,32 +5370,32 @@ function pauseVid(){vid.pause();}
                                         )).toList(),
                                       ),
                                     ),
-                                  const Divider(color: Colors.white12, height: 1),
+                                  const Divider(color: Color(0xFFEEEEEE), height: 1),
                                   // 하단 버튼 행: 세로화면 전환 버튼 + 전체화면 버튼
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
                                     child: Row(
                                       children: [
-                                        // ★ 세로화면 전환 버튼 (눈에 잘 띄게)
+                                        // ★ 세로화면 전환 버튼
                                         Expanded(
                                           child: GestureDetector(
                                             onTap: _toggleLandscapeMode,
                                             child: Container(
                                               padding: const EdgeInsets.symmetric(vertical: 8),
                                               decoration: BoxDecoration(
-                                                color: Colors.white.withValues(alpha: 0.15),
+                                                color: Colors.grey[100],
                                                 borderRadius: BorderRadius.circular(8),
                                                 border: Border.all(
-                                                  color: Colors.white38, width: 1.0)),
+                                                  color: const Color(0xFFCCCCCC), width: 1.0)),
                                               child: const Row(
                                                 mainAxisAlignment: MainAxisAlignment.center,
                                                 children: [
                                                   Icon(Icons.stay_primary_portrait_rounded,
-                                                    color: Colors.white, size: 14),
+                                                    color: Color(0xFF444444), size: 14),
                                                   SizedBox(width: 5),
                                                   Text('세로화면',
                                                     style: TextStyle(
-                                                      color: Colors.white,
+                                                      color: Color(0xFF333333),
                                                       fontSize: 11,
                                                       fontWeight: FontWeight.w700,
                                                     )),
