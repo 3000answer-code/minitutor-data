@@ -155,8 +155,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
+          isScrollable: false,
           tabs: _categories.map((c) => Tab(text: c)).toList(),
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
