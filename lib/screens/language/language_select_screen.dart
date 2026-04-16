@@ -151,45 +151,39 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 children: [
-                  // ── 상단 여백 (전체 높이의 8%)
-                  SizedBox(height: size.height * 0.06),
+                  const Spacer(flex: 3),
 
-                  // ── 로고 영역 (컴팩트하게)
+                  // ── 로고 영역
                   _buildLogo(),
 
-                  SizedBox(height: size.height * 0.035),
+                  const SizedBox(height: 20),
 
                   // ── 안내 문구
                   _buildDesc(),
 
-                  SizedBox(height: size.height * 0.03),
+                  const SizedBox(height: 22),
 
-                  // ── 언어 버튼 목록 (Expanded로 가운데 정렬)
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildLangBtn(_languages[0], fullWidth: true),
-                        const SizedBox(height: 10),
-                        Row(children: [
-                          Expanded(child: _buildLangBtn(_languages[1])),
-                          const SizedBox(width: 10),
-                          Expanded(child: _buildLangBtn(_languages[2])),
-                        ]),
-                        const SizedBox(height: 10),
-                        Row(children: [
-                          Expanded(child: _buildLangBtn(_languages[3])),
-                          const SizedBox(width: 10),
-                          Expanded(child: _buildLangBtn(_languages[4])),
-                        ]),
-                      ],
-                    ),
-                  ),
+                  // ── 언어 버튼 목록
+                  _buildLangBtn(_languages[0], fullWidth: true),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(child: _buildLangBtn(_languages[1])),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildLangBtn(_languages[2])),
+                  ]),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(child: _buildLangBtn(_languages[3])),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildLangBtn(_languages[4])),
+                  ]),
+
+                  const SizedBox(height: 28),
 
                   // ── 시작 버튼
                   _buildStartButton(),
 
-                  const SizedBox(height: 24),
+                  const Spacer(flex: 2),
                 ],
               ),
             ),
@@ -290,7 +284,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         width: double.infinity,
-        height: 50,
+        height: 48,
         decoration: BoxDecoration(
           gradient: _selectedLang != null
               ? const LinearGradient(
@@ -337,7 +331,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         width: fullWidth ? double.infinity : null,
-        height: 56,
+        height: 48,
         decoration: BoxDecoration(
           color: isSelected
               ? (lang['color'] as Color).withValues(alpha: 0.85)

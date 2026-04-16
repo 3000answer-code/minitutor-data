@@ -11,3 +11,6 @@ ios/Pods/
 ios/.symlinks/
 .idea/
 .vscode/
+*.apk
+*.zip
+*.docx
