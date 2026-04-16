@@ -127,41 +127,44 @@ class _ProgressScreenState extends State<ProgressScreen> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(42),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: subjects.map((sub) {
-                  final isSelected = appState.progressSubject == sub;
-                  return GestureDetector(
-                    onTap: () {
-                      appState.setProgressSubject(sub);
-                      _loadLectureProgress();
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: isSelected ? AppColors.primary : Colors.transparent,
-                            width: 2.5,
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: subjects.map((sub) {
+                    final isSelected = appState.progressSubject == sub;
+                    return GestureDetector(
+                      onTap: () {
+                        appState.setProgressSubject(sub);
+                        _loadLectureProgress();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(
+                              color: isSelected ? AppColors.primary : Colors.transparent,
+                              width: 2.5,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          sub,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                            color: isSelected ? AppColors.primary : AppColors.textSecondary,
                           ),
                         ),
                       ),
-                      child: Text(
-                        sub,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                          color: isSelected ? AppColors.primary : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              Container(color: AppColors.divider, height: 1),
-            ],
+                    );
+                  }).toList(),
+                ),
+                Container(color: AppColors.divider, height: 1),
+              ],
+            ),
           ),
         ),
       ),
