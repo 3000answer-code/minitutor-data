@@ -543,7 +543,7 @@ class _NoteSearchViewerScreenState extends State<NoteSearchViewerScreen> {
             const Text('색상:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             const SizedBox(width: 6),
             for (final c in [
-              const Color(0xFF2563EB), Colors.red, Colors.green, Colors.black,
+              const Color(0xFF2563EB), Colors.red, const Color(0xFF16A34A), _kOrange, Colors.black,
             ])
               GestureDetector(
                 onTap: () => setState(() {

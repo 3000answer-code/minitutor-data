@@ -507,7 +507,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
     );
   }
 
-  // ── 툴바 ────────────────────────────────────
+  // ── 툴바 (886 형식과 동일한 2행 구조) ──────────
   Widget _buildToolbar() {
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 6, 10, 4),
@@ -517,7 +517,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
         boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 1))],
       ),
       child: Column(children: [
-        // 행 1: 모드 전환
+        // 행 1: 모드 전환 + 저장 버튼
         Row(children: [
           _buildModeBtn(Icons.zoom_in_rounded, '확대/축소', !_isDrawingMode,
               () => setState(() => _isDrawingMode = false)),
@@ -525,93 +525,113 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
           _buildModeBtn(Icons.edit_rounded, '필기', _isDrawingMode,
               () => setState(() => _isDrawingMode = true)),
           const Spacer(),
-          if (_isDrawingMode) ...[
-            // 지우개
+          if (_isDrawingMode)
             GestureDetector(
-              onTap: () => setState(() => _isEraser = !_isEraser),
+              onTap: _saveStrokes,
               child: Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: _isEraser ? Colors.orange.shade50 : Colors.transparent,
+                  color: _strokesSaved
+                      ? Colors.grey.shade100
+                      : const Color(0xFF2563EB),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: _isEraser ? _kOrange : Colors.grey.shade300),
+                    color: _strokesSaved
+                        ? Colors.grey.shade300
+                        : const Color(0xFF2563EB)),
                 ),
-                child: EraserIcon(isActive: _isEraser, size: 22),
-              ),
-            ),
-            const SizedBox(width: 6),
-            // 이 페이지 초기화
-            GestureDetector(
-              onTap: _clearCurrentPage,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.red.shade200),
-                ),
-                child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.delete_sweep_outlined, size: 14, color: Colors.red),
-                  SizedBox(width: 3),
-                  Text('초기화', style: TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.w600)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(
+                    _strokesSaved ? Icons.check_rounded : Icons.save_outlined,
+                    size: 14,
+                    color: _strokesSaved ? AppColors.textSecondary : Colors.white,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _strokesSaved ? '저장됨' : '저장',
+                    style: TextStyle(
+                      fontSize: 11, fontWeight: FontWeight.w700,
+                      color: _strokesSaved ? AppColors.textSecondary : Colors.white,
+                    ),
+                  ),
                 ]),
               ),
             ),
-          ],
         ]),
-        // 행 2: 색상 선택 (항상 표시 - 색상 선택 시 자동 필기 모드 전환)
-        if (!_isEraser)
-          Padding(
-            padding: const EdgeInsets.only(top: 6),
+        // 행 2: 색상 + 지우개 + 삭제 (필기 모드 시, 886과 동일한 구조)
+        if (_isDrawingMode)
+          Container(
+            padding: const EdgeInsets.fromLTRB(0, 4, 0, 2),
             child: Row(children: [
-              ..._penColors.map((c) => GestureDetector(
-                onTap: () => setState(() {
-                  _penColor = c;
-                  _isEraser = false;
-                  _isDrawingMode = true; // 색상 선택 시 자동 필기 모드 전환
-                  _strokesSaved = false;
-                }),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  margin: const EdgeInsets.only(right: 8),
-                  width: _penColor == c ? 26 : 22,
-                  height: _penColor == c ? 26 : 22,
-                  decoration: BoxDecoration(
-                    color: c,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _penColor == c ? Colors.black87 : Colors.transparent,
-                      width: 2,
+              const Text('색상:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+              const SizedBox(width: 6),
+              for (final c in _penColors)
+                GestureDetector(
+                  onTap: () => setState(() {
+                    _penColor = c;
+                    _isEraser = false;
+                    _isDrawingMode = true;
+                  }),
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: 24, height: 24,
+                    decoration: BoxDecoration(
+                      color: c, shape: BoxShape.circle,
+                      border: _penColor == c && !_isEraser
+                          ? Border.all(
+                              color: (c.red > 180 && c.green < 100 && c.blue < 100)
+                                  ? Colors.white
+                                  : _kOrange,
+                              width: 2.5)
+                          : null,
+                      boxShadow: _penColor == c && !_isEraser
+                          ? [BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 4, spreadRadius: 1)]
+                          : null,
                     ),
-                    boxShadow: _penColor == c
-                        ? [BoxShadow(color: c.withValues(alpha: 0.5), blurRadius: 6)]
-                        : null,
                   ),
                 ),
-              )),
-              const Spacer(),
-              // 선 굵기
-              ...([2.0, 3.0, 5.0].map((w) => GestureDetector(
-                onTap: () => setState(() => _strokeWidth = w),
+              const SizedBox(width: 8),
+              // 지우개
+              GestureDetector(
+                onTap: () => setState(() => _isEraser = !_isEraser),
                 child: Container(
-                  margin: const EdgeInsets.only(left: 6),
-                  width: 28, height: 28,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _strokeWidth == w ? _penColor.withValues(alpha: 0.15) : Colors.transparent,
+                    color: _isEraser ? _kOrange.withValues(alpha: 0.12) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(6),
                     border: Border.all(
-                      color: _strokeWidth == w ? _penColor : Colors.grey.shade300),
+                      color: _isEraser ? _kOrange : Colors.grey.shade300),
                   ),
-                  child: Center(
-                    child: Container(
-                      width: w * 2, height: w * 2,
-                      decoration: BoxDecoration(
-                        color: _penColor, shape: BoxShape.circle),
-                    ),
-                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    EraserIcon(isActive: _isEraser, size: 18),
+                    const SizedBox(width: 3),
+                    Text('지우개', style: TextStyle(
+                      fontSize: 10,
+                      color: _isEraser ? _kOrange : AppColors.textSecondary,
+                      fontWeight: FontWeight.w600)),
+                  ]),
                 ),
-              ))),
+              ),
+              const Spacer(),
+              // 현재 페이지 필기 삭제
+              GestureDetector(
+                onTap: _clearCurrentPage,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.delete_outline_rounded, size: 14, color: Colors.red.shade400),
+                    const SizedBox(width: 3),
+                    Text('초기화', style: TextStyle(
+                      fontSize: 10, color: Colors.red.shade400, fontWeight: FontWeight.w600)),
+                  ]),
+                ),
+              ),
             ]),
           ),
       ]),

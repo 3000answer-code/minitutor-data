@@ -2077,7 +2077,7 @@ function pauseVid(){vid.pause();}
             const Text('색상:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             const SizedBox(width: 6),
             for (final c in [
-              const Color(0xFF2563EB), Colors.red, Colors.green, Colors.black,
+              const Color(0xFF2563EB), Colors.red, Colors.green, const Color(0xFFF97316), Colors.black,
             ])
               GestureDetector(
                 onTap: () => setState(() {
@@ -2174,34 +2174,29 @@ function pauseVid(){vid.pause();}
                     ]),
                   ),
                   // 이미지 + 필기 레이어
-                  GestureDetector(
-                    onTapDown: _isDrawingMode
-                        ? (d) => setState(() {
+                  // ★ Listener 사용: GestureDetector 대신 Listener로 교체하여
+                  //   PageView/ScrollView와의 터치 이벤트 충돌(떨림)을 완전 제거
+                  Listener(
+                    behavior: HitTestBehavior.opaque,
+                    onPointerDown: _isDrawingMode
+                        ? (e) => setState(() {
                             _currentNotePageIndex = pageIdx;
-                            _currentStroke = [d.localPosition];
+                            _currentStroke = [e.localPosition];
                           })
                         : null,
-                    onPanStart: _isDrawingMode
-                        ? (d) => setState(() {
-                            _currentNotePageIndex = pageIdx;
-                            _currentStroke = [d.localPosition];
-                          })
-                        : null,
-                    onPanUpdate: _isDrawingMode
-                        ? (d) {
+                    onPointerMove: _isDrawingMode
+                        ? (e) {
                             setState(() {
-                              _currentStroke.add(d.localPosition);
+                              _currentStroke.add(e.localPosition);
                               if (_isEraser) {
-                                // 지우개 커서 위치 업데이트
-                                _eraserPosition = d.localPosition;
+                                _eraserPosition = e.localPosition;
                                 _showEraserCursor = true;
-                                // ── 한 획씩 지우기: 지우개 반경에 닿은 첫 획 하나만 제거 ──
                                 final strokes = List<_DrawingStroke>.from(
                                     _pageStrokes[pageIdx] ?? []);
                                 const eraseRadius = 20.0;
                                 final idx = strokes.indexWhere((s) =>
                                     s.points.whereType<Offset>().any(
-                                        (p) => (p - d.localPosition).distance < eraseRadius));
+                                        (p) => (p - e.localPosition).distance < eraseRadius));
                                 if (idx != -1) {
                                   strokes.removeAt(idx);
                                   _pageStrokes[pageIdx] = strokes;
@@ -2211,7 +2206,7 @@ function pauseVid(){vid.pause();}
                             });
                           }
                         : null,
-                    onPanEnd: _isDrawingMode
+                    onPointerUp: _isDrawingMode
                         ? (_) {
                             if (!_isEraser && _currentStroke.isNotEmpty) {
                               final strokes = List<_DrawingStroke>.from(
@@ -2230,6 +2225,13 @@ function pauseVid(){vid.pause();}
                               _eraserPosition = null;
                             });
                           }
+                        : null,
+                    onPointerCancel: _isDrawingMode
+                        ? (_) => setState(() {
+                            _currentStroke = [];
+                            _showEraserCursor = false;
+                            _eraserPosition = null;
+                          })
                         : null,
                     child: Stack(children: [
                       // 교안 이미지
@@ -2803,8 +2805,9 @@ function pauseVid(){vid.pause();}
         Row(mainAxisSize: MainAxisSize.min, children: [
           for (final c in [
             const Color(0xFF2563EB),
-            Colors.red,
-            Colors.green,
+            const Color(0xFFDC2626),
+            const Color(0xFF16A34A),
+            _kOrange,
             Colors.black,
           ])
             GestureDetector(
