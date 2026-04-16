@@ -2149,9 +2149,12 @@ function pauseVid(){vid.pause();}
           ]),
         ),
       // ── 교안 페이지 스크롤 영역 ──
+      // ★ 필기 모드일 때 NeverScrollableScrollPhysics로 전환 → 스크롤 충돌(떨림) 완전 제거
       Expanded(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: _isDrawingMode
+              ? const NeverScrollableScrollPhysics()
+              : const BouncingScrollPhysics(),
           child: Column(
             children: List.generate(_notePages.length, (pageIdx) {
               final pageUrl = _notePages[pageIdx];

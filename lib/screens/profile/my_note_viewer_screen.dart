@@ -49,8 +49,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
   List<String> _notePages = [];
   bool _slidesLoading = true;
 
-  // ── 미니플레이어 / 이전·다음 ──────────────────
-  bool _miniPlayerVisible = true;    // 하단 미니플레이어 표시 여부
+  // ── 이전·다음 강의 이동 ──────────────────────
   late Lecture _currentLecture;      // 현재 보는 강의
 
   String get _strokesKey => 'strokes_${_currentLecture.id}';
@@ -145,14 +144,14 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
       ));
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Row(children: [
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: const Row(children: [
             Icon(Icons.check_circle, color: Colors.white, size: 18),
             SizedBox(width: 8),
             Text('내 노트가 저장되었습니다'),
           ]),
-          backgroundColor: Color(0xFF2563EB),
-          duration: Duration(seconds: 2),
+          backgroundColor: const Color(0xFF2563EB),
+          duration: const Duration(seconds: 2),
         ));
       }
     } catch (_) {}
@@ -217,13 +216,23 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
           ? const Center(child: CircularProgressIndicator(color: _kOrange))
           : _notePages.isEmpty
               ? _buildEmpty()
-              : Column(children: [
-                  _buildToolbar(),
-                  Expanded(child: _buildPageList()),
-                  // ── 하단 미니플레이어 + 이전/다음 바 ──
-                  _buildBottomBar(hasPrev: hasPrev, hasNext: hasNext,
-                    onPrev: hasPrev ? () => _navigateLecture(allLectures[currentIdx - 1]) : null,
-                    onNext: hasNext ? () => _navigateLecture(allLectures[currentIdx + 1]) : null,
+              : Stack(children: [
+                  // 툴바 + 교안 영역
+                  Column(children: [
+                    _buildToolbar(),
+                    Expanded(child: _buildPageList()),
+                    // 하단 플로팅 바 높이만큼 여백 (겹침 방지)
+                    const SizedBox(height: 72),
+                  ]),
+                  // ── 하단 플로팅 액션 바 (886과 동일한 형태) ──
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: MediaQuery.of(context).padding.bottom + 12,
+                    child: _buildFloatingActionBar(hasPrev, hasNext,
+                      onPrev: hasPrev ? () => _navigateLecture(allLectures![currentIdx - 1]) : null,
+                      onNext: hasNext ? () => _navigateLecture(allLectures![currentIdx + 1]) : null,
+                    ),
                   ),
                 ]),
     );
@@ -259,236 +268,147 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
     _loadStrokes();
   }
 
-  /// 하단 미니플레이어 + 이전/다음 버튼 바
-  Widget _buildBottomBar({
-    required bool hasPrev,
-    required bool hasNext,
-    VoidCallback? onPrev,
-    VoidCallback? onNext,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12, offset: const Offset(0, -2))],
-      ),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        // ── fromPlayer=true: 플레이어에서 열린 경우 → 간단한 돌아가기 바 ──
-        // ── fromPlayer=false: MyActivity에서 열린 경우 → 미니플레이어 표시 ──
-        if (widget.fromPlayer)
-          // 플레이어에서 열린 경우: 영상으로 돌아가기 슬림 바
-          GestureDetector(
+  // ── 하단 플로팅 액션 바 (886 노트검색과 동일한 형태) ────
+  Widget _buildFloatingActionBar(bool hasPrev, bool hasNext,
+      {VoidCallback? onPrev, VoidCallback? onNext}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: Container(
+        height: 56,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(children: [
+          // ① 영상 재생
+          _buildActionItem(
+            icon: Icons.play_circle_rounded,
+            label: '영상',
+            color: const Color(0xFF34D399),
             onTap: _goToPlayer,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: const BoxDecoration(
-                color: Color(0xFF1E293B),
-                border: Border(bottom: BorderSide(color: Color(0xFF334155))),
-              ),
-              child: Row(children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(5),
-                  child: Container(
-                    width: 40, height: 30,
-                    color: const Color(0xFF334155),
-                    child: _currentLecture.thumbnailUrl.isNotEmpty
-                        ? Image.network(_currentLecture.thumbnailUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const Icon(
-                                Icons.play_circle_rounded,
-                                color: Colors.white54, size: 20))
-                        : const Icon(Icons.play_circle_rounded,
-                            color: Colors.white54, size: 20),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(_currentLecture.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white)),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF97316),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(Icons.play_arrow_rounded, color: Colors.white, size: 14),
-                    SizedBox(width: 3),
-                    Text('영상 재생',
-                        style: TextStyle(fontSize: 11, color: Colors.white,
-                            fontWeight: FontWeight.w700)),
-                  ]),
-                ),
-              ]),
-            ),
-          )
-        else ...[
-          // MyActivity에서 열린 경우: 미니플레이어
-          if (_miniPlayerVisible)
-            GestureDetector(
-              onTap: _goToPlayer, // 영상 화면으로 복귀/이동
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF1E293B),
-                  border: Border(bottom: BorderSide(color: Color(0xFF334155))),
-                ),
-                child: Row(children: [
-                  // 썸네일
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Container(
-                      width: 48, height: 36,
-                      color: const Color(0xFF334155),
-                      child: _currentLecture.thumbnailUrl.isNotEmpty
-                          ? Image.network(
-                              _currentLecture.thumbnailUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(
-                                  Icons.play_circle_rounded,
-                                  color: Colors.white54, size: 24),
-                            )
-                          : const Icon(Icons.play_circle_rounded,
-                              color: Colors.white54, size: 24),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  // 강의 정보
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(_currentLecture.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white)),
-                        Text(_currentLecture.instructor,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 10, color: Colors.white60)),
-                      ],
-                    ),
-                  ),
-                  // 컨트롤 버튼들
-                  Row(mainAxisSize: MainAxisSize.min, children: [
-                    _miniPlayerBtn(Icons.play_arrow_rounded, '영상 보기', _goToPlayer),
-                    const SizedBox(width: 4),
-                    _miniPlayerBtn(Icons.close_rounded, '닫기', () {
-                      setState(() => _miniPlayerVisible = false);
-                    }),
-                  ]),
-                ]),
-              ),
-            ),
-        ],
-        // 이전/다음 버튼: lectureList가 있으면 항상 표시 (활성/비활성만 다름)
-        if (widget.lectureList != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(children: [
-              // 이전 버튼
-              Expanded(
-                child: GestureDetector(
-                  onTap: onPrev,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: hasPrev
-                          ? const Color(0xFFF1F5F9)
-                          : const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: hasPrev
-                              ? const Color(0xFFCBD5E1)
-                              : const Color(0xFFE2E8F0)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.skip_previous_rounded,
-                            size: 18,
-                            color: hasPrev
-                                ? const Color(0xFF475569)
-                                : const Color(0xFFCBD5E1)),
-                        const SizedBox(width: 4),
-                        Text('이전',
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: hasPrev
-                                    ? const Color(0xFF475569)
-                                    : const Color(0xFFCBD5E1))),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              // 다음 버튼
-              Expanded(
-                child: GestureDetector(
-                  onTap: onNext,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: hasNext
-                          ? const Color(0xFF0EA5E9)
-                          : const Color(0xFFF8FAFC),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: hasNext
-                              ? const Color(0xFF0EA5E9)
-                              : const Color(0xFFE2E8F0)),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('다음',
-                            style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: hasNext
-                                    ? Colors.white
-                                    : const Color(0xFFCBD5E1))),
-                        const SizedBox(width: 4),
-                        Icon(Icons.skip_next_rounded,
-                            size: 18,
-                            color: hasNext
-                                ? Colors.white
-                                : const Color(0xFFCBD5E1)),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ]),
           ),
-      ]),
+          _buildDivider(),
+          // ② 필기 토글
+          _buildActionItem(
+            icon: _isDrawingMode ? Icons.edit_rounded : Icons.edit_outlined,
+            label: _isDrawingMode ? '필기 중' : '필기',
+            color: _isDrawingMode ? const Color(0xFF60A5FA) : Colors.white60,
+            onTap: () => setState(() => _isDrawingMode = !_isDrawingMode),
+            isActive: _isDrawingMode,
+            activeColor: const Color(0xFF60A5FA),
+          ),
+          // ③ 저장 (필기 중일 때만)
+          if (_isDrawingMode) ...[
+            _buildDivider(),
+            _buildActionItem(
+              icon: _strokesSaved ? Icons.check_circle_rounded : Icons.save_rounded,
+              label: _strokesSaved ? '저장됨' : '저장',
+              color: _strokesSaved ? Colors.white38 : const Color(0xFFFBBF24),
+              onTap: _strokesSaved ? null : _saveStrokes,
+            ),
+          ],
+          const Spacer(),
+          _buildDivider(),
+          // ④ 이전 강의
+          _buildNavItem(
+            icon: Icons.skip_previous_rounded,
+            label: '이전',
+            enabled: hasPrev,
+            onTap: onPrev ?? () {},
+          ),
+          // ⑤ 다음 강의
+          _buildNavItem(
+            icon: Icons.skip_next_rounded,
+            label: '다음',
+            enabled: hasNext,
+            onTap: onNext ?? () {},
+          ),
+          const SizedBox(width: 4),
+        ]),
+      ),
     );
   }
 
-  Widget _miniPlayerBtn(IconData icon, String tooltip, VoidCallback onTap) {
+  Widget _buildActionItem({
+    required IconData icon,
+    required String label,
+    required Color color,
+    VoidCallback? onTap,
+    bool isActive = false,
+    Color? activeColor,
+  }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        width: 36, height: 36,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(18),
+          color: isActive
+              ? (activeColor ?? color).withValues(alpha: 0.15)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(0),
         ),
-        child: Icon(icon, color: Colors.white, size: 18),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 20, color: onTap == null ? Colors.white24 : color),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                color: onTap == null ? Colors.white24 : color,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildNavItem({
+    required IconData icon,
+    required String label,
+    required bool enabled,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 22,
+                color: enabled ? Colors.white : Colors.white24),
+            const SizedBox(height: 2),
+            Text(label,
+                style: TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: enabled ? Colors.white70 : Colors.white24,
+                  letterSpacing: 0.2,
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      width: 1, height: 28,
+      color: Colors.white.withValues(alpha: 0.1),
     );
   }
 
