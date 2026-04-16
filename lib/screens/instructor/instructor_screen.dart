@@ -19,7 +19,6 @@ class InstructorScreen extends StatefulWidget {
 class _InstructorScreenState extends State<InstructorScreen> {
   String _selectedSubject = '전체'; // 과목 필터
 
-<<<<<<< Updated upstream
   // 학제별 과목 목록
   static const Map<String, List<String>> _subjectsByGrade = {
     'pre_middle': ['전체', '수학', '과학'],
@@ -36,8 +35,6 @@ class _InstructorScreenState extends State<InstructorScreen> {
     }
   }
 
-=======
->>>>>>> Stashed changes
   @override
   Widget build(BuildContext context) {
     final appState = context.watch<AppState>();
@@ -45,18 +42,11 @@ class _InstructorScreenState extends State<InstructorScreen> {
     final T = (String key) => AppTranslations.tLang(lang, key);
     // ✅ 강의 데이터 기반 동적 강사 목록 (새 콘텐츠 업로드 시 자동 반영)
     final allInstructors = appState.dynamicInstructors;
-<<<<<<< Updated upstream
     final gradeMap = {'pre_middle': T('grade_pre_middle'), 'middle': T('grade_middle'), 'high': T('grade_high')};
 
     var filtered = allInstructors
         .where((i) => i.grade == appState.instructorGrade ||
             (appState.instructorGrade == 'pre_middle' && i.grade == 'elementary'))
-=======
-    final gradeMap = {'elementary': T('grade_elementary'), 'middle': T('grade_middle'), 'high': T('grade_high')};
-
-    var filtered = allInstructors
-        .where((i) => i.grade == appState.instructorGrade)
->>>>>>> Stashed changes
         .toList();
 
     // 과목 필터
@@ -88,11 +78,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
             color: Colors.white,
             child: Column(children: [
               // 학제 탭
-<<<<<<< Updated upstream
               Row(children: ['pre_middle', 'middle', 'high'].map((g) =>
-=======
-              Row(children: ['elementary', 'middle', 'high'].map((g) =>
->>>>>>> Stashed changes
                 Expanded(child: GestureDetector(
                   onTap: () => _onGradeChanged(g, appState),
                   child: Container(
@@ -116,11 +102,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-<<<<<<< Updated upstream
                   children: (_subjectsByGrade[appState.instructorGrade] ?? ['전체', '수학', '과학']).map((s) => Padding(
-=======
-                  children: ['전체', '수학', '과학', '공통과학', '물리', '화학', '생명과학', '지구과학'].map((s) => Padding(
->>>>>>> Stashed changes
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
                       onTap: () => setState(() => _selectedSubject = s),
@@ -304,12 +286,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
                   lecture: l,
                   onTap: () {
                     appState.addRecentView(l.id);
-<<<<<<< Updated upstream
                     if (appState.pipActive && appState.pipLecture?.id != l.id) {
                       appState.deactivatePip();
                     }
-=======
->>>>>>> Stashed changes
                     Navigator.push(context, MaterialPageRoute(
                       builder: (_) => LecturePlayerScreen(lecture: l)));
                   },
@@ -394,7 +373,6 @@ class _InstructorScreenState extends State<InstructorScreen> {
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
                     child: Row(children: [
-<<<<<<< Updated upstream
                       // ── 뒤로가기(닫기) 버튼 ──
                       GestureDetector(
                         onTap: () => Navigator.of(sheetCtx).pop(),
@@ -410,8 +388,6 @@ class _InstructorScreenState extends State<InstructorScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-=======
->>>>>>> Stashed changes
                       Container(
                         width: 6, height: 24,
                         decoration: BoxDecoration(
@@ -454,12 +430,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
                       },
                       onTap: () {
                         appState.addRecentView(lec.id);
-<<<<<<< Updated upstream
                         if (appState.pipActive && appState.pipLecture?.id != lec.id) {
                           appState.deactivatePip();
                         }
-=======
->>>>>>> Stashed changes
                         Navigator.pop(sheetCtx);
                         Navigator.push(context, MaterialPageRoute(
                           builder: (_) => LecturePlayerScreen(

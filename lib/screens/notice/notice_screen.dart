@@ -83,11 +83,7 @@ class _NoticeScreenState extends State<NoticeScreen>
       category: '공지',
       title: '📚 2025 수능 대비 특별 강의 오픈',
       content:
-<<<<<<< Updated upstream
           '2025 수능을 준비하는 수험생 여러분을 위한 특별 강의 시리즈가 오픈되었습니다.\n\n■ 제공 과목\n• 수학 (공통, 미적분, 확률과 통계)\n• 과학탐구 (물리, 화학, 생명과학, 지구과학)\n\n■ 강의 특징\n• 개념별 2분 핵심 요약\n• 빈출 문제 유형 분석\n• 국내 최고 강사진 참여\n\n합격의 그날까지 Asome Tutor가 함께하겠습니다! 파이팅!',
-=======
-          '2025 수능을 준비하는 수험생 여러분을 위한 특별 강의 시리즈가 오픈되었습니다.\n\n■ 제공 과목\n• 수학 (공통, 미적분, 확률과 통계)\n• 과학탐구 (물리, 화학, 생명과학, 지구과학)\n\n■ 강의 특징\n• 개념별 2분 핵심 요약\n• 빈출 문제 유형 분석\n• 국내 최고 강사진 참여\n\n합격의 그날까지 2공이 함께하겠습니다! 파이팅!',
->>>>>>> Stashed changes
       createdAt: DateTime.now().subtract(const Duration(days: 3)),
     ),
     NoticeItem(

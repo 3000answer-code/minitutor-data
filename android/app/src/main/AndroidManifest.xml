@@ -4,11 +4,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
-<<<<<<< Updated upstream
         android:label="@string/app_name"
-=======
-        android:label="Mini Tutor"
->>>>>>> Stashed changes
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
@@ -83,7 +79,6 @@
 
 
 
-<<<<<<< Updated upstream
 
 
 
@@ -98,5 +93,3 @@
 
 
 
-=======
->>>>>>> Stashed changes

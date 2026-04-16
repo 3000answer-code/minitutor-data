@@ -325,7 +325,6 @@ class _CurriculumScreenState extends State<CurriculumScreen>
     );
   }
 
-<<<<<<< Updated upstream
   /// 과목 선택 칩 바로 아래 — 과목별 소개 배너
   Widget _buildSubjectBanner() {
     const Map<String, Map<String, dynamic>> subjectInfo = {
@@ -471,77 +470,10 @@ class _CurriculumScreenState extends State<CurriculumScreen>
 
     final bgColor   = gradientColors[0]; // 연한 파스텔 배경
     final textColor  = gradientColors[1]; // 진한 텍스트/포인트
-=======
-  // 번갈아 사용할 컬러 팔레트 — 각 과목마다 다채롭고 구분감 있는 색상
-  List<Color> get _cardPalette {
-    if (_selectedSubject == '수학') {
-      return const [
-        Color(0xFF3B82F6), // 파란색
-        Color(0xFF8B5CF6), // 보라색
-        Color(0xFF06B6D4), // 청록색
-        Color(0xFF6366F1), // 인디고
-        Color(0xFF0EA5E9), // 하늘색
-        Color(0xFF7C3AED), // 진보라
-        Color(0xFF2563EB), // 진파랑
-        Color(0xFF0891B2), // 딥시안
-      ];
-    } else if (_selectedSubject == '과학') {
-      return const [
-        Color(0xFF10B981), // 에메랄드
-        Color(0xFF8B5CF6), // 보라
-        Color(0xFF0D9488), // 틸
-        Color(0xFFF97316), // 오렌지
-        Color(0xFF06B6D4), // 시안
-        Color(0xFF6366F1), // 인디고
-      ];
-    } else if (_selectedSubject == '물리') {
-      return const [
-        Color(0xFF6366F1), // 인디고
-        Color(0xFF3B82F6), // 블루
-        Color(0xFF8B5CF6), // 퍼플
-      ];
-    } else if (_selectedSubject == '화학') {
-      return const [
-        Color(0xFFF97316), // 오렌지
-        Color(0xFFEF4444), // 레드
-        Color(0xFFEC4899), // 핑크
-      ];
-    } else if (_selectedSubject == '생명과학') {
-      return const [
-        Color(0xFF10B981), // 에메랄드
-        Color(0xFF059669), // 그린
-        Color(0xFF16A34A), // 다크그린
-      ];
-    } else if (_selectedSubject == '지구과학') {
-      return const [
-        Color(0xFF0EA5E9), // 스카이
-        Color(0xFF0284C7), // 블루
-        Color(0xFF0D9488), // 틸
-      ];
-    }
-    // 공통과학 등 기타
-    return const [
-      Color(0xFF7C3AED), Color(0xFF6366F1), Color(0xFF3B82F6), Color(0xFF0D9488),
-    ];
-  }
-
-  Widget _buildUnitCard(Map<String, dynamic> unit) {
-    final units = _filteredUnits;
-    final idx = units.indexOf(unit);
-    final palette = _cardPalette;
-    final cardColor = palette[idx % palette.length];
-
-    // 번갈아 배경 색상: 짝수 → 흰색, 홀수 → 아주 연한 컬러 틴트
-    final isOdd = idx % 2 == 1;
-    final bgColor = isOdd
-        ? cardColor.withValues(alpha: 0.06)
-        : Colors.white;
->>>>>>> Stashed changes
 
     return GestureDetector(
       onTap: () => _openUnitDetail(unit),
       child: Container(
-<<<<<<< Updated upstream
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
           color: bgColor,
@@ -553,27 +485,11 @@ class _CurriculumScreenState extends State<CurriculumScreen>
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
-=======
-        margin: const EdgeInsets.only(bottom: 6),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(10),
-          border: Border(
-            left: BorderSide(color: cardColor, width: 4),
-          ),
-          boxShadow: [BoxShadow(
-            color: cardColor.withValues(alpha: 0.08),
-            blurRadius: 4, offset: const Offset(0, 1))],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 9, 10, 9),
->>>>>>> Stashed changes
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // ── 번호 배지
               Container(
-<<<<<<< Updated upstream
                 width: 28, height: 28,
                 decoration: BoxDecoration(
                   color: textColor.withValues(alpha: 0.15),
@@ -590,23 +506,6 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                 ),
               ),
               const SizedBox(width: 12),
-=======
-                width: 24, height: 24,
-                decoration: BoxDecoration(
-                  color: cardColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text('${idx + 1}',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    )),
-                ),
-              ),
-              const SizedBox(width: 10),
->>>>>>> Stashed changes
               // ── 본문
               Expanded(
                 child: Column(
@@ -616,32 +515,20 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                     // 배지 행
                     Row(children: [
                       Container(
-<<<<<<< Updated upstream
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                           color: textColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(5),
-=======
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: cardColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(4),
->>>>>>> Stashed changes
                         ),
                         child: Text(_selectedSubject,
                           style: TextStyle(
                             fontSize: 10,
-<<<<<<< Updated upstream
                             color: textColor,
-=======
-                            color: cardColor,
->>>>>>> Stashed changes
                             fontWeight: FontWeight.w700,
                           )),
                       ),
                       const SizedBox(width: 5),
                       Container(
-<<<<<<< Updated upstream
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
                           color: textColor.withValues(alpha: 0.08),
@@ -651,22 +538,10 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                           style: TextStyle(
                             fontSize: 10,
                             color: textColor.withValues(alpha: 0.8),
-=======
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(unit['grade'] as String,
-                          style: const TextStyle(
-                            fontSize: 10,
-                            color: AppColors.textSecondary,
->>>>>>> Stashed changes
                             fontWeight: FontWeight.w600,
                           )),
                       ),
                     ]),
-<<<<<<< Updated upstream
                     const SizedBox(height: 5),
                     // 단원명
                     Text(unit['name'] as String,
@@ -681,22 +556,6 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                     Row(children: [
                       Icon(Icons.play_circle_outline,
                         size: 12, color: textColor.withValues(alpha: 0.65)),
-=======
-                    const SizedBox(height: 4),
-                    // 단원명
-                    Text(unit['name'] as String,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
-                        height: 1.2,
-                      )),
-                    const SizedBox(height: 3),
-                    // 강의 수
-                    Row(children: [
-                      Icon(Icons.play_circle_outline,
-                        size: 11, color: cardColor.withValues(alpha: 0.7)),
->>>>>>> Stashed changes
                       const SizedBox(width: 3),
                       Builder(builder: (ctx) {
                         final l = ctx.read<AppState>().selectedLanguage;
@@ -705,11 +564,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
                           Tk('lecture_count_unit').replaceAll('{n}', '${unit['lectureCount']}'),
                           style: TextStyle(
                             fontSize: 11,
-<<<<<<< Updated upstream
                             color: textColor.withValues(alpha: 0.65),
-=======
-                            color: cardColor.withValues(alpha: 0.65),
->>>>>>> Stashed changes
                             fontWeight: FontWeight.w600,
                           ));
                       }),
@@ -719,11 +574,7 @@ class _CurriculumScreenState extends State<CurriculumScreen>
               ),
               // ── 오른쪽 화살표
               Icon(Icons.chevron_right_rounded,
-<<<<<<< Updated upstream
                 color: textColor.withValues(alpha: 0.5), size: 22),
-=======
-                color: cardColor.withValues(alpha: 0.5), size: 18),
->>>>>>> Stashed changes
             ],
           ),
         ),
@@ -1137,7 +988,6 @@ class _UnitDetailScreenState extends State<_UnitDetailScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: GestureDetector(
-<<<<<<< Updated upstream
                     onTap: () {
                       final appState = context.read<AppState>();
                       if (appState.pipActive && appState.pipLecture?.id != lec.id) {
@@ -1151,15 +1001,6 @@ class _UnitDetailScreenState extends State<_UnitDetailScreen> {
                         ),
                       ));
                     },
-=======
-                    onTap: () => Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => LecturePlayerScreen(
-                        lecture: lec,
-                        autoPlayList: _autoPlay ? lectures : null,
-                        autoPlayIndex: _autoPlay ? i : 0,
-                      ),
-                    )),
->>>>>>> Stashed changes
                     child: Stack(
                       children: [
                         LectureCard(lecture: lec),

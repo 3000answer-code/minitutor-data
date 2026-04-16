@@ -4,11 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/lecture.dart';
 
-<<<<<<< Updated upstream
 /// Asome Tutor API 서버 연동 서비스
-=======
-/// 2공 API 서버 연동 서비스
->>>>>>> Stashed changes
 /// - 환경 설정은 lib/config.dart 에서 관리
 /// - NAS ↔ AWS 전환: config.dart 의 currentEnv 만 변경하면 됨
 class ApiService {
@@ -18,11 +14,7 @@ class ApiService {
 
   // 강의 데이터 URL (GitHub Raw → 어디서든 접근 가능, APK 재설치 없이 자동 업데이트)
   static const List<String> _adminUrls = [
-<<<<<<< Updated upstream
     'https://raw.githubusercontent.com/3000answer-code/asometutor-data/main/lectures.json',
-=======
-    'https://raw.githubusercontent.com/3000answer-code/minitutor-data/main/lectures.json',
->>>>>>> Stashed changes
     'https://5061-i9igdqirkxrt7g1sztl0y-2e1b9533.sandbox.novita.ai/lectures.json',
     'http://10.0.2.2:5061/lectures.json',
   ];
@@ -41,7 +33,6 @@ class ApiService {
     // ── 두번설명 강의 (구글 드라이브 - 16:9 일반 영상 형태) ──
     {
       'id': 'gd_twice_001',
-<<<<<<< Updated upstream
       'title': '부분분수 (식, 분해)',
       'subject': '수학',
       'grade': 'high',
@@ -52,18 +43,6 @@ class ApiService {
       'duration': 176, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
       'lectureType': 'twice',
       'hashtags': ['부분분수식', '급수', '분해', '분리'],
-=======
-      'title': '부분분수(식,분해)',
-      'subject': '수학',
-      'grade': 'high',
-      'gradeYear': 'All',
-      'instructor': '최성빈 최형규 전요셉',
-      'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1tI4RfZazxvkdEK99N_hjcYxg94jLdfg0&sz=w480',
-      'videoUrl': 'https://drive.google.com/file/d/1tI4RfZazxvkdEK99N_hjcYxg94jLdfg0/view?usp=sharing',
-      'duration': 176, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
-      'lectureType': 'twice',
-      'hashtags': ['두번설명', '부분분수식', '급수', '분해', '분리'],
->>>>>>> Stashed changes
       'description': '부분분수 식의 분해 방법을 두 번 설명으로 완벽하게 이해합니다.',
       'isFavorite': false, 'series': '다항식', 'lectureNumber': 1,
       'uploadDate': '2026-04-10', 'relatedLectureId': '',
@@ -77,19 +56,11 @@ class ApiService {
     },
     {
       'id': 'gd_twice_002',
-<<<<<<< Updated upstream
       'title': '원의 접선 (길이와 각)',
       'subject': '수학',
       'grade': 'middle',
       'gradeYear': 'All',
       'instructor': '김재은, 공병찬',
-=======
-      'title': '원의 접선(길이와 각)',
-      'subject': '수학',
-      'grade': 'middle',
-      'gradeYear': 'All',
-      'instructor': '김재은 공병찬',
->>>>>>> Stashed changes
       'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1QaMle-tbdB6fiUibJKzyVyzuYj-Uk9tP&sz=w480',
       'videoUrl': 'https://drive.google.com/file/d/1QaMle-tbdB6fiUibJKzyVyzuYj-Uk9tP/view?usp=sharing',
       'duration': 177, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
@@ -113,14 +84,8 @@ class ApiService {
       'subject': '수학',
       'grade': 'high',
       'gradeYear': 'All',
-<<<<<<< Updated upstream
       'instructor': '한성훈, 최성빈',
       'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1qVKYmCRx7jhoZbaSlaPpnOpgABzooPSG&sz=w480',
-=======
-      'instructor': '한성훈 최성빈',
-      'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1qVKYmCRx7jhoZbaSlaPpnOpgABzooPSG&sz=w480',
-      'fallbackThumbnailUrl': 'assets/handouts/twice_003_p1.png',
->>>>>>> Stashed changes
       'videoUrl': 'https://drive.google.com/file/d/1qVKYmCRx7jhoZbaSlaPpnOpgABzooPSG/view?usp=sharing',
       'duration': 168, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
       'lectureType': 'twice',
@@ -165,13 +130,8 @@ class ApiService {
       'subject': '수학',
       'grade': 'high',
       'gradeYear': 'All',
-<<<<<<< Updated upstream
       'instructor': '한성훈, 최형규, 전요셉',
       'thumbnailUrl': 'https://drive.google.com/thumbnail?id=19bL7iZPrz-iK_NFAg3ASoWLivoukCi3J&sz=w480',
-=======
-      'instructor': '한성훈 최형규 전요셉',
-      'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1pMqsxRZ4QlGVzRsTBRoVIPiEILXrQYKD&sz=w480',
->>>>>>> Stashed changes
       'videoUrl': 'https://drive.google.com/file/d/19bL7iZPrz-iK_NFAg3ASoWLivoukCi3J/view?usp=sharing',
       'duration': 167, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
       'lectureType': 'twice',
@@ -282,28 +242,16 @@ class ApiService {
     },
     {
       'id': 'gd_twice_010',
-<<<<<<< Updated upstream
       'title': '지구의 크기 측정',
-=======
-      'title': '지구의 크기',
->>>>>>> Stashed changes
       'subject': '과학',
       'grade': 'middle',
       'gradeYear': 'All',
       'instructor': '김정아, 임지현',
-<<<<<<< Updated upstream
       'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1SxeunlPodLToddvK2XpE1G0HZvETTJW3&sz=w480',
       'videoUrl': 'https://drive.google.com/file/d/1SxeunlPodLToddvK2XpE1G0HZvETTJW3/view?usp=sharing',
       'duration': 164, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
       'lectureType': 'twice',
       'hashtags': ['에라토스테네스', '지구의 크기', '가정'],
-=======
-      'thumbnailUrl': 'https://drive.google.com/thumbnail?id=1K8EDP3ZuS_klrba9w94WSDIRYNpmB_j-&sz=w480',
-      'videoUrl': 'https://drive.google.com/file/d/1SxeunlPodLToddvK2XpE1G0HZvETTJW3/view?usp=sharing',
-      'duration': 180, 'viewCount': 0, 'rating': 0.0, 'ratingCount': 0,
-      'lectureType': 'twice',
-      'hashtags': ['두번설명', '에라토스테네스', '지구의 크기', '가정'],
->>>>>>> Stashed changes
       'description': '에라토스테네스의 방법으로 지구의 크기를 측정하는 원리를 두 번 설명으로 완벽하게 이해합니다.',
       'isFavorite': false, 'series': '태양계', 'lectureNumber': 10,
       'uploadDate': '2026-04-10', 'relatedLectureId': '',

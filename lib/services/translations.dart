@@ -872,9 +872,6 @@ class AppTranslations {
     'my_consult': {
       'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
     },
-    'my_consult': {
-      'ko': '나의 상담', 'en': 'My Consult', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
-    },
     'favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',
     },
@@ -1098,11 +1095,7 @@ class AppTranslations {
       'ko': '강의 Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
     },
     'tab_expert': {
-<<<<<<< Updated upstream
       'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
-=======
-      'ko': '나의 상담', 'en': 'My Consult', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
->>>>>>> Stashed changes
     },
     'tab_favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',

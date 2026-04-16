@@ -299,11 +299,7 @@ class _SupportScreenState extends State<SupportScreen>
                     color: AppColors.error.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8),
                   ),
-<<<<<<< Updated upstream
                   child: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.error),
-=======
-                  child: const Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
->>>>>>> Stashed changes
                 ),
               ),
             ],
@@ -495,16 +491,12 @@ class _SupportScreenState extends State<SupportScreen>
                       onPressed: () {
                         if (titleCtrl.text.isEmpty || contentCtrl.text.isEmpty) {
                           ScaffoldMessenger.of(ctx).showSnackBar(
-<<<<<<< Updated upstream
                             const SnackBar(
                               content: Text('제목과 내용을 입력해주세요'),
                               duration: Duration(seconds: 2),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
-=======
-                              const SnackBar(content: Text('제목과 내용을 입력해주세요')));
->>>>>>> Stashed changes
                           return;
                         }
                         final newInquiry = Inquiry(
@@ -519,16 +511,11 @@ class _SupportScreenState extends State<SupportScreen>
                         Navigator.pop(ctx);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-<<<<<<< Updated upstream
                             content: Text('문의가 접수되었습니다. 1~2일 내 답변드릴게요.'),
                             duration: Duration(seconds: 3),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
-=======
-                              content: Text(
-                                  '문의가 접수되었습니다. 영업일 기준 1~2일 내 답변드릴게요!')));
->>>>>>> Stashed changes
                       },
                       child: const Text('문의 등록'),
                     ),

@@ -12,11 +12,7 @@ import 'package:chewie/chewie.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 // Conditional import for web speech API
-<<<<<<< Updated upstream
 import 'package:asometutor/utils/web_speech_web.dart' if (dart.library.io) 'package:asometutor/utils/web_speech_stub.dart';
-=======
-import 'package:minitutor/utils/web_speech_web.dart' if (dart.library.io) 'package:minitutor/utils/web_speech_stub.dart';
->>>>>>> Stashed changes
 import '../../models/lecture.dart';
 import '../../services/app_state.dart';
 import '../../services/auth_service.dart';
@@ -25,21 +21,14 @@ import '../../theme/app_theme.dart';
 import '../../config.dart';
 import '../../widgets/drive_web_player.dart';
 import '../../widgets/eraser_widgets.dart';
-<<<<<<< Updated upstream
 import '../profile/my_activity_screen.dart';
 import '../profile/my_note_viewer_screen.dart';
-=======
->>>>>>> Stashed changes
 
 const Color _kOrange = Color(0xFFF97316);
 const String _kOrangeHex = '#F97316';
 
 // ─────────────────────────────────────────────────────────────────────────────
-<<<<<<< Updated upstream
 // LecturePlayerScreen — Asome Tutor 스타일 동영상 플레이어
-=======
-// LecturePlayerScreen — 공만세 스타일 동영상 플레이어
->>>>>>> Stashed changes
 // ─────────────────────────────────────────────────────────────────────────────
 class LecturePlayerScreen extends StatefulWidget {
   final Lecture lecture;
@@ -79,7 +68,6 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   // ── 미니 플레이어 (하단 고정)
   bool _isMiniPlayer = false;
 
-<<<<<<< Updated upstream
   // ── 가로화면 + 사이드패널 모드
   bool _isLandscape = false;
   bool _isLandscapeInfoExpanded = false; // 가로화면 강의정보 확장/축소
@@ -90,11 +78,6 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   // ── 자동 재생 (재생 목록)
   bool _autoPlay = false;
 
-=======
-  // ── 자동 재생 (재생 목록)
-  bool _autoPlay = false;
-
->>>>>>> Stashed changes
   // ── WebView (Android NAS MP4 재생)
   WebViewController? _webViewController;
   bool _webViewLoading = true;
@@ -186,16 +169,17 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
       }
     });
 
-    // 새 강의 열릴 때 기존 PIP를 일시정지 상태로 알림
+    // 새 강의 플레이어 열릴 때: PIP와 동일 강의면 PIP 종료, 다른 강의면 PIP 그대로 유지
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         final appState = context.read<AppState>();
-        // PIP가 활성화되어 있고, 현재 강의와 다른 강의가 PIP에 있을 때만 일시정지
         if (appState.pipActive &&
             appState.pipLecture != null &&
-            appState.pipLecture!.id != widget.lecture.id) {
-          appState.pausePipForNewLecture();
+            appState.pipLecture!.id == widget.lecture.id) {
+          // PIP 강의와 같은 강의 → PIP 종료
+          appState.deactivatePip();
         }
+        // PIP 강의와 다른 강의 D → PIP(A)는 그대로 재생 유지 (아무것도 안 함)
       }
     });
     
@@ -384,7 +368,6 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
       baseUrl = AppConfig.baseUrl.isNotEmpty ? AppConfig.baseUrl : 'about:blank';
     }
 
-<<<<<<< Updated upstream
     final controller = WebViewController();
 
     // Android: 자동재생 허용 - 컨트롤러 설정 전에 먼저 적용 (로딩 속도 향상)
@@ -400,9 +383,6 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     }
 
     controller
-=======
-    final controller = WebViewController()
->>>>>>> Stashed changes
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.black)
       ..setUserAgent(userAgent)
@@ -414,39 +394,16 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
         onPageFinished: (_) {
           if (mounted) {
             setState(() => _webViewLoading = false);
-<<<<<<< Updated upstream
-=======
-            // 페이지 로딩 완료 후 컨트롤 자동 숨김 타이머 재시작
->>>>>>> Stashed changes
             _scheduleHideControls();
           }
         },
         onWebResourceError: (err) {
           if (mounted) setState(() => _webViewLoading = false);
         },
-<<<<<<< Updated upstream
         onNavigationRequest: (req) => NavigationDecision.navigate,
       ))
       ..loadHtmlString(html, baseUrl: baseUrl);
 
-=======
-        onNavigationRequest: (req) {
-          return NavigationDecision.navigate;
-        },
-      ))
-      ..loadHtmlString(html, baseUrl: baseUrl);
-
-    // Android: 자동재생 허용 필수
-    if (!kIsWeb) {
-      try {
-        final androidCtrl = controller.platform;
-        if (androidCtrl is AndroidWebViewController) {
-          androidCtrl.setMediaPlaybackRequiresUserGesture(false);
-        }
-      } catch (_) {}
-    }
-
->>>>>>> Stashed changes
     if (kDebugMode) {
       controller.setOnConsoleMessage(
           (m) => debugPrint('VideoPlayer: ${m.message}'));
@@ -467,17 +424,11 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;}
 #player{width:100%;height:100%;}
-<<<<<<< Updated upstream
 /* YouTube 로고/워터마크/버튼/점3개/전체화면 등 완전 숨김 */
 .ytp-watermark,.ytp-youtube-button,.ytp-share-button,.ytp-pause-overlay,
 .ytp-gradient-top,.ytp-chrome-top,.ytp-show-cards-title,
 .ytp-overflow-button,.ytp-more-videos-button,.ytp-contextmenu,
 .ytp-settings-button,.ytp-fullscreen-button,.ytp-size-button,
-=======
-/* YouTube 로고/워터마크/버튼 등 완전 숨김 */
-.ytp-watermark,.ytp-youtube-button,.ytp-share-button,.ytp-pause-overlay,
-.ytp-gradient-top,.ytp-chrome-top,.ytp-show-cards-title,
->>>>>>> Stashed changes
 [class*="ytp-logo"],[class*="watermark"]{
   display:none!important;opacity:0!important;visibility:hidden!important;
 }
@@ -593,11 +544,7 @@ video::cue{display:none!important;visibility:hidden!important;opacity:0!importan
 </head>
 <body>
 <div id="load"><div class="spin"></div><p>영상 불러오는 중...</p></div>
-<<<<<<< Updated upstream
 <video id="vid" playsinline preload="auto" x-webkit-airplay="allow"></video>
-=======
-<video id="vid" playsinline preload="auto" controls></video>
->>>>>>> Stashed changes
 <div id="err">
   <div class="icon">⚠️</div>
   <p>영상을 불러올 수 없습니다.<br><small>파일이 공개 설정인지 확인해주세요.</small></p>
@@ -609,7 +556,6 @@ var load=document.getElementById("load");
 var err=document.getElementById("err");
 var lastTime=-1;
 var retryCount=0;
-<<<<<<< Updated upstream
 vid.src="$streamUrl";
 // 메타데이터 로드 즉시 재생 (canplay 대기 시간 단축)
 vid.onloadedmetadata=function(){
@@ -623,26 +569,12 @@ vid.onerror=function(){
   if(retryCount<2){
     retryCount++;
     setTimeout(function(){ vid.load(); }, 1000);
-=======
-// 직접 스트림 URL 설정
-vid.src="$streamUrl";
-vid.oncanplay=function(){load.classList.add("hide");vid.play().catch(function(){});}
-vid.oncanplaythrough=function(){load.classList.add("hide");}
-vid.onerror=function(){
-  if(retryCount<2){
-    retryCount++;
-    setTimeout(function(){vid.load();},1500);
->>>>>>> Stashed changes
   }else{
     load.classList.add("hide");
     err.classList.add("show");
   }
 }
-<<<<<<< Updated upstream
 vid.onwaiting=function(){ /* 버퍼링 중 깜빡임 방지 - 로딩 표시 생략 */ }
-=======
-vid.onwaiting=function(){load.classList.remove("hide");}
->>>>>>> Stashed changes
 vid.onplaying=function(){
   load.classList.add("hide");
   if(window.FlutterBridge) FlutterBridge.postMessage("play");
@@ -656,34 +588,6 @@ vid.ontimeupdate=function(){
     if(window.FlutterBridge) FlutterBridge.postMessage("time:"+t.toFixed(1));
   }
 }
-<<<<<<< Updated upstream
-=======
-vid.onloadedmetadata=function(){
-  if(window.FlutterBridge) FlutterBridge.postMessage("dur:"+vid.duration.toFixed(0));
-  // 자막 트랙 전부 비활성화
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-}
-vid.addEventListener('loadeddata',function(){
-  // 로드 후에도 자막 트랙 비활성화
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-});
-// 주기적으로 자막 트랙 비활성화 (브라우저가 재활성화하는 경우 대비)
-setInterval(function(){
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      if(vid.textTracks[i].mode!='disabled') vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-},500);
->>>>>>> Stashed changes
 function retry(){retryCount=0;err.classList.remove("show");load.classList.remove("hide");vid.load();vid.play().catch(function(){});}
 function setSpeed(s){vid.playbackRate=s;}
 function seekTo(t){vid.currentTime=t;}
@@ -736,7 +640,6 @@ function pauseVid(){vid.pause();}
         );
       }
       return;
-<<<<<<< Updated upstream
     }
     final nextLecture = list[nextIndex];
     if (!mounted) return;
@@ -1005,273 +908,6 @@ function pauseVid(){vid.pause();}
   void _toggleLandscapeMode() {
     if (_isLandscape) {
       // 가로 → 세로 복귀
-=======
-    }
-    final nextLecture = list[nextIndex];
-    if (!mounted) return;
-    // 현재 화면을 대체(replace)해 다음 강의로 이동
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => LecturePlayerScreen(
-          lecture: nextLecture,
-          autoPlayList: list,
-          autoPlayIndex: nextIndex,
-        ),
-      ),
-    );
-  }
-
-  // ─── 유튜브 영상 ID 추출 ───
-  static String? _extractYoutubeId(String url) {
-    // 두번설명: youtube.com/shorts/VIDEOID
-    final shortsMatch = RegExp(r'youtube\.com/shorts/([a-zA-Z0-9_-]{11})').firstMatch(url);
-    if (shortsMatch != null) return shortsMatch.group(1);
-    // 일반: youtu.be/VIDEOID 또는 youtube.com/watch?v=VIDEOID
-    final normalMatch = RegExp(r'(?:youtu\.be/|youtube\.com/(?:watch\?v=|embed/|v/))([a-zA-Z0-9_-]{11})').firstMatch(url);
-    if (normalMatch != null) return normalMatch.group(1);
-    return null;
-  }
-
-  // ─── MP4/NAS 플레이어 HTML ───
-  String _buildMp4Html(String videoUrl, double speedVal) {
-    return '''<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<style>
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:#000;overflow:hidden;}
-video{width:100%;height:100%;object-fit:contain;background:#000;display:block;}
-/* 자막/자동자막 오버레이 완전 제거 */
-::cue{display:none!important;visibility:hidden!important;opacity:0!important;}
-video::cue{display:none!important;visibility:hidden!important;opacity:0!important;}
-.vtt-cue,.caption-window,.caption-text,
-[class*="caption"],[class*="subtitle"],[class*="cue"]{
-  display:none!important;visibility:hidden!important;opacity:0!important;
-}
-#load{display:flex;position:absolute;inset:0;background:#000;
-  flex-direction:column;align-items:center;justify-content:center;z-index:10;}
-#load.hide{display:none;}
-.spin{width:44px;height:44px;border:3px solid #333;border-top:3px solid $_kOrangeHex;
-  border-radius:50%;animation:sp 0.8s linear infinite;}
-@keyframes sp{to{transform:rotate(360deg);}}
-#load p{color:#777;font-size:12px;margin-top:12px;font-family:sans-serif;}
-#err{display:none;position:absolute;inset:0;background:#111;
-  color:#fff;flex-direction:column;align-items:center;
-  justify-content:center;font-family:sans-serif;text-align:center;
-  padding:20px;z-index:20;}
-#err.show{display:flex;}
-#err .icon{font-size:40px;margin-bottom:8px;}
-#err p{font-size:13px;color:#aaa;line-height:1.6;}
-#err small{font-size:11px;color:#555;}
-#err button{margin-top:16px;padding:10px 28px;background:$_kOrangeHex;color:#fff;
-  border:none;border-radius:24px;font-size:14px;font-weight:bold;cursor:pointer;}
-</style>
-</head>
-<body>
-<div id="load"><div class="spin"></div><p>영상 불러오는 중...</p></div>
-<video id="vid" playsinline preload="auto" src="$videoUrl#t=0.001"></video>
-<div id="err">
-  <div class="icon">⚠️</div>
-  <p>영상을 불러올 수 없습니다.<br><small>네트워크를 확인하거나 잠시 후 다시 시도해주세요.</small></p>
-  <button onclick="retry()">다시 시도</button>
-</div>
-<script>
-var vid=document.getElementById("vid");
-var load=document.getElementById("load");
-var err=document.getElementById("err");
-var lastTime=-1;
-vid.playbackRate=$speedVal;
-
-// 재생 준비 완료 시 자동 재생 시도
-vid.oncanplay=function(){
-  load.classList.add("hide");
-  vid.play().catch(function(){});
-}
-vid.oncanplaythrough=function(){load.classList.add("hide");}
-vid.onerror=function(){load.classList.add("hide");err.classList.add("show");}
-vid.onwaiting=function(){load.classList.remove("hide");}
-vid.onstalled=function(){
-  load.classList.remove("hide");
-  // 스톨 시 재시도
-  setTimeout(function(){vid.load();vid.play().catch(function(){});},1000);
-}
-vid.onplaying=function(){
-  load.classList.add("hide");
-  if(window.FlutterBridge) FlutterBridge.postMessage("play");
-}
-vid.onpause=function(){
-  if(window.FlutterBridge) FlutterBridge.postMessage("pause");
-}
-vid.onended=function(){
-  if(window.FlutterBridge) FlutterBridge.postMessage("ended");
-}
-vid.ontimeupdate=function(){
-  var t=vid.currentTime;
-  if(Math.abs(t-lastTime)>=0.5){
-    lastTime=t;
-    if(window.FlutterBridge) FlutterBridge.postMessage("time:"+t.toFixed(1));
-  }
-}
-vid.onloadedmetadata=function(){
-  if(window.FlutterBridge) FlutterBridge.postMessage("dur:"+vid.duration.toFixed(0));
-  // 자막 트랙 전부 비활성화
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-}
-vid.addEventListener('loadeddata',function(){
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-});
-// 주기적으로 자막 트랙 비활성화
-setInterval(function(){
-  try{
-    for(var i=0;i<vid.textTracks.length;i++){
-      if(vid.textTracks[i].mode!='disabled') vid.textTracks[i].mode='disabled';
-    }
-  }catch(e){}
-},500);
-function retry(){err.classList.remove("show");load.classList.remove("hide");vid.load();vid.play().catch(function(){});}
-// 외부에서 제어할 수 있는 함수들
-function setSpeed(s){vid.playbackRate=s;}
-function seekTo(t){vid.currentTime=t;}
-function playVid(){vid.play().catch(function(){});}
-function pauseVid(){vid.pause();}
-</script>
-</body>
-</html>''';
-  }
-
-  // ─────────────────────────────────────────────
-  // 교안 슬라이드 로드
-  // ─────────────────────────────────────────────
-  Future<void> _loadSlidePages() async {
-    // 1순위: Lecture 모델에 handoutUrls가 있으면 바로 사용
-    if (widget.lecture.handoutUrls.isNotEmpty) {
-      if (mounted) {
-        setState(() {
-          _notePages = List.from(widget.lecture.handoutUrls);
-          _slidesLoading = false;
-        });
-      }
-      return;
-    }
-    // 2순위: NAS 서버에서 슬라이드 자동 탐색
-    final lectureId = widget.lecture.id;
-    final baseUrl = AppConfig.baseUrl;
-    final List<String> pages = [];
-    for (int total = 1; total <= 20; total++) {
-      final url = '$baseUrl/slides/$lectureId/${lectureId}_1$total.png';
-      try {
-        final res = await http.head(Uri.parse(url)).timeout(const Duration(seconds: 3));
-        if (res.statusCode == 200) {
-          for (int page = 1; page <= total; page++) {
-            pages.add('$baseUrl/slides/$lectureId/${lectureId}_$page$total.png');
-          }
-          break;
-        }
-      } catch (_) { break; }
-    }
-    if (mounted) setState(() { _notePages = pages; _slidesLoading = false; });
-  }
-
-  // ─────────────────────────────────────────────
-  // 타이머/플레이어 컨트롤
-  // ─────────────────────────────────────────────
-  void _scheduleHideControls() {
-    _controlsTimer?.cancel();
-    _controlsTimer = Timer(const Duration(seconds: 3), () {
-      // 재생 중이든 아니든 일정 시간 후 컨트롤 오버레이를 숨김
-      if (mounted) setState(() => _showControls = false);
-    });
-  }
-
-  void _onTapPlayer() {
-    setState(() => _showControls = !_showControls);
-    if (_showControls) _scheduleHideControls();
-  }
-
-  void _togglePlay() {
-    setState(() => _isPlaying = !_isPlaying);
-    if (_isPlaying) {
-      _startSimulation();
-    } else {
-      _playbackTimer?.cancel();
-    }
-    // 재생/정지 모두 컨트롤 표시 후 자동 숨김
-    setState(() => _showControls = true);
-    _scheduleHideControls();
-    // YouTube IFrame API / HTML5 video 통합 제어
-    _webViewController?.runJavaScript(
-      _isPlaying ? 'try{playVid();}catch(e){}' : 'try{pauseVid();}catch(e){}',
-    );
-  }
-
-  void _startSimulation() {
-    _playbackTimer?.cancel();
-    _playbackTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (!mounted) return;
-      if (_currentTime < _totalTime) {
-        setState(() {
-          _currentTime++;
-          _saveProgressIfNeeded();
-        });
-      } else {
-        _playbackTimer?.cancel();
-        setState(() => _isPlaying = false);
-      }
-    });
-  }
-
-  Future<void> _saveProgressIfNeeded() async {
-    if (!mounted) return;
-    final appState = context.read<AppState>();
-    if (!appState.isLoggedIn) return;
-    final userId = appState.userId;
-    if (userId.isEmpty) return;
-    await _authService.saveLectureProgress(userId, widget.lecture.id, _watchProgress);
-    for (final cp in [0.25, 0.5, 0.75, 0.9]) {
-      final key = '${widget.lecture.id}_${(cp * 100).toInt()}';
-      if (_watchProgress >= cp && !_savedProgressCheckpoints.contains(key)) {
-        _savedProgressCheckpoints.add(key);
-      }
-    }
-  }
-
-  void _seekRelative(int seconds) {
-    setState(() => _currentTime = (_currentTime + seconds).clamp(0, _totalTime));
-    // YouTube IFrame API / HTML5 video 통합 탐색
-    _webViewController?.runJavaScript('try{seekTo($_currentTime);}catch(e){}');
-    _scheduleHideControls();
-  }
-
-  void _seekTo(double ratio) {
-    setState(() => _currentTime = (ratio * _totalTime).toInt().clamp(0, _totalTime));
-    _webViewController?.runJavaScript('try{seekTo($_currentTime);}catch(e){}');
-  }
-
-  void _setPlaybackSpeed(double speed) {
-    setState(() => _playbackSpeed = speed);
-    _webViewController?.runJavaScript('try{setSpeed($speed);}catch(e){}');
-  }
-
-  void _toggleFullScreen() {
-    setState(() => _isFullScreen = !_isFullScreen);
-    if (_isFullScreen) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    } else {
->>>>>>> Stashed changes
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -1313,10 +949,7 @@ function pauseVid(){vid.pause();}
   @override
   Widget build(BuildContext context) {
     if (_isFullScreen) return _buildFullScreenScaffold();
-<<<<<<< Updated upstream
     if (_isLandscape) return _buildLandscapeWithSidePanel();
-=======
->>>>>>> Stashed changes
     if (_isMiniPlayer) return _buildMiniPlayerLayout();
     // 모든 강의는 동일한 일반 레이아웃 사용 (탭 포함)
     return _buildNormalLayout();
@@ -1395,16 +1028,12 @@ function pauseVid(){vid.pause();}
                       children: widget.lecture.hashtags.take(4).map((tag) => GestureDetector(
                         onTap: () {
                           final appState = context.read<AppState>();
-<<<<<<< Updated upstream
                           // 이미 다른 강의가 PIP로 재생 중이면 activatePip 호출 안 함 (PIP 유지)
                           if (!appState.pipActive ||
                               appState.pipLecture == null ||
                               appState.pipLecture!.id == widget.lecture.id) {
                             appState.activatePip(widget.lecture, startSeconds: _currentTime);
                           }
-=======
-                          appState.activatePip(widget.lecture, startSeconds: _currentTime);
->>>>>>> Stashed changes
                           appState.setSearchQuery(tag);
                           appState.setNavIndex(3);
                           if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
@@ -1504,7 +1133,6 @@ function pauseVid(){vid.pause();}
       }
     }
 
-<<<<<<< Updated upstream
     // ── 재생 전: 로딩 스피너만 표시 (탭-투-플레이 버튼 없음)
     // Drive 영상은 자동으로 _startDriveInlinePlayer가 호출됨
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -1523,48 +1151,6 @@ function pauseVid(){vid.pause();}
           Text('영상 불러오는 중...', style: TextStyle(color: Colors.white54, fontSize: 12)),
         ]),
       ),
-=======
-    // ── 재생 전 썸네일 + 탭-투-플레이 버튼
-    final playBtn = Column(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-        width: isShortsStyle ? 76 : 64,
-        height: isShortsStyle ? 76 : 64,
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          shape: BoxShape.circle,
-          boxShadow: [BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.6),
-            blurRadius: 28, spreadRadius: 4)],
-        ),
-        child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: isShortsStyle ? 48 : 40),
-      ),
-      const SizedBox(height: 14),
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 0.8),
-        ),
-        child: const Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(Icons.play_circle_rounded, color: Colors.white60, size: 15),
-          SizedBox(width: 7),
-          Text('탭하여 재생', style: TextStyle(
-            color: Colors.white, fontSize: 14,
-            fontWeight: FontWeight.w600, letterSpacing: 0.3)),
-        ]),
-      ),
-    ]);
-
-    return GestureDetector(
-      onTap: () => _startDriveInlinePlayer(fileId),
-      child: Stack(fit: StackFit.expand, children: [
-        _buildGradientPlaceholder(),
-        isShortsStyle
-            ? Positioned(left: 0, right: 0, top: 0, bottom: 160, child: Center(child: playBtn))
-            : Center(child: playBtn),
-      ]),
->>>>>>> Stashed changes
     );
   }
 
@@ -1632,12 +1218,9 @@ function pauseVid(){vid.pause();}
   Widget _buildNormalLayout() {
     return Scaffold(
       backgroundColor: Colors.white,
-<<<<<<< Updated upstream
       // ── (교안) 내 노트 플로팅 버튼 ──
       floatingActionButton: _buildNoteViewerFAB(),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-=======
->>>>>>> Stashed changes
       body: SafeArea(
         child: Column(children: [
           // ① 플레이어 영역 (상단 바 + 영상 + 진행바)
@@ -1662,7 +1245,6 @@ function pauseVid(){vid.pause();}
     );
   }
 
-<<<<<<< Updated upstream
   /// 교안 내 노트 플로팅 버튼 (작고 샤프한 스타일)
   Widget _buildNoteViewerFAB() {
     if (widget.lecture.handoutUrls.isEmpty) return const SizedBox.shrink();
@@ -1728,8 +1310,6 @@ function pauseVid(){vid.pause();}
     );
   }
 
-=======
->>>>>>> Stashed changes
   // ─────────────────────────────────────────────
   // 🎬 플레이어 섹션
   // ─────────────────────────────────────────────
@@ -1760,7 +1340,6 @@ function pauseVid(){vid.pause();}
                 onTap: _onTapPlayer,
                 child: Stack(fit: StackFit.expand, children: [
                   _buildVideoArea(),
-<<<<<<< Updated upstream
                   // 로딩 중에는 컨트롤 오버레이(플레이 버튼) 숨김
                   if (_showControls && !_webViewLoading) _buildControlOverlay(),
                   if (_showSubtitle && _currentSubtitle.isNotEmpty) _buildSubtitle(),
@@ -1800,10 +1379,6 @@ function pauseVid(){vid.pause();}
                       ],
                     ),
                   ),
-=======
-                  if (_showControls) _buildControlOverlay(),
-                  if (_showSubtitle && _currentSubtitle.isNotEmpty) _buildSubtitle(),
->>>>>>> Stashed changes
                 ]),
               ),
             );
@@ -1817,24 +1392,14 @@ function pauseVid(){vid.pause();}
   // ── 상단 바
   Widget _buildPlayerTopBar() {
     return Container(
-<<<<<<< Updated upstream
       height: 42,
       padding: const EdgeInsets.symmetric(horizontal: 4),
       color: Colors.white,
-=======
-      height: 46,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      color: Colors.black,
->>>>>>> Stashed changes
       child: Row(children: [
         // 뒤로가기
         IconButton(
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
-<<<<<<< Updated upstream
               color: Color(0xFF333333), size: 26),
-=======
-              color: Colors.white, size: 26),
->>>>>>> Stashed changes
           onPressed: () => Navigator.pop(context),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -1844,7 +1409,6 @@ function pauseVid(){vid.pause();}
           child: Text(
             widget.lecture.title,
             style: const TextStyle(
-<<<<<<< Updated upstream
               color: Color(0xFF222222), fontSize: 13, fontWeight: FontWeight.w700),
             maxLines: 1, overflow: TextOverflow.ellipsis,
           ),
@@ -1854,25 +1418,6 @@ function pauseVid(){vid.pause();}
         _buildSpeedChip(highlighted: true),
         const SizedBox(width: 6),
         // 점 3개(더보기) 삭제
-=======
-              color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700),
-            maxLines: 1, overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        // CC 자막 토글
-        _buildCCButton(),
-        const SizedBox(width: 2),
-        // 재생속도 칩
-        _buildSpeedChip(),
-        const SizedBox(width: 2),
-        // 더보기
-        IconButton(
-          icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 22),
-          onPressed: _showOptionsSheet,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        ),
->>>>>>> Stashed changes
       ]),
     );
   }
@@ -1884,7 +1429,6 @@ function pauseVid(){vid.pause();}
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
         decoration: BoxDecoration(
-<<<<<<< Updated upstream
           color: _showSubtitle ? _kOrange : const Color(0xFFE0E0E0),
           borderRadius: BorderRadius.circular(4),
         ),
@@ -1892,29 +1436,16 @@ function pauseVid(){vid.pause();}
           style: TextStyle(
             color: _showSubtitle ? Colors.white : const Color(0xFF444444),
             fontSize: 10, fontWeight: FontWeight.w800,
-=======
-          color: _showSubtitle ? _kOrange : Colors.white.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: const Text('CC',
-          style: TextStyle(
-            color: Colors.white, fontSize: 10, fontWeight: FontWeight.w800,
->>>>>>> Stashed changes
             letterSpacing: 0.5)),
       ),
     );
   }
 
-<<<<<<< Updated upstream
   Widget _buildSpeedChip({bool onDark = false, bool highlighted = false}) {
-=======
-  Widget _buildSpeedChip() {
->>>>>>> Stashed changes
     final label = _playbackSpeed == 1.0 ? '1x'
         : _playbackSpeed == 1.5 ? '1.5x'
         : _playbackSpeed == 2.0 ? '2x'
         : '${_playbackSpeed}x';
-<<<<<<< Updated upstream
     final isNonDefault = _playbackSpeed != 1.0;
     // highlighted=true(세로화면 상단): 기본속도라도 주황 테두리로 눈에 띄게
     final bgColor = isNonDefault
@@ -1956,19 +1487,6 @@ function pauseVid(){vid.pause();}
                 fontSize: 12, fontWeight: FontWeight.w800)),
           ],
         ),
-=======
-    return GestureDetector(
-      onTap: _showSpeedSheet,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(label,
-          style: const TextStyle(
-            color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
->>>>>>> Stashed changes
       ),
     );
   }
@@ -2123,7 +1641,6 @@ function pauseVid(){vid.pause();}
     );
   }
 
-<<<<<<< Updated upstream
   // ── 컨트롤 오버레이 (터치 투명도 처리 포함)
   Widget _buildControlOverlay() {
     // _showControls=false면 포인터 무시 + 투명으로 처리
@@ -2320,202 +1837,10 @@ function pauseVid(){vid.pause();}
                 : CrossFadeState.showFirst,
           ),
         ),
-=======
-  // ── 컨트롤 오버레이
-  Widget _buildControlOverlay() {
-    return AnimatedOpacity(
-      opacity: _showControls ? 1.0 : 0.0,
-      duration: const Duration(milliseconds: 250),
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter, end: Alignment.bottomCenter,
-            colors: [
-              Colors.black.withValues(alpha: 0.55),
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.35),
-            ],
-          ),
-        ),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildSeekButton(Icons.replay_10_rounded, '-10', () => _seekRelative(-10)),
-              const SizedBox(width: 28),
-              // 재생/정지 버튼
-              GestureDetector(
-                onTap: _togglePlay,
-                child: Container(
-                  width: 48, height: 48,
-                  decoration: BoxDecoration(
-                    color: _kOrange,
-                    shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(
-                      color: _kOrange.withValues(alpha: 0.4),
-                      blurRadius: 12, spreadRadius: 1)],
-                  ),
-                  child: Icon(
-                    _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    color: Colors.white, size: 28),
-                ),
-              ),
-              const SizedBox(width: 28),
-              _buildSeekButton(Icons.forward_10_rounded, '+10', () => _seekRelative(10)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSeekButton(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 48, height: 48,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
-        ),
-        child: Stack(alignment: Alignment.center, children: [
-          Icon(icon, color: Colors.white, size: 28),
-          Positioned(
-            bottom: 6,
-            child: Text(label,
-              style: const TextStyle(
-                color: Colors.white70, fontSize: 7, fontWeight: FontWeight.w700)),
-          ),
-        ]),
-      ),
-    );
-  }
-
-  // ── 자막
-  Widget _buildSubtitle() {
-    return Positioned(
-      bottom: 8, left: 16, right: 16,
-      child: Center(
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.68),
-            borderRadius: BorderRadius.circular(5),
-          ),
-          child: Text(
-            _currentSubtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white, fontSize: 13, height: 1.5,
-              fontWeight: FontWeight.w500,
-              shadows: [Shadow(color: Colors.black, blurRadius: 4)],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── 진행바
-  Widget _buildProgressBar() {
-    final progress = _totalTime > 0 ? _currentTime / _totalTime : 0.0;
-    return Container(
-      color: const Color(0xFF111111),
-      padding: const EdgeInsets.fromLTRB(12, 2, 12, 8),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 3.5,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-            activeTrackColor: _kOrange,
-            inactiveTrackColor: Colors.white.withValues(alpha: 0.2),
-            thumbColor: _kOrange,
-            overlayColor: _kOrange.withValues(alpha: 0.25),
-          ),
-          child: Slider(
-            value: progress.clamp(0.0, 1.0),
-            onChanged: _seekTo,
-            onChangeStart: (_) {
-              _controlsTimer?.cancel();
-              setState(() => _showControls = true);
-            },
-            onChangeEnd: (_) => _scheduleHideControls(),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: Row(children: [
-            Text(_formatTime(_currentTime),
-              style: const TextStyle(color: Colors.white, fontSize: 11,
-                fontWeight: FontWeight.w600)),
-            const SizedBox(width: 4),
-            Text('/ ${_formatTime(_totalTime)}',
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.45), fontSize: 11)),
-            const Spacer(),
-            // 미니 플레이어 아이콘
-            GestureDetector(
-              onTap: _toggleMiniPlayer,
-              child: Icon(Icons.picture_in_picture_alt_rounded,
-                color: Colors.white.withValues(alpha: 0.7), size: 18),
-            ),
-            const SizedBox(width: 12),
-            // 전체화면
-            GestureDetector(
-              onTap: _toggleFullScreen,
-              child: const Icon(Icons.fullscreen_rounded,
-                color: Colors.white, size: 22),
-            ),
-          ]),
-        ),
-      ]),
-    );
-  }
-
-  // ─────────────────────────────────────────────
-  // 🗂️ 탭바
-  // ─────────────────────────────────────────────
-  Widget _buildTabBar() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // ── 탭 바 (자동재생 토글 제거됨) ──
-        Container(
-          color: Colors.white,
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFEEEEEE), width: 1)),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            labelColor: _kOrange,
-            unselectedLabelColor: const Color(0xFF888888),
-            isScrollable: true,
-            tabAlignment: TabAlignment.fill,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
-            labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-            unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            indicatorColor: _kOrange,
-            indicatorWeight: 2.5,
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            tabs: const [
-              Tab(text: '노트 보기'),
-              Tab(text: '강의 Q&A'),
-              Tab(text: '재생 목록'),
-              Tab(text: '문제풀이'),
-            ],
-          ),
-        ),
-        // ── 강의 메타 정보 영역 (탭바 바로 아래, 필기 도구 바로 위) ──
-        _buildLectureMetaBar(),
->>>>>>> Stashed changes
       ],
     );
   }
 
-<<<<<<< Updated upstream
   /// 접힌 상태 메타바 (제목 한 줄 + 펼침 화살표)
   Widget _buildCollapsedMetaBar() {
     final lec = widget.lecture;
@@ -2547,8 +1872,6 @@ function pauseVid(){vid.pause();}
     );
   }
 
-=======
->>>>>>> Stashed changes
   /// 탭바 아래 강의 정보 요약 바 (LectureCard와 동일한 형식으로 통일)
   Widget _buildLectureMetaBar() {
     final lec = widget.lecture;
@@ -2568,15 +1891,9 @@ function pauseVid(){vid.pause();}
       default:          subjectColor = _kOrange;
     }
     switch (lec.grade) {
-<<<<<<< Updated upstream
       case 'elementary': gradeColor = const Color(0xFFFF6B35); break;  // 주황
       case 'middle':     gradeColor = const Color(0xFF059669); break;  // 에메랄드 (해시태그 파랑과 구분)
       default:           gradeColor = const Color(0xFF7C3AED);          // 보라 (고등)
-=======
-      case 'elementary': gradeColor = const Color(0xFFFF6B35); break;
-      case 'middle':     gradeColor = const Color(0xFF2563EB); break;
-      default:           gradeColor = const Color(0xFF7C3AED);
->>>>>>> Stashed changes
     }
 
     Widget badge(String label, Color color) => Container(
@@ -2653,70 +1970,11 @@ function pauseVid(){vid.pause();}
             const SizedBox(height: 5),
             _buildMetaHashtags(lec.hashtags, subjectColor),
           ],
-<<<<<<< Updated upstream
-=======
-          // 행 5: B강의(관련강의) PIP 버튼
-          if (lec.relatedLectureId != null &&
-              lec.relatedLectureId!.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            _buildRelatedLecturePipButton(lec.relatedLectureId!, subjectColor),
-          ],
->>>>>>> Stashed changes
         ],
       ),
     );
   }
 
-<<<<<<< Updated upstream
-=======
-  /// 관련 강의를 PIP로 띄우는 버튼
-  Widget _buildRelatedLecturePipButton(String relatedId, Color accentColor) {
-    final appState = context.read<AppState>();
-    final allLectures = appState.apiLectures;
-    final related = allLectures.cast<Lecture?>()
-        .firstWhere((l) => l?.id == relatedId, orElse: () => null);
-    if (related == null) return const SizedBox.shrink();
-
-    return GestureDetector(
-      onTap: () {
-        // 관련 강의를 PIP로 활성화
-        appState.activatePip(related, startSeconds: 0);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accentColor.withValues(alpha: 0.3), width: 1),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.picture_in_picture_alt_rounded,
-                size: 13, color: accentColor),
-            const SizedBox(width: 5),
-            Flexible(
-              child: Text(
-                'B강의: ${related.title}',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: accentColor,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(Icons.play_circle_outline_rounded,
-                size: 13, color: accentColor),
-          ],
-        ),
-      ),
-    );
-  }
-
->>>>>>> Stashed changes
   // ─────────────────────────────────────────────
   // 📝 탭1: 노트 보기
   // ─────────────────────────────────────────────
@@ -2820,11 +2078,7 @@ function pauseVid(){vid.pause();}
             const Text('색상:', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             const SizedBox(width: 6),
             for (final c in [
-<<<<<<< Updated upstream
               const Color(0xFF2563EB), Colors.red, Colors.green, const Color(0xFFF97316), Colors.black,
-=======
-              const Color(0xFF2563EB), Colors.red, Colors.green, Colors.black,
->>>>>>> Stashed changes
             ])
               GestureDetector(
                 onTap: () => setState(() {
@@ -2896,18 +2150,12 @@ function pauseVid(){vid.pause();}
           ]),
         ),
       // ── 교안 페이지 스크롤 영역 ──
-<<<<<<< Updated upstream
       // ★ 필기 모드일 때 NeverScrollableScrollPhysics로 전환 → 스크롤 충돌(떨림) 완전 제거
       Expanded(
         child: SingleChildScrollView(
           physics: _isDrawingMode
               ? const NeverScrollableScrollPhysics()
               : const BouncingScrollPhysics(),
-=======
-      Expanded(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
->>>>>>> Stashed changes
           child: Column(
             children: List.generate(_notePages.length, (pageIdx) {
               final pageUrl = _notePages[pageIdx];
@@ -2930,7 +2178,6 @@ function pauseVid(){vid.pause();}
                     ]),
                   ),
                   // 이미지 + 필기 레이어
-<<<<<<< Updated upstream
                   // ★ Listener 사용: GestureDetector 대신 Listener로 교체하여
                   //   PageView/ScrollView와의 터치 이벤트 충돌(떨림)을 완전 제거
                   Listener(
@@ -2948,40 +2195,12 @@ function pauseVid(){vid.pause();}
                               if (_isEraser) {
                                 _eraserPosition = e.localPosition;
                                 _showEraserCursor = true;
-=======
-                  GestureDetector(
-                    onTapDown: _isDrawingMode
-                        ? (d) => setState(() {
-                            _currentNotePageIndex = pageIdx;
-                            _currentStroke = [d.localPosition];
-                          })
-                        : null,
-                    onPanStart: _isDrawingMode
-                        ? (d) => setState(() {
-                            _currentNotePageIndex = pageIdx;
-                            _currentStroke = [d.localPosition];
-                          })
-                        : null,
-                    onPanUpdate: _isDrawingMode
-                        ? (d) {
-                            setState(() {
-                              _currentStroke.add(d.localPosition);
-                              if (_isEraser) {
-                                // 지우개 커서 위치 업데이트
-                                _eraserPosition = d.localPosition;
-                                _showEraserCursor = true;
-                                // ── 한 획씩 지우기: 지우개 반경에 닿은 첫 획 하나만 제거 ──
->>>>>>> Stashed changes
                                 final strokes = List<_DrawingStroke>.from(
                                     _pageStrokes[pageIdx] ?? []);
                                 const eraseRadius = 20.0;
                                 final idx = strokes.indexWhere((s) =>
                                     s.points.whereType<Offset>().any(
-<<<<<<< Updated upstream
                                         (p) => (p - e.localPosition).distance < eraseRadius));
-=======
-                                        (p) => (p - d.localPosition).distance < eraseRadius));
->>>>>>> Stashed changes
                                 if (idx != -1) {
                                   strokes.removeAt(idx);
                                   _pageStrokes[pageIdx] = strokes;
@@ -2991,11 +2210,7 @@ function pauseVid(){vid.pause();}
                             });
                           }
                         : null,
-<<<<<<< Updated upstream
                     onPointerUp: _isDrawingMode
-=======
-                    onPanEnd: _isDrawingMode
->>>>>>> Stashed changes
                         ? (_) {
                             if (!_isEraser && _currentStroke.isNotEmpty) {
                               final strokes = List<_DrawingStroke>.from(
@@ -3015,7 +2230,6 @@ function pauseVid(){vid.pause();}
                             });
                           }
                         : null,
-<<<<<<< Updated upstream
                     onPointerCancel: _isDrawingMode
                         ? (_) => setState(() {
                             _currentStroke = [];
@@ -3023,8 +2237,6 @@ function pauseVid(){vid.pause();}
                             _eraserPosition = null;
                           })
                         : null,
-=======
->>>>>>> Stashed changes
                     child: Stack(children: [
                       // 교안 이미지
                       // 필기 모드 or 지우개 모드: 교안 완전 고정 (InteractiveViewer 비활성)
@@ -3378,28 +2590,20 @@ function pauseVid(){vid.pause();}
   /// 메타바 해시태그: 터치 → PIP 전환 + 검색화면 이동 (2줄 이내 + 좌우 스크롤)
   Widget _buildMetaHashtags(List<String> tags, Color accentColor) {
     if (tags.isEmpty) return const SizedBox.shrink();
-<<<<<<< Updated upstream
     // 해시태그 색상 고정 (앱 전체 통일: 890 화면 기준)
     const tagBg     = Color(0xFFEEF4FF);
     const tagBorder = Color(0xFFC3D4F0);
     const tagText   = Color(0xFF5E8ED6);
-=======
->>>>>>> Stashed changes
     final appState = context.read<AppState>();
 
     Widget tagChip(String tag) => GestureDetector(
       onTap: () {
-<<<<<<< Updated upstream
         // 이미 다른 강의가 PIP로 재생 중이면 activatePip 호출 안 함 (PIP 유지)
         if (!appState.pipActive ||
             appState.pipLecture == null ||
             appState.pipLecture!.id == widget.lecture.id) {
           appState.activatePip(widget.lecture, startSeconds: _currentTime);
         }
-=======
-        // 현재 강의를 PIP로 전환
-        appState.activatePip(widget.lecture, startSeconds: _currentTime);
->>>>>>> Stashed changes
         // 검색어 설정 후 검색 탭으로 이동
         appState.setSearchQuery(tag);
         appState.setNavIndex(3);
@@ -3408,7 +2612,6 @@ function pauseVid(){vid.pause();}
       },
       child: Container(
         margin: const EdgeInsets.only(right: 4, bottom: 2),
-<<<<<<< Updated upstream
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
         decoration: BoxDecoration(
           color: tagBg,
@@ -3420,19 +2623,6 @@ function pauseVid(){vid.pause();}
           style: const TextStyle(
             fontSize: 10,
             color: tagText,
-=======
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: accentColor.withValues(alpha: 0.25), width: 0.8),
-        ),
-        child: Text(
-          '#$tag',
-          style: TextStyle(
-            fontSize: 10,
-            color: accentColor,
->>>>>>> Stashed changes
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -3489,28 +2679,20 @@ function pauseVid(){vid.pause();}
   /// 태그 수에 따라 1줄 / 2줄 / 2줄+좌우스크롤 자동 조절
   Widget _buildDetailHashtags(List<String> tags) {
     if (tags.isEmpty) return const SizedBox.shrink();
-<<<<<<< Updated upstream
     // 해시태그 색상 고정 (앱 전체 통일: 890 화면 기준)
     const tagBg     = Color(0xFFEEF4FF);
     const tagBorder = Color(0xFFC3D4F0);
     const tagText   = Color(0xFF5E8ED6);
-=======
->>>>>>> Stashed changes
     final appState = context.read<AppState>();
 
     Widget tagChip(String tag) => GestureDetector(
       onTap: () {
-<<<<<<< Updated upstream
         // 이미 다른 강의가 PIP로 재생 중이면 activatePip 호출 안 함 (PIP 유지)
         if (!appState.pipActive ||
             appState.pipLecture == null ||
             appState.pipLecture!.id == widget.lecture.id) {
           appState.activatePip(widget.lecture, startSeconds: _currentTime);
         }
-=======
-        // PIP 활성화 후 검색화면으로 이동
-        appState.activatePip(widget.lecture, startSeconds: _currentTime);
->>>>>>> Stashed changes
         appState.setSearchQuery(tag);
         appState.setNavIndex(3);
         if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
@@ -3519,21 +2701,12 @@ function pauseVid(){vid.pause();}
         margin: const EdgeInsets.only(right: 6, bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-<<<<<<< Updated upstream
           color: tagBg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: tagBorder, width: 0.8)),
         child: Text('#$tag',
           style: const TextStyle(
             fontSize: 12, color: tagText, fontWeight: FontWeight.w600)),
-=======
-          color: _kOrange.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: _kOrange.withValues(alpha: 0.25))),
-        child: Text('#$tag',
-          style: const TextStyle(
-            fontSize: 12, color: _kOrange, fontWeight: FontWeight.w600)),
->>>>>>> Stashed changes
       ),
     );
 
@@ -3636,14 +2809,9 @@ function pauseVid(){vid.pause();}
         Row(mainAxisSize: MainAxisSize.min, children: [
           for (final c in [
             const Color(0xFF2563EB),
-<<<<<<< Updated upstream
             const Color(0xFFDC2626),
             const Color(0xFF16A34A),
             _kOrange,
-=======
-            Colors.red,
-            Colors.green,
->>>>>>> Stashed changes
             Colors.black,
           ])
             GestureDetector(
@@ -4426,11 +3594,7 @@ function pauseVid(){vid.pause();}
             final lec = lectures[i];
             final isCurrent = lec.id == widget.lecture.id;
             return Container(
-<<<<<<< Updated upstream
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 1),
-=======
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
->>>>>>> Stashed changes
               decoration: BoxDecoration(
                 color: isCurrent ? _kOrange.withValues(alpha: 0.06) : Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -4439,11 +3603,7 @@ function pauseVid(){vid.pause();}
                   width: isCurrent ? 1.5 : 0),
               ),
               child: ListTile(
-<<<<<<< Updated upstream
                 contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-=======
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
->>>>>>> Stashed changes
                 leading: Stack(children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(7),
@@ -4465,7 +3625,6 @@ function pauseVid(){vid.pause();}
                     fontSize: 13, fontWeight: FontWeight.w600,
                     color: isCurrent ? _kOrange : AppColors.textPrimary),
                   maxLines: 2, overflow: TextOverflow.ellipsis),
-<<<<<<< Updated upstream
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 2),
                   child: Column(
@@ -4518,22 +3677,6 @@ function pauseVid(){vid.pause();}
                     ],
                   ),
                 ),
-=======
-                subtitle: Row(children: [
-                  Text(lec.instructor,
-                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEEF2FF),
-                      borderRadius: BorderRadius.circular(3)),
-                    child: Text(lec.durationText,
-                      style: const TextStyle(fontSize: 10, color: AppColors.primary,
-                        fontWeight: FontWeight.w600)),
-                  ),
-                ]),
->>>>>>> Stashed changes
                 onTap: isCurrent ? null : () {
                   // 재생목록 탭에서 강의 선택 → 자동재생 목록 유지
                   Navigator.pushReplacement(
@@ -4555,7 +3698,6 @@ function pauseVid(){vid.pause();}
     ]);
   }
 
-<<<<<<< Updated upstream
   // ── 재생목록/홈 카드용 미니 배지 헬퍼 ──────────────
   static Color _subjectBadgeColor(String subject) {
     switch (subject) {
@@ -4623,8 +3765,6 @@ function pauseVid(){vid.pause();}
     );
   }
 
-=======
->>>>>>> Stashed changes
   Widget _buildThumbSmall(Lecture lec) {
     final url = lec.effectiveThumbnailUrl;
     Widget img;
@@ -5964,7 +5104,6 @@ function pauseVid(){vid.pause();}
               const SizedBox(height: 2),
             ]),
           ),
-<<<<<<< Updated upstream
         ),
       ),
     );
@@ -6359,14 +5498,11 @@ function pauseVid(){vid.pause();}
               ),
             ),
           ],
-=======
->>>>>>> Stashed changes
         ),
       ),
     );
   }
 
-<<<<<<< Updated upstream
   // 가로화면 강의 안내용 배지
   Widget _buildLandscapeBadge(String label) {
     Color color;
@@ -6392,108 +5528,6 @@ function pauseVid(){vid.pause();}
       child: Text(label,
           style: TextStyle(
               fontSize: 10, color: color, fontWeight: FontWeight.w700)),
-=======
-  Widget _buildToggleSwitch({required bool value, required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 44, height: 26,
-        decoration: BoxDecoration(
-          color: value ? _kOrange : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(13)),
-        child: AnimatedAlign(
-          duration: const Duration(milliseconds: 200),
-          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 3),
-            width: 20, height: 20,
-            decoration: const BoxDecoration(
-              color: Colors.white, shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 2)]),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildOptionTile({
-    required IconData icon,
-    required String title,
-    required Widget trailing,
-  }) {
-    return SizedBox(
-      height: 44,
-      child: Row(children: [
-        Container(
-          width: 34, height: 34,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F5F5),
-            borderRadius: BorderRadius.circular(8)),
-          child: Icon(icon, size: 16, color: AppColors.textSecondary),
-        ),
-        const SizedBox(width: 10),
-        Text(title,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary)),
-        const Spacer(),
-        trailing,
-      ]),
-    );
-  }
-
-  // ── 재생속도 전용 시트
-  void _showSpeedSheet() {
-    final speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-    final labels = ['0.5x', '0.75x', '기본', '1.25x', '1.5x', '2.0x'];
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 36, height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 14),
-          const Align(
-            alignment: Alignment.centerLeft,
-            child: Text('재생 속도',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
-          const SizedBox(height: 16),
-          GridView.count(
-            crossAxisCount: 3, shrinkWrap: true,
-            mainAxisSpacing: 10, crossAxisSpacing: 10,
-            childAspectRatio: 2.2,
-            children: List.generate(speeds.length, (i) {
-              final selected = _playbackSpeed == speeds[i];
-              return GestureDetector(
-                onTap: () {
-                  _setPlaybackSpeed(speeds[i]);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: selected ? _kOrange : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(8),
-                    border: selected
-                        ? null
-                        : Border.all(color: const Color(0xFFEEEEEE))),
-                  child: Center(
-                    child: Text(labels[i],
-                      style: TextStyle(
-                        fontSize: 13, fontWeight: FontWeight.w700,
-                        color: selected ? Colors.white : AppColors.textPrimary)),
-                  ),
-                ),
-              );
-            }),
-          ),
-        ]),
-      ),
->>>>>>> Stashed changes
     );
   }
 
@@ -6501,7 +5535,6 @@ function pauseVid(){vid.pause();}
   // 📺 전체화면 모드
   // ─────────────────────────────────────────────
   Widget _buildFullScreenScaffold() {
-<<<<<<< Updated upstream
     // 블랙아웃 방지: WebView를 직접 사용
     Widget videoWidget;
     if (!kIsWeb && _webViewController != null) {
@@ -6546,44 +5579,17 @@ function pauseVid(){vid.pause();}
                     colors: [Colors.black.withValues(alpha: 0.75), Colors.transparent])),
                 child: Row(children: [
                   // 세로화면 복귀
-=======
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: _onTapPlayer,
-        child: Stack(children: [
-          // 영상
-          if (_webViewController != null && !kIsWeb)
-            WebViewWidget(controller: _webViewController!)
-          else
-            _buildGradientPlaceholder(),
-          // 컨트롤
-          if (_showControls) ...[
-            Positioned(
-              top: 0, left: 0, right: 0,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(8, 36, 8, 8),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                    colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent])),
-                child: Row(children: [
->>>>>>> Stashed changes
                   IconButton(
                     icon: const Icon(Icons.fullscreen_exit_rounded,
                       color: Colors.white, size: 26),
                     onPressed: _toggleFullScreen,
-<<<<<<< Updated upstream
                     tooltip: '전체화면 종료',
-=======
->>>>>>> Stashed changes
                   ),
                   Expanded(
                     child: Text(widget.lecture.title,
                       style: const TextStyle(color: Colors.white, fontSize: 14,
                         fontWeight: FontWeight.w600),
                       maxLines: 1, overflow: TextOverflow.ellipsis)),
-<<<<<<< Updated upstream
                   // CC 버튼 제거 (모든 강의에 자막 있어 불필요)
                   // 속도 버튼 (전체화면)
                   _buildSpeedChip(onDark: true),
@@ -6649,20 +5655,11 @@ function pauseVid(){vid.pause();}
                             fontWeight: FontWeight.w600)),
                       ]),
                     ),
-=======
-                  IconButton(
-                    icon: const Icon(Icons.more_vert_rounded,
-                      color: Colors.white, size: 22),
-                    onPressed: _showOptionsSheet,
->>>>>>> Stashed changes
                   ),
                 ]),
               ),
             ),
-<<<<<<< Updated upstream
             // 중앙 재생 컨트롤
-=======
->>>>>>> Stashed changes
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -6688,10 +5685,7 @@ function pauseVid(){vid.pause();}
                 ],
               ),
             ),
-<<<<<<< Updated upstream
             // 하단 진행바
-=======
->>>>>>> Stashed changes
             Positioned(
               bottom: 0, left: 0, right: 0,
               child: Container(
@@ -6703,23 +5697,15 @@ function pauseVid(){vid.pause();}
                 child: _buildProgressBar(),
               ),
             ),
-<<<<<<< Updated upstream
           ]),
             ),
           ),
-=======
-          ],
->>>>>>> Stashed changes
           if (_showSubtitle && _currentSubtitle.isNotEmpty)
             Positioned(
               bottom: 60, left: 24, right: 24,
               child: Center(child: _buildSubtitle()),
             ),
         ]),
-<<<<<<< Updated upstream
-=======
-      ),
->>>>>>> Stashed changes
     );
   }
 

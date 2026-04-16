@@ -119,11 +119,7 @@ class LectureCard extends StatelessWidget {
                         padding: const EdgeInsets.fromLTRB(10, 8, 6, 8),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-<<<<<<< Updated upstream
                           mainAxisAlignment: MainAxisAlignment.start,
-=======
-                          mainAxisAlignment: MainAxisAlignment.center,
->>>>>>> Stashed changes
                           children: [
                             Text(
                               lecture.title,
@@ -187,7 +183,6 @@ class LectureCard extends StatelessWidget {
 
   // ── 시리즈명 행 ─────────────────────────────────────
   Widget _buildSeriesRow() {
-<<<<<<< Updated upstream
     // 시리즈가 있으면 시리즈명, 없으면 강사명을 2번째 줄로 표시
     final displayText = lecture.series.isNotEmpty ? lecture.series : lecture.instructor;
     final icon = lecture.series.isNotEmpty
@@ -200,16 +195,6 @@ class LectureCard extends StatelessWidget {
         Expanded(
           child: Text(
             displayText,
-=======
-    if (lecture.series.isEmpty) return const SizedBox.shrink();
-    return Row(
-      children: [
-        const Icon(Icons.playlist_play_rounded, size: 12, color: AppColors.textSecondary),
-        const SizedBox(width: 3),
-        Expanded(
-          child: Text(
-            lecture.series,
->>>>>>> Stashed changes
             style: const TextStyle(
               fontSize: 11,
               color: AppColors.textSecondary,
@@ -223,11 +208,7 @@ class LectureCard extends StatelessWidget {
     );
   }
 
-<<<<<<< Updated upstream
   // ── 메타 정보 행 (2행: 배지행 + 강사명행) ───────────
-=======
-  // ── 메타 정보 행 ────────────────────────────────────
->>>>>>> Stashed changes
   Widget _buildMetaRow() {
     final gc = _gradeColor();
     final sc = _subjectColor();
@@ -236,12 +217,9 @@ class LectureCard extends StatelessWidget {
         ? 'All'
         : '${lecture.gradeYear}학년';
     const Color allBadgeColor = Color(0xFFF97316);
-<<<<<<< Updated upstream
     // 시리즈 있을 때: 배지+강사명 한 줄
     // 시리즈 없을 때: 2번째 줄에 강사명 이미 있으므로 배지만 표시
     final hasSeries = lecture.series.isNotEmpty;
-=======
->>>>>>> Stashed changes
 
     return Row(
       children: [
@@ -250,7 +228,6 @@ class LectureCard extends StatelessWidget {
         _badge(yearLabel, yearLabel == 'All' ? allBadgeColor : gc.withValues(alpha: 0.65)),
         const SizedBox(width: 3),
         _badge(lecture.subject, sc),
-<<<<<<< Updated upstream
         if (hasSeries) ...[
           const SizedBox(width: 6),
           Expanded(
@@ -264,19 +241,6 @@ class LectureCard extends StatelessWidget {
             ),
           ),
         ],
-=======
-        const SizedBox(width: 5),
-        Expanded(
-          child: Text(
-            lecture.instructor,
-            style: const TextStyle(
-              fontSize: 11, color: AppColors.textSecondary,
-              fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
->>>>>>> Stashed changes
       ],
     );
   }
@@ -414,21 +378,17 @@ class _HashtagArea extends StatelessWidget {
   Widget build(BuildContext context) {
     if (tags.isEmpty) return const SizedBox.shrink();
 
-<<<<<<< Updated upstream
     // 어썸튜터 스타일: 연보라 배경 + 진보라 텍스트 + 옅은 보라 테두리 (고정색)
     const tagBg    = Color(0xFFEAF6FF); // 미니튀터 동일 하늘색 배경
     const tagText  = Color(0xFF42A8F0); // 미니튀터 동일 스카이블루 텍스트
     const tagBorder= Color(0xFFD7E9F9); // 미니튀터 동일 연한 테두리
 
-=======
->>>>>>> Stashed changes
     Widget chip(String tag) => GestureDetector(
       onTap: () => onTagTap(tag),
       child: Container(
         margin: const EdgeInsets.only(right: 5, bottom: 4),
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(
-<<<<<<< Updated upstream
           color: tagBg,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(color: tagBorder, width: 0.8),
@@ -460,17 +420,6 @@ class _HashtagArea extends StatelessWidget {
           style: const TextStyle(
             fontSize: 10,
             color: tagText,
-=======
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: color.withValues(alpha: 0.18), width: 0.8),
-        ),
-        child: Text(
-          '#$tag',
-          style: TextStyle(
-            fontSize: 10,
-            color: color,
->>>>>>> Stashed changes
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -489,11 +438,7 @@ class _HashtagArea extends StatelessWidget {
         builder: (context, constraints) {
           final avail = constraints.maxWidth;
           if (avail <= 0) {
-<<<<<<< Updated upstream
             return Wrap(children: tags.map(tagChip).toList());
-=======
-            return Wrap(children: tags.map(chip).toList());
->>>>>>> Stashed changes
           }
 
           int lineCount = 1;
@@ -509,20 +454,12 @@ class _HashtagArea extends StatelessWidget {
           }
 
           if (lineCount <= 2) {
-<<<<<<< Updated upstream
             return Wrap(children: tags.map(tagChip).toList());
-=======
-            return Wrap(children: tags.map(chip).toList());
->>>>>>> Stashed changes
           }
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
-<<<<<<< Updated upstream
             child: Row(children: tags.map(tagChip).toList()),
-=======
-            child: Row(children: tags.map(chip).toList()),
->>>>>>> Stashed changes
           );
         },
       ),

@@ -126,19 +126,11 @@ class AppState extends ChangeNotifier {
   // ─── Getters ───
   String get selectedLanguage => _selectedLanguage;
   bool get languageSelected => _languageSelected;
-<<<<<<< Updated upstream
   // 레거시 브랜드명(2분공부/이공/미니튜터/Mini Tutor) → Asome Tutor로 자동 변환
   String get nickname {
     if (!_isLoggedIn) return '게스트';
     const legacyNames = ['2분공부', '이공', '미니튜터', 'Mini Tutor', '2GONG', 'Minute Mentor', 'miniTutor'];
     if (legacyNames.contains(_nickname.trim())) return 'Asome Tutor';
-=======
-  // 레거시 브랜드명(2분공부/이공/2공) → miniTutor로 자동 변환
-  String get nickname {
-    if (!_isLoggedIn) return '게스트';
-    const legacyNames = ['2분공부', '이공', '2공', '2GONG', 'Minute Mentor'];
-    if (legacyNames.contains(_nickname.trim())) return 'miniTutor';
->>>>>>> Stashed changes
     return _nickname;
   }
   String get email => _email;
@@ -150,17 +142,10 @@ class AppState extends ChangeNotifier {
   // ─── 어드민 여부 (이메일 기반) ───
   bool get isAdmin {
     const adminEmails = [
-<<<<<<< Updated upstream
       'admin@asometutor.com',
       'admin@2gong.com',
       'master@asometutor.com',
       'superadmin@asometutor.com',
-=======
-      'admin@minitutor.com',
-      'admin@2gong.com',
-      'master@minitutor.com',
-      'superadmin@minitutor.com',
->>>>>>> Stashed changes
     ];
     return adminEmails.contains(_email.trim().toLowerCase());
   }
@@ -204,10 +189,7 @@ class AppState extends ChangeNotifier {
       _totalStudyMinutes = stats.totalStudyMinutes;
       _todayStudyMinutes = stats.todayStudyMinutes;
       _completedLectures = stats.completedLectures;
-<<<<<<< Updated upstream
       _searchCount = stats.searchCount;  // 검색수 복원
-=======
->>>>>>> Stashed changes
 
       // 3. 즐겨찾기 / 최근 본 강의 / 검색어
       _favoriteIds = await _authService.loadFavoriteIds(session.userId);
@@ -242,10 +224,7 @@ class AppState extends ChangeNotifier {
     _totalStudyMinutes = stats.totalStudyMinutes;
     _todayStudyMinutes = stats.todayStudyMinutes;
     _completedLectures = stats.completedLectures;
-<<<<<<< Updated upstream
     _searchCount = stats.searchCount;  // 검색수 복원
-=======
->>>>>>> Stashed changes
 
     // 즐겨찾기 / 최근 본 강의 / 검색어 불러오기
     _favoriteIds = await _authService.loadFavoriteIds(userId);
@@ -516,18 +495,14 @@ class AppState extends ChangeNotifier {
     _searchQuery = query;
     if (query.isNotEmpty) {
       _searchCount++;  // 검색 시 조회수 증가
-<<<<<<< Updated upstream
       // SharedPreferences에도 저장 (비동기, 로그인 시에만)
       if (_isLoggedIn) {
         _authService.incrementSearchCount(_userId);
       }
-=======
->>>>>>> Stashed changes
     }
     notifyListeners();
   }
 
-<<<<<<< Updated upstream
   /// 검색수 직접 증가 (search_screen._search() 등에서 호출)
   void incrementSearchCount() {
     _searchCount++;
@@ -537,8 +512,6 @@ class AppState extends ChangeNotifier {
     }
   }
 
-=======
->>>>>>> Stashed changes
   Future<void> addRecentSearch(String query) async {
     if (query.isEmpty) return;
     _recentSearches.remove(query);

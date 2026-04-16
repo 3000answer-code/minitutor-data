@@ -1,10 +1,5 @@
-<<<<<<< Updated upstream
 name: asometutor
 description: Asome Tutor - 어썸튜터. 매일 2분, 쌓이는 실력. 짧고 강한 강의 플랫폼.
-=======
-name: minitutor
-description: miniTutor - 미니튜터. 매일 2분, 쌓이는 실력. 짧고 강한 강의 플랫폼.
->>>>>>> Stashed changes
 publish_to: 'none'
 version: 3.60.0+1
 
@@ -66,8 +61,4 @@ flutter:
     - assets/images/banners/
     - assets/images/subjects/
     - assets/icons/
-<<<<<<< Updated upstream
-=======
-    - assets/lottie/
->>>>>>> Stashed changes
     - assets/handouts/

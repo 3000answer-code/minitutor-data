@@ -1,11 +1,6 @@
 {
-<<<<<<< Updated upstream
     "name": "Asome Tutor",
     "short_name": "AsomeTutor",
-=======
-    "name": "miniTutor",
-    "short_name": "miniTutor",
->>>>>>> Stashed changes
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FF6B00",

@@ -14,11 +14,7 @@ if (keyPropertiesFile.exists()) {
 }
 
 android {
-<<<<<<< Updated upstream
     namespace = "com.asometutor.study"
-=======
-    namespace = "com.minitutor.study"
->>>>>>> Stashed changes
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -32,11 +28,7 @@ android {
     }
 
     defaultConfig {
-<<<<<<< Updated upstream
         applicationId = "com.asometutor.study"
-=======
-        applicationId = "com.minitutor.study"
->>>>>>> Stashed changes
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = 27

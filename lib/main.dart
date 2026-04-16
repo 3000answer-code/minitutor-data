@@ -31,11 +31,7 @@ void main() async {
   ));
   // NAS 터널 URL 동적 업데이트 (백그라운드)
   ApiService.fetchTunnelUrl();
-<<<<<<< Updated upstream
   runApp(const AsomeTutorApp());
-=======
-  runApp(const App2Gong());
->>>>>>> Stashed changes
 }
 
 class AsomeTutorApp extends StatelessWidget {
@@ -47,11 +43,7 @@ class AsomeTutorApp extends StatelessWidget {
       create: (_) => AppState(),
       child: Consumer<AppState>(
         builder: (context, appState, _) => MaterialApp(
-<<<<<<< Updated upstream
           title: 'Asome Tutor',
-=======
-          title: 'miniTutor',
->>>>>>> Stashed changes
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
           home: const _AppRootScreen(),
@@ -202,11 +194,7 @@ class _SplashScreenState extends State<_SplashScreen>
                       const SizedBox(height: 24),
                       // 브랜드명
                       const Text(
-<<<<<<< Updated upstream
                         'Asome Tutor',
-=======
-                        'miniTutor',
->>>>>>> Stashed changes
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 32,
@@ -322,7 +310,6 @@ class MainShell extends StatelessWidget {
   Future<bool?> _showExitDialog(BuildContext context) {
     return showDialog<bool>(
       context: context,
-<<<<<<< Updated upstream
       barrierColor: Colors.black.withValues(alpha: 0.4),
       builder: (_) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -378,23 +365,6 @@ class MainShell extends StatelessWidget {
             ],
           ),
         ),
-=======
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('앱 종료', style: TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text('앱을 종료하시겠습니까?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('취소'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.error),
-            child: const Text('종료'),
-          ),
-        ],
->>>>>>> Stashed changes
       ),
     );
   }
@@ -411,11 +381,7 @@ class MainShell extends StatelessWidget {
       automaticallyImplyLeading: false,
       titleSpacing: 12,
       title: Row(children: [
-<<<<<<< Updated upstream
         // Asome Tutor 아이콘
-=======
-        // miniTutor 아이콘
->>>>>>> Stashed changes
         Container(
           width: 40,
           height: 40,
@@ -686,10 +652,7 @@ class _PipOverlayState extends State<_PipOverlay>
   bool _webReady = false;
   bool _webError = false;
   bool _isPaused = false;      // PIP 일시정지 상태
-<<<<<<< Updated upstream
   bool _showControls = false;  // 탭 시 일시적으로 컨트롤 표시
-=======
->>>>>>> Stashed changes
 
   // ── YouTube ID 추출
   static String? _ytId(String url) {
@@ -1074,7 +1037,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                           ),
                         ),
 
-<<<<<<< Updated upstream
                       // ③ 탭 감지 (컨트롤 잠시 표시)
                       Positioned.fill(
                         child: GestureDetector(
@@ -1101,22 +1063,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                             width: 42, height: 42,
                             decoration: BoxDecoration(
                               color: Colors.black.withValues(alpha: 0.70),
-=======
-                      // ③ 일시정지 시 반투명 오버레이
-                      if (_isPaused)
-                        Container(color: Colors.black.withValues(alpha: 0.35)),
-
-                      // ④ 중앙 일시정지/재생 버튼
-                      Center(
-                        child: GestureDetector(
-                          onTap: _togglePause,
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 150),
-                            width: 40, height: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(
-                                  alpha: _isPaused ? 0.75 : 0.45),
->>>>>>> Stashed changes
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -1124,7 +1070,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                                   ? Icons.play_arrow_rounded
                                   : Icons.pause_rounded,
                               color: Colors.white,
-<<<<<<< Updated upstream
                               size: 26,
                             ),
                           ),
@@ -1163,23 +1108,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                           decoration: BoxDecoration(
                             color: (_isPaused ? Colors.grey[700] : Colors.red)!
                                 .withValues(alpha: 0.90),
-=======
-                              size: 24,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // ⑤ 좌하단: 재생중 / 일시정지 뱃지
-                      Positioned(
-                        left: 6, bottom: 5,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 5, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: (_isPaused ? Colors.grey[700] : Colors.red)!
-                                .withValues(alpha: 0.92),
->>>>>>> Stashed changes
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
@@ -1187,17 +1115,10 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                             children: [
                               Icon(
                                 _isPaused
-<<<<<<< Updated upstream
                                     ? Icons.play_arrow_rounded
                                     : Icons.fiber_manual_record,
                                 color: Colors.white,
                                 size: _isPaused ? 10 : 6,
-=======
-                                    ? Icons.pause_circle_outline_rounded
-                                    : Icons.fiber_manual_record,
-                                color: Colors.white,
-                                size: _isPaused ? 8 : 6,
->>>>>>> Stashed changes
                               ),
                               const SizedBox(width: 3),
                               Text(
@@ -1211,7 +1132,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                           ),
                         ),
                       ),
-<<<<<<< Updated upstream
                       const SizedBox(width: 5),
                       // 강의 제목 (탭하면 본화면으로)
                       Expanded(
@@ -1252,102 +1172,6 @@ video{width:100%;height:100%;object-fit:contain;background:#000;}
                         ),
                       ),
                     ],
-=======
-
-                      // ⑥ 우상단: 닫기 버튼
-                      Positioned(
-                        right: 4, top: 4,
-                        child: GestureDetector(
-                          onTap: () => appState.deactivatePip(),
-                          child: Container(
-                            width: 22, height: 22,
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.75),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.close,
-                                color: Colors.white, size: 13),
-                          ),
-                        ),
-                      ),
-                    ]),
-                  ),
-                ),
-
-                // ━━━━━━━━━━━━━━━━━━━━━━━
-                // ── 강의 정보 + 본 화면 이동
-                // ━━━━━━━━━━━━━━━━━━━━━━━
-                GestureDetector(
-                  onTap: () {
-                    // PIP → 본 화면 복귀: deactivate 후 push
-                    // (Navigator stack 최상단에서 새로 열어야 기존 플레이어와 충돌 없음)
-                    appState.deactivatePip();
-                    Navigator.of(context, rootNavigator: true).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            LecturePlayerScreen(lecture: widget.lecture),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: pipW,
-                    height: pipInfoH,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A2E),
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
-                      ),
-                      border: Border(
-                        top: BorderSide(
-                            color: subjectColor.withValues(alpha: 0.3),
-                            width: 0.8),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        // 과목 컬러 도트
-                        Container(
-                          width: 6, height: 6,
-                          margin: const EdgeInsets.only(right: 6),
-                          decoration: BoxDecoration(
-                            color: subjectColor,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        Expanded(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                widget.lecture.title,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                widget.lecture.instructor,
-                                style: TextStyle(
-                                    fontSize: 9,
-                                    color: Colors.white.withValues(alpha: 0.6)),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.open_in_full_rounded,
-                            size: 12, color: subjectColor.withValues(alpha: 0.8)),
-                      ],
-                    ),
->>>>>>> Stashed changes
                   ),
                 ),
               ],
