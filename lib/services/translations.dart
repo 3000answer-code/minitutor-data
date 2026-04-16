@@ -33,7 +33,7 @@ class AppTranslations {
       'es': 'Inicio',
     },
     'nav_progress': {
-      'ko': '진도학습',
+      'ko': '교과서',
       'en': 'Progress',
       'ja': '進度',
       'zh': '进度',
@@ -525,7 +525,7 @@ class AppTranslations {
     // 진도 화면
     // ────────────────────────────────────────────
     'progress_title': {
-      'ko': '진도학습',
+      'ko': '교과서',
       'en': 'My Progress',
       'ja': '進度学習',
       'zh': '学习进度',
@@ -1193,7 +1193,7 @@ class AppTranslations {
     // 교과서 진도 화면
     // ────────────────────────────────────────────
     'curriculum_title': {
-      'ko': '진도학습', 'en': 'Progress', 'ja': '進度学習', 'zh': '进度学习', 'es': 'Progreso',
+      'ko': '교과서', 'en': 'Progress', 'ja': '進度学習', 'zh': '进度学习', 'es': 'Progreso',
     },
     'select_grade': {
       'ko': '학년 선택', 'en': 'Select Grade', 'ja': '学年選択', 'zh': '选择年级', 'es': 'Seleccionar Grado',

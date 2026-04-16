@@ -171,8 +171,8 @@ class _ProgressScreenState extends State<ProgressScreen> {
                     const SizedBox(height: 10),
                     SizedBox(
                       height: 36,
-                      child: ListView(
-                          scrollDirection: Axis.horizontal,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: subjects.map((sub) {
                             final isSelected =
                                 appState.progressSubject == sub;
