@@ -151,39 +151,40 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 children: [
-                  const Spacer(flex: 3),
+                  // ── 상단 여백
+                  const Spacer(flex: 2),
 
-                  // ── 로고 영역
+                  // ── 그룹1: 로고 + 안내 문구
                   _buildLogo(),
-
-                  const SizedBox(height: 20),
-
-                  // ── 안내 문구
+                  const SizedBox(height: 16),
                   _buildDesc(),
 
-                  const SizedBox(height: 22),
+                  // ── 그룹1~2 사이 여백
+                  const Spacer(flex: 2),
 
-                  // ── 언어 버튼 목록
+                  // ── 그룹2: 언어 버튼 목록
                   _buildLangBtn(_languages[0], fullWidth: true),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(children: [
                     Expanded(child: _buildLangBtn(_languages[1])),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Expanded(child: _buildLangBtn(_languages[2])),
                   ]),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Row(children: [
                     Expanded(child: _buildLangBtn(_languages[3])),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Expanded(child: _buildLangBtn(_languages[4])),
                   ]),
 
-                  const SizedBox(height: 28),
+                  // ── 그룹2~3 사이 여백
+                  const Spacer(flex: 2),
 
-                  // ── 시작 버튼
+                  // ── 그룹3: 시작 버튼
                   _buildStartButton(),
 
-                  const Spacer(flex: 2),
+                  // ── 하단 여백
+                  const Spacer(flex: 1),
                 ],
               ),
             ),
