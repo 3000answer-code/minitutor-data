@@ -183,14 +183,11 @@ class LectureCard extends StatelessWidget {
 
   // ── 시리즈명 행 ─────────────────────────────────────
   Widget _buildSeriesRow() {
-    // 시리즈가 있으면 시리즈명, 없으면 강사명을 2번째 줄로 표시
-    final displayText = lecture.series.isNotEmpty ? lecture.series : lecture.instructor;
-    final icon = lecture.series.isNotEmpty
-        ? Icons.playlist_play_rounded
-        : Icons.person_outline_rounded;
+    // 시리즈가 있으면 시리즈명, 없으면 "시리즈" 라고 표기 (520 규칙)
+    final displayText = lecture.series.isNotEmpty ? lecture.series : '시리즈';
     return Row(
       children: [
-        Icon(icon, size: 12, color: AppColors.textSecondary),
+        const Icon(Icons.playlist_play_rounded, size: 12, color: AppColors.textSecondary),
         const SizedBox(width: 3),
         Expanded(
           child: Text(
@@ -217,10 +214,8 @@ class LectureCard extends StatelessWidget {
         ? 'All'
         : '${lecture.gradeYear}학년';
     const Color allBadgeColor = Color(0xFFF97316);
-    // 시리즈 있을 때: 배지+강사명 한 줄
-    // 시리즈 없을 때: 2번째 줄에 강사명 이미 있으므로 배지만 표시
-    final hasSeries = lecture.series.isNotEmpty;
 
+    // 520 규칙: 항상 배지 + 강사명을 한 줄에 표시
     return Row(
       children: [
         _badge(gradeLabel, gc),
@@ -228,19 +223,17 @@ class LectureCard extends StatelessWidget {
         _badge(yearLabel, yearLabel == 'All' ? allBadgeColor : gc.withValues(alpha: 0.65)),
         const SizedBox(width: 3),
         _badge(lecture.subject, sc),
-        if (hasSeries) ...[
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              lecture.instructor,
-              style: const TextStyle(
-                fontSize: 10.5, color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            lecture.instructor,
+            style: const TextStyle(
+              fontSize: 10.5, color: AppColors.textSecondary,
+              fontWeight: FontWeight.w500),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
+        ),
       ],
     );
   }

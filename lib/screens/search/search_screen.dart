@@ -384,7 +384,7 @@ class _SearchScreenState extends State<SearchScreen>
     ]);
   }
 
-  // ── 노트 검색 카드 (모던 슬림 디자인) ──────────────────────────
+  // ── 노트 검색 카드 (520 스타일 3줄 · 내용 중심부 배치) ──────────
   Widget _buildNoteCard(Lecture lec, List<Lecture> allResults, int index, AppState appState) {
     Color subjectColor;
     switch (lec.subject) {
@@ -402,9 +402,8 @@ class _SearchScreenState extends State<SearchScreen>
         .where((u) => u.isNotEmpty && !u.endsWith('.mp4'))
         .toList();
     final thumbUrl = realUrls.isNotEmpty ? realUrls.first : '';
-    final pageCount = realUrls.length;
 
-    // 썸네일 위젯 (크기 지정은 밖에서)
+    // 썸네일 위젯
     Widget thumbInner;
     if (thumbUrl.isEmpty) {
       thumbInner = Container(
@@ -434,6 +433,17 @@ class _SearchScreenState extends State<SearchScreen>
             )));
     }
 
+    // 학제 색상
+    Color gradeColor;
+    switch (lec.grade) {
+      case 'elementary': gradeColor = AppColors.elementary; break;
+      case 'middle':     gradeColor = AppColors.middle; break;
+      default:           gradeColor = AppColors.high; break;
+    }
+    final yearLabel = lec.gradeYear.isEmpty || lec.gradeYear == 'All'
+        ? 'All' : '${lec.gradeYear}학년';
+    const Color allBadgeColor = Color(0xFFF97316);
+
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(
         builder: (_) => NoteSearchViewerScreen(
@@ -453,175 +463,131 @@ class _SearchScreenState extends State<SearchScreen>
             ),
           ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── 썸네일: 고정 너비 105 ──────────────
+                ClipRRect(
+                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+                  child: Container(
+                    width: 105,
+                    color: Colors.white,
+                    alignment: Alignment.center,
+                    child: thumbInner,
+                  ),
+                ),
 
-            // ── 썸네일: 고정 크기 (108×120) ──────────────
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
-              child: Container(
-                width: 108,
-                height: 120,
-                color: Colors.white,
-                alignment: Alignment.center,
-                child: thumbInner,
-              ),
-            ),
-
-            // ── 본문 정보 영역 ──────────────────────────
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(11, 10, 10, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 1행: 과목 배지 + 쪽수
-                    Row(children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: subjectColor,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        child: Text(lec.subject,
+                // ── 본문 정보 영역 (세로 중앙 정렬) ─────
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 6, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 1줄: 강의 제목 (520 스타일)
+                        Text(lec.title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
-                                fontSize: 10,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                letterSpacing: 0.2)),
-                      ),
-                      if (pageCount > 0) ...[
-                        const SizedBox(width: 6),
-                        Text('$pageCount쪽',
-                            style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFFAAAAAA),
-                                fontWeight: FontWeight.w400)),
-                      ],
-                    ]),
+                                color: AppColors.textPrimary,
+                                height: 1.3)),
 
-                    const SizedBox(height: 5),
+                        const SizedBox(height: 4),
 
-                    // 2행: 강의 제목 (가장 크게, 가장 중요)
-                    Text(lec.title,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF1A1A2E),
-                            height: 1.35)),
-
-                    const SizedBox(height: 4),
-
-                    // 3행: 시리즈명(있으면) 또는 학년+연도 배지 + 강사명
-                    if (lec.series.isNotEmpty)
-                      Row(children: [
-                        const Icon(Icons.playlist_play_rounded,
-                            size: 11, color: Color(0xFFAAAAAA)),
-                        const SizedBox(width: 3),
-                        Expanded(
-                          child: Text(lec.series,
+                        // 2줄: 시리즈명 (없으면 "시리즈") — 520 스타일 아이콘+회색
+                        Row(children: [
+                          Icon(Icons.playlist_play_rounded,
+                              size: 12, color: AppColors.textSecondary),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              lec.series.isNotEmpty ? lec.series : '시리즈',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                  fontSize: 10.5,
-                                  color: Color(0xFF888888),
-                                  fontWeight: FontWeight.w500)),
-                        ),
-                      ])
-                    else
-                      Row(children: [
-                        _miniNoteBadge(lec.gradeText, subjectColor),
-                        const SizedBox(width: 4),
-                        _miniNoteBadge(
-                          lec.gradeYear.isEmpty || lec.gradeYear == 'All'
-                              ? 'All'
-                              : '${lec.gradeYear}학년',
-                          const Color(0xFFF97316),
-                        ),
-                      ]),
-
-                    const SizedBox(height: 3),
-
-                    // 4행: 강사명
-                    Text(lec.instructor,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 11,
-                            color: Color(0xFF9E9E9E),
-                            fontWeight: FontWeight.w400)),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── 영상 버튼: 오른쪽 세로 중앙 ───────────
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {
-                appState.addRecentView(lec.id);
-                // PIP 중인 강의와 동일하면 PIP 종료, 다른 강의면 PIP 유지
-                if (appState.pipActive && appState.pipLecture?.id == lec.id) {
-                  appState.deactivatePip();
-                }
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => LecturePlayerScreen(lecture: lec),
-                ));
-              },
-              child: SizedBox(
-                width: 48,
-                height: 90,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        color: subjectColor,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: subjectColor.withValues(alpha: 0.30),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
+                                  fontSize: 11,
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w500),
+                            ),
                           ),
-                        ],
-                      ),
-                      child: const Icon(Icons.play_arrow_rounded,
-                          size: 18, color: Colors.white),
+                        ]),
+
+                        const SizedBox(height: 4),
+
+                        // 3줄: 학제 배지 + 학년 배지 + 과목 배지 + 강사명 (520 스타일)
+                        Row(children: [
+                          _noteBadge520(lec.gradeText, gradeColor),
+                          const SizedBox(width: 3),
+                          _noteBadge520(yearLabel, yearLabel == 'All' ? allBadgeColor : gradeColor.withValues(alpha: 0.65)),
+                          const SizedBox(width: 3),
+                          _noteBadge520(lec.subject, subjectColor),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(lec.instructor,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 10.5,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500)),
+                          ),
+                        ]),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text('영상',
-                        style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            color: subjectColor)),
-                  ],
+                  ),
                 ),
-              ),
+
+                // ── 영상 버튼: 오른쪽 세로 중앙 ───────────
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    appState.addRecentView(lec.id);
+                    if (appState.pipActive && appState.pipLecture?.id == lec.id) {
+                      appState.deactivatePip();
+                    }
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => LecturePlayerScreen(lecture: lec),
+                    ));
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 10, 10, 0),
+                    child: Container(
+                      width: 34, height: 34,
+                      decoration: BoxDecoration(
+                        color: subjectColor.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.play_arrow_rounded,
+                          color: subjectColor, size: 22),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // ── 노트 검색 카드 미니 배지 헬퍼 ──────────────────────
-  Widget _miniNoteBadge(String label, Color color) => Container(
+  // ── 520 스타일 배지 헬퍼 (LectureCard와 동일) ──────────
+  Widget _noteBadge520(String label, Color color) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
     decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.12),
+      color: color.withValues(alpha: 0.13),
       borderRadius: BorderRadius.circular(4),
       border: Border.all(color: color.withValues(alpha: 0.25), width: 0.8),
     ),
     child: Text(label,
         style: TextStyle(
-            fontSize: 9.5, color: color, fontWeight: FontWeight.w700)),
+            fontSize: 10, color: color, fontWeight: FontWeight.w700)),
   );
 
   Widget _buildNoteEmptyState(String message) {

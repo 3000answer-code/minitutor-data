@@ -226,12 +226,12 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                     // ── 교안 미리보기 썸네일 ──
                     ClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: Container(
-                        width: 100, height: 100,
+                        width: 100, height: 78,
                         color: Colors.white,
                         alignment: Alignment.center,
                         child: previewUrl != null
@@ -248,60 +248,71 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    // ── 텍스트 정보 ──
+                    // ── 텍스트 정보 (520 스타일 3줄 · 세로 중앙) ──
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 과목 배지 + 강사명
-                          Row(children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: subjectColor.withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(4)),
-                              child: Text(note.subject,
-                                style: TextStyle(fontSize: 10,
-                                  color: subjectColor,
-                                  fontWeight: FontWeight.w700)),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(note.instructorName,
-                              style: const TextStyle(fontSize: 11,
-                                color: AppColors.textSecondary)),
-                          ]),
-                          const SizedBox(height: 4),
-                          // 강의 제목
-                          Text(note.lectureTitle,
-                            style: const TextStyle(fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary),
-                            maxLines: 1, overflow: TextOverflow.ellipsis),
-                          const SizedBox(height: 4),
-                          // 필기 수 · 메모 수 · 저장 시각
-                          Row(children: [
-                            Icon(Icons.edit_rounded, size: 11,
-                              color: subjectColor.withValues(alpha: 0.7)),
-                            const SizedBox(width: 3),
-                            Text('필기 ${note.strokeCount}획',
-                              style: const TextStyle(fontSize: 11,
-                                color: AppColors.textSecondary)),
-                            if (note.memoCount > 0) ...[
-                              const SizedBox(width: 8),
-                              const Icon(Icons.sticky_note_2_outlined,
-                                size: 11, color: AppColors.textHint),
+                      child: () {
+                        // Lecture 객체 조회하여 시리즈·학제·학년 정보 사용
+                        final lecture = appState.allLectures
+                            .where((l) => l.id == note.lectureId)
+                            .firstOrNull;
+                        final seriesName = lecture != null && lecture.series.isNotEmpty
+                            ? lecture.series : '시리즈';
+                        final gradeText = lecture?.gradeText ?? '중등';
+                        final gradeStr = lecture?.grade ?? 'middle';
+                        final gradeYear = lecture?.gradeYear ?? 'All';
+                        final yearLabel = gradeYear.isEmpty || gradeYear == 'All'
+                            ? 'All' : '${gradeYear}학년';
+                        final gc = _gradeColor(gradeStr);
+                        const Color allBadgeColor = Color(0xFFF97316);
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 1줄: 강의 제목
+                            Text(note.lectureTitle,
+                              style: const TextStyle(fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                height: 1.3),
+                              maxLines: 2, overflow: TextOverflow.ellipsis),
+                            const SizedBox(height: 4),
+                            // 2줄: 시리즈명 (520 스타일 아이콘+회색)
+                            Row(children: [
+                              const Icon(Icons.playlist_play_rounded,
+                                  size: 12, color: AppColors.textSecondary),
                               const SizedBox(width: 3),
-                              Text('메모 ${note.memoCount}개',
-                                style: const TextStyle(fontSize: 11,
-                                  color: AppColors.textHint)),
-                            ],
-                          ]),
-                          const SizedBox(height: 3),
-                          Text(note.savedAt,
-                            style: const TextStyle(fontSize: 10,
-                              color: AppColors.textHint)),
-                        ],
-                      ),
+                              Expanded(
+                                child: Text(seriesName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500)),
+                              ),
+                            ]),
+                            const SizedBox(height: 4),
+                            // 3줄: 학제 + 학년 + 과목 + 강사 (520 스타일 배지)
+                            Row(children: [
+                              _noteBadge520(gradeText, gc),
+                              const SizedBox(width: 3),
+                              _noteBadge520(yearLabel, yearLabel == 'All' ? allBadgeColor : gc.withValues(alpha: 0.65)),
+                              const SizedBox(width: 3),
+                              _noteBadge520(note.subject, subjectColor),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(note.instructorName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 10.5,
+                                    color: AppColors.textSecondary,
+                                    fontWeight: FontWeight.w500)),
+                              ),
+                            ]),
+                          ],
+                        );
+                      }(),
                     ),
                     // ── 휴지통 삭제 버튼 ──
                     IconButton(
@@ -505,10 +516,34 @@ class _MyActivityScreenState extends State<MyActivityScreen>
 
   Color _subjectColor(String subject) {
     switch (subject) {
-      case '수학': return AppColors.math;
-      case '과학': return AppColors.science;
-      case '화학': return const Color(0xFFE67E22);
-      default: return AppColors.other;
+      case '수학':     return AppColors.math;
+      case '과학':     return AppColors.science;
+      case '공통과학': return AppColors.commonScience;
+      case '물리':     return AppColors.physics;
+      case '화학':     return AppColors.chemistry;
+      case '생명과학': return AppColors.biology;
+      case '지구과학': return AppColors.earth;
+      default:         return AppColors.other;
     }
   }
+
+  Color _gradeColor(String grade) {
+    switch (grade) {
+      case 'elementary': return AppColors.elementary;
+      case 'middle':     return AppColors.middle;
+      default:           return AppColors.high;
+    }
+  }
+
+  Widget _noteBadge520(String label, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.13),
+      borderRadius: BorderRadius.circular(4),
+      border: Border.all(color: color.withValues(alpha: 0.25), width: 0.8),
+    ),
+    child: Text(label,
+        style: TextStyle(
+            fontSize: 10, color: color, fontWeight: FontWeight.w700)),
+  );
 }
