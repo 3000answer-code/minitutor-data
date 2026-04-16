@@ -31,11 +31,11 @@ void main() async {
   ));
   // NAS 터널 URL 동적 업데이트 (백그라운드)
   ApiService.fetchTunnelUrl();
-  runApp(const App2Gong());
+  runApp(const AsomeTutorApp());
 }
 
-class App2Gong extends StatelessWidget {
-  const App2Gong({super.key});
+class AsomeTutorApp extends StatelessWidget {
+  const AsomeTutorApp({super.key});
 
   @override
   Widget build(BuildContext context) {

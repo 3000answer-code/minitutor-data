@@ -378,7 +378,7 @@ class _HashtagArea extends StatelessWidget {
   Widget build(BuildContext context) {
     if (tags.isEmpty) return const SizedBox.shrink();
 
-    // 미니튜터 스타일: 연보라 배경 + 진보라 텍스트 + 옅은 보라 테두리 (고정색)
+    // 어썸튜터 스타일: 연보라 배경 + 진보라 텍스트 + 옅은 보라 테두리 (고정색)
     const tagBg    = Color(0xFFEAF6FF); // 미니튀터 동일 하늘색 배경
     const tagText  = Color(0xFF42A8F0); // 미니튀터 동일 스카이블루 텍스트
     const tagBorder= Color(0xFFD7E9F9); // 미니튀터 동일 연한 테두리

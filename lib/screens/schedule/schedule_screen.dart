@@ -335,7 +335,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(20)),
-                    child: const Text('미니튜터 이벤트',
+                    child: const Text('어썸튜터 이벤트',
                       style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
                   ),
                   const SizedBox(height: 6),

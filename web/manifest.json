@@ -1,11 +1,11 @@
 {
-    "name": "miniTutor",
-    "short_name": "miniTutor",
+    "name": "Asome Tutor",
+    "short_name": "AsomeTutor",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#FF6B00",
+    "theme_color": "#FF6B00",
+    "description": "Asome Tutor - 매일 2분, 쌓이는 실력. 짧고 강한 강의 플랫폼.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -126,10 +126,10 @@ class AppState extends ChangeNotifier {
   // ─── Getters ───
   String get selectedLanguage => _selectedLanguage;
   bool get languageSelected => _languageSelected;
-  // 레거시 브랜드명(2분공부/이공/Asome Tutor) → Asome Tutor로 자동 변환
+  // 레거시 브랜드명(2분공부/이공/미니튜터/Mini Tutor) → Asome Tutor로 자동 변환
   String get nickname {
     if (!_isLoggedIn) return '게스트';
-    const legacyNames = ['2분공부', '이공', 'Asome Tutor', '2GONG', 'Minute Mentor'];
+    const legacyNames = ['2분공부', '이공', '미니튜터', 'Mini Tutor', '2GONG', 'Minute Mentor', 'miniTutor'];
     if (legacyNames.contains(_nickname.trim())) return 'Asome Tutor';
     return _nickname;
   }
