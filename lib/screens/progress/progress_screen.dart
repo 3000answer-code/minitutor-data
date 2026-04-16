@@ -8,6 +8,7 @@ import '../../services/translations.dart';
 import '../../theme/app_theme.dart';
 import '../../screens/profile/profile_drawer.dart';
 import '../lecture/lecture_player_screen.dart';
+import '../../widgets/lecture_card.dart';
 
 class ProgressScreen extends StatefulWidget {
   const ProgressScreen({super.key});
@@ -874,329 +875,126 @@ class _ProgressScreenState extends State<ProgressScreen> {
     );
   }
 
-  // 인기 영상 리스트 (가상 데이터 포함)
+  // 인기 영상 리스트 (추천 강의에서 학년별 5개씩, 예비중은 빈칸)
   Widget _buildPopularVideosList(List<dynamic> allLectures) {
-    // 실제 데이터 필터링
-    final filteredLectures = allLectures.where((l) {
-      if (_popularGrade == 'elementary') return l.grade == 'elementary';
-      if (_popularGrade == 'middle') return l.grade == 'middle';
-      if (_popularGrade == 'high') return l.grade == 'high';
-      return false;
-    }).toList();
+    final appState = context.read<AppState>();
 
-    // 조회수 기준 정렬
-    filteredLectures.sort((a, b) => (b.viewCount ?? 0).compareTo(a.viewCount ?? 0));
-    
-    // 실제 데이터가 있으면 사용
-    if (filteredLectures.isNotEmpty) {
-      final topLectures = filteredLectures.take(10).toList();
-      return Column(
-        children: topLectures.asMap().entries.map((entry) {
-          final index = entry.key;
-          final lecture = entry.value;
-          return _buildPopularVideoCard(index + 1, lecture);
-        }).toList(),
+    // 예비중은 빈칸 처리
+    if (_popularGrade == 'elementary') {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(Icons.upcoming_rounded, size: 44, color: AppColors.textHint.withValues(alpha: 0.4)),
+              const SizedBox(height: 12),
+              const Text('준비 중입니다',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+              const SizedBox(height: 4),
+              const Text('예비중 인기 강의가 곧 추가됩니다',
+                  style: TextStyle(fontSize: 12, color: AppColors.textHint)),
+            ],
+          ),
+        ),
       );
     }
 
-    // 실제 데이터가 없으면 가상 데이터 생성
-    final dummyLectures = _generateDummyPopularLectures();
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.amber.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-          ),
-          child: Row(
+    // 추천 강의에서 해당 학년 필터 → 상위 5개
+    final recommended = appState.recommendedLectures
+        .where((l) => l.grade == _popularGrade)
+        .take(5)
+        .toList();
+
+    // 추천 강의가 부족하면 전체에서 보충
+    if (recommended.length < 5) {
+      final extra = (allLectures as List)
+          .where((l) => l.grade == _popularGrade && !recommended.any((r) => r.id == l.id))
+          .take(5 - recommended.length)
+          .toList();
+      for (final l in extra) {
+        recommended.add(l);
+      }
+    }
+
+    if (recommended.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Column(
             children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.amber[700]),
+              Icon(Icons.video_library_outlined, size: 44, color: AppColors.textHint.withValues(alpha: 0.4)),
+              const SizedBox(height: 12),
+              const Text('등록된 강의가 없습니다',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 520 스타일 LectureCard (순위 배지 + LectureCard)
+    return Column(
+      children: recommended.asMap().entries.map((entry) {
+        final rank = entry.key + 1;
+        final lecture = entry.value;
+        final rankColor = rank == 1
+            ? const Color(0xFFFFD700)
+            : rank == 2
+                ? const Color(0xFFC0C0C0)
+                : rank == 3
+                    ? const Color(0xFFCD7F32)
+                    : AppColors.textSecondary;
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 순위 배지
+              Padding(
+                padding: const EdgeInsets.only(top: 18),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: rank <= 3 ? rankColor : rankColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$rank',
+                      style: TextStyle(
+                        color: rank <= 3 ? Colors.white : AppColors.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(width: 8),
+              // LectureCard (520 스타일 4~5줄)
               Expanded(
-                child: Text(
-                  '가상 데이터입니다 (실제 강의 등록 시 자동 반영)',
-                  style: TextStyle(fontSize: 11, color: Colors.amber[900]),
+                child: LectureCard(
+                  lecture: lecture,
+                  onTap: () {
+                    appState.addRecentView(lecture.id);
+                    if (appState.pipActive && appState.pipLecture?.id == lecture.id) {
+                      appState.deactivatePip();
+                    }
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => LecturePlayerScreen(lecture: lecture),
+                    ));
+                  },
                 ),
               ),
             ],
           ),
-        ),
-        ...dummyLectures.asMap().entries.map((entry) {
-          final index = entry.key;
-          final data = entry.value;
-          return _buildDummyPopularVideoCard(index + 1, data);
-        }),
-      ],
-    );
-  }
-
-  // 가상 인기 영상 데이터 생성
-  List<Map<String, dynamic>> _generateDummyPopularLectures() {
-    if (_popularGrade == 'elementary') {
-      return [
-        {'title': '분수의 덧셈과 뺄셈', 'subject': '수학', 'views': 1250},
-        {'title': '소수의 곱셈', 'subject': '수학', 'views': 980},
-        {'title': '약수와 배수', 'subject': '수학', 'views': 875},
-        {'title': '도형의 넓이', 'subject': '수학', 'views': 720},
-        {'title': '식물의 구조와 기능', 'subject': '과학', 'views': 650},
-      ];
-    } else if (_popularGrade == 'middle') {
-      return [
-        {'title': '일차방정식 풀이', 'subject': '수학', 'views': 2350},
-        {'title': '피타고라스 정리', 'subject': '수학', 'views': 2100},
-        {'title': '연립방정식 해법', 'subject': '수학', 'views': 1890},
-        {'title': '세포 분열과 생식', 'subject': '과학', 'views': 1650},
-        {'title': '화학 반응식', 'subject': '과학', 'views': 1420},
-        {'title': '이차함수 그래프', 'subject': '수학', 'views': 1280},
-        {'title': '전기와 자기', 'subject': '과학', 'views': 1150},
-      ];
-    } else {
-      return [
-        {'title': '이차방정식 근의 공식', 'subject': '수학', 'views': 3250},
-        {'title': '삼각함수의 덧셈정리', 'subject': '수학', 'views': 2980},
-        {'title': '미분과 적분의 기본', 'subject': '수학', 'views': 2750},
-        {'title': '수열의 극한', 'subject': '수학', 'views': 2480},
-        {'title': '유전과 진화', 'subject': '과학', 'views': 2150},
-        {'title': '화학 평형', 'subject': '과학', 'views': 1980},
-        {'title': '역학적 에너지 보존', 'subject': '과학', 'views': 1820},
-        {'title': '확률과 통계', 'subject': '수학', 'views': 1650},
-      ];
-    }
-  }
-
-  // 인기 영상 카드
-  Widget _buildPopularVideoCard(int rank, dynamic lecture) {
-    final rankColor = rank <= 3
-        ? (rank == 1 ? const Color(0xFFFFD700) : rank == 2 ? const Color(0xFFC0C0C0) : const Color(0xFFCD7F32))
-        : AppColors.textSecondary;
-
-    return GestureDetector(
-      onTap: () {
-        context.read<AppState>().addRecentView(lecture.id);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => LecturePlayerScreen(lecture: lecture),
-          ),
         );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: rank <= 3
-              ? Border.all(color: rankColor.withValues(alpha: 0.3), width: 2)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // 순위 배지
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: rankColor.withValues(alpha: rank <= 3 ? 1.0 : 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  '$rank',
-                  style: TextStyle(
-                    color: rank <= 3 ? Colors.white : AppColors.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            
-            // 강의 정보
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    lecture.title,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: _subjectColor(lecture.subject).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          lecture.subject,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: _subjectColor(lecture.subject),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '조회 ${lecture.viewCount ?? 0}회',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // 재생 아이콘
-            Icon(
-              Icons.play_circle_outline_rounded,
-              color: AppColors.primary,
-              size: 28,
-            ),
-          ],
-        ),
-      ),
+      }).toList(),
     );
   }
 
-  // 가상 인기 영상 카드 (dummy data용)
-  Widget _buildDummyPopularVideoCard(int rank, Map<String, dynamic> data) {
-    final rankColor = rank == 1
-        ? const Color(0xFFFFD700)
-        : rank == 2
-            ? const Color(0xFFC0C0C0)
-            : rank == 3
-                ? const Color(0xFFCD7F32)
-                : AppColors.textSecondary;
-
-    return GestureDetector(
-      onTap: () {
-        // 가상 데이터는 재생하지 않음
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('가상 데이터입니다'), duration: Duration(seconds: 1)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: rank <= 3
-              ? Border.all(color: rankColor.withValues(alpha: 0.3), width: 2)
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // 순위 배지
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: rankColor.withValues(alpha: rank <= 3 ? 1.0 : 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  '$rank',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: rank <= 3 ? Colors.white : rankColor,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            
-            // 강의 정보
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    data['title'],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: _subjectColor(data['subject']).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          data['subject'],
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: _subjectColor(data['subject']),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '조회 ${data['viewCount']}회',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // 재생 아이콘
-            Icon(
-              Icons.play_circle_outline_rounded,
-              color: AppColors.primary.withValues(alpha: 0.5),
-              size: 28,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // 통계 박스 (홈 화면과 동일)
   Widget _buildStudyStats(AppState appState) {
