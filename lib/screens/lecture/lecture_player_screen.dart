@@ -2892,81 +2892,94 @@ function pauseVid(){vid.pause();}
       backgroundColor: Colors.white,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom +
-                  MediaQuery.of(ctx).padding.bottom,
-          left: 20, right: 20, top: 20),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 36, height: 4,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 14),
-          Row(children: [
-            const Text('메모 추가',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: _kOrange.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12)),
-              child: Text(_formatTime(_currentTime),
-                style: const TextStyle(
-                  fontSize: 11, color: _kOrange, fontWeight: FontWeight.w700)),
-            ),
-          ]),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _noteController,
-            maxLines: 4, autofocus: true,
-            decoration: InputDecoration(
-              hintText: '강의 내용을 메모하세요...',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: _kOrange, width: 2)),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _kOrange, foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(vertical: 12)),
-              onPressed: () async {
-                if (_noteController.text.trim().isNotEmpty) {
-                  setState(() {
-                    _savedNotes.add({
-                      'time': _formatTime(_currentTime),
-                      'text': _noteController.text.trim(),
-                    });
-                    _noteController.clear();
-                  });
-                  await _saveNotes();
-                  if (mounted) Navigator.pop(context);
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Row(children: [
-                          Icon(Icons.check_circle, color: Colors.white, size: 18),
-                          SizedBox(width: 8),
-                          Text('메모가 저장되었습니다'),
-                        ]),
-                        backgroundColor: _kOrange,
-                        duration: Duration(seconds: 2)));
-                  }
-                }
-              },
-              child: const Text('저장', style: TextStyle(fontWeight: FontWeight.w700)),
-            ),
-          ),
-          const SizedBox(height: 16),
-        ]),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.45,
       ),
+      builder: (ctx) {
+        final isLandscape = MediaQuery.of(ctx).orientation == Orientation.landscape;
+        final memoLines = isLandscape ? 2 : 4;
+        final hPad = isLandscape ? 16.0 : 20.0;
+        final vPad = isLandscape ? 10.0 : 20.0;
+
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+            left: hPad, right: hPad, top: vPad),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(width: 36, height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+            SizedBox(height: isLandscape ? 8 : 14),
+            Row(children: [
+              const Text('메모 추가',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: _kOrange.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12)),
+                child: Text(_formatTime(_currentTime),
+                  style: const TextStyle(
+                    fontSize: 11, color: _kOrange, fontWeight: FontWeight.w700)),
+              ),
+            ]),
+            SizedBox(height: isLandscape ? 8 : 12),
+            TextField(
+              controller: _noteController,
+              maxLines: memoLines, autofocus: true,
+              style: const TextStyle(fontSize: 14),
+              decoration: InputDecoration(
+                hintText: '강의 내용을 메모하세요...',
+                hintStyle: const TextStyle(fontSize: 13),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: 12, vertical: isLandscape ? 8 : 12),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: _kOrange, width: 2)),
+              ),
+            ),
+            SizedBox(height: isLandscape ? 8 : 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _kOrange, foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.symmetric(vertical: isLandscape ? 8 : 12)),
+                onPressed: () async {
+                  if (_noteController.text.trim().isNotEmpty) {
+                    setState(() {
+                      _savedNotes.add({
+                        'time': _formatTime(_currentTime),
+                        'text': _noteController.text.trim(),
+                      });
+                      _noteController.clear();
+                    });
+                    await _saveNotes();
+                    if (mounted) Navigator.pop(context);
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Row(children: [
+                            Icon(Icons.check_circle, color: Colors.white, size: 18),
+                            SizedBox(width: 8),
+                            Text('메모가 저장되었습니다'),
+                          ]),
+                          backgroundColor: _kOrange,
+                          duration: Duration(seconds: 2)));
+                    }
+                  }
+                },
+                child: const Text('저장', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+            SizedBox(height: isLandscape ? 8 : 16),
+          ]),
+        );
+      },
     );
   }
 

@@ -1260,26 +1260,29 @@ class _SearchScreenState extends State<SearchScreen>
               children: [
                 _buildKeywordList(appState.popularSearches, isPopular: true),
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  // '최근 검색' / '전체 삭제' 헤더를 최상단에 바짝 붙임
+                  // '최근 검색' / '전체 삭제' 헤더 — 중앙 적절 간격
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
-                    child: Row(children: [
-                      Text(T('search_recent_label'),
-                          style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary)),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: appState.clearRecentSearches,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          child: Text(T('search_clear_all'),
-                              style: const TextStyle(
-                                  fontSize: 12, color: AppColors.textHint)),
+                    padding: const EdgeInsets.fromLTRB(0, 6, 0, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(T('search_recent_label'),
+                            style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary)),
+                        const SizedBox(width: 40),
+                        GestureDetector(
+                          onTap: appState.clearRecentSearches,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            child: Text(T('search_clear_all'),
+                                style: const TextStyle(
+                                    fontSize: 12, color: AppColors.textHint)),
+                          ),
                         ),
-                      ),
-                    ]),
+                      ],
+                    ),
                   ),
                   const Divider(height: 1, indent: 16, endIndent: 16, color: Color(0xFFEEEEEE)),
                   Expanded(
