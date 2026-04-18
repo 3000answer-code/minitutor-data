@@ -18,7 +18,7 @@ import 'screens/consultation/consultation_screen.dart';
 import 'screens/instructor/instructor_screen.dart';
 import 'screens/curriculum/curriculum_screen.dart';
 import 'screens/profile/profile_drawer.dart';
-import 'screens/storyboard/storyboard_viewer_screen.dart';
+import 'screens/profile/my_activity_screen.dart';
 import 'screens/lecture/lecture_player_screen.dart';
 
 void main() async {
@@ -433,29 +433,6 @@ class MainShell extends StatelessWidget {
       ]),
       actions: [
         IconButton(
-          icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
-          tooltip: '강의 새로고침',
-          onPressed: () async {
-            final appState = context.read<AppState>();
-            await appState.refreshApiLectures();
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✅ 최신 강의 목록을 불러왔습니다'),
-                  duration: Duration(seconds: 2),
-                  backgroundColor: Color(0xFF059669),
-                ),
-              );
-            }
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.slideshow_rounded, color: AppColors.primary),
-          tooltip: T('storyboard_tooltip'),
-          onPressed: () => Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const StoryboardViewerScreen())),
-        ),
-        IconButton(
           icon: const Icon(Icons.notifications_outlined,
               color: AppColors.textPrimary),
           tooltip: T('notification_tooltip'),
@@ -515,16 +492,18 @@ class MainShell extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10)),
-                  child: Text('3', style: const TextStyle(
+                  child: Text('1', style: const TextStyle(
                     fontSize: 12, fontWeight: FontWeight.w800, color: AppColors.primary)),
                 ),
               ]),
               const SizedBox(height: 4),
               const Divider(),
               const SizedBox(height: 8),
-              _notifItem('🎉', T('notif_new_lecture'), '삼각함수 시리즈 3편이 업로드되었습니다.', '방금'),
-              _notifItem('✅', T('notif_answer'), '이차방정식 질문에 답변이 달렸습니다.', '1시간 전'),
-              _notifItem('🔥', T('notif_goal'), '오늘 학습 목표를 달성했어요!', '3시간 전'),
+              _notifItem('✅', '나의 Q&A', '이차방정식 질문에 답변이 달렸습니다.', '1시간 전', onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const MyActivityScreen(initialTab: 2)));
+              }),
               const SizedBox(height: 4),
             ],
           ),
@@ -533,26 +512,33 @@ class MainShell extends StatelessWidget {
     );
   }
 
-  Widget _notifItem(String emoji, String title, String body, String time) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
-        const SizedBox(width: 12),
-        Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-          Text(title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-          Text(body,
-              style: const TextStyle(
-                  fontSize: 12, color: AppColors.textSecondary),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis),
-        ])),
-        Text(time,
-            style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
-      ]),
+  Widget _notifItem(String emoji, String title, String body, String time, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Row(children: [
+          Text(emoji, style: const TextStyle(fontSize: 24)),
+          const SizedBox(width: 12),
+          Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+            Text(title,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(body,
+                style: const TextStyle(
+                    fontSize: 12, color: AppColors.textSecondary),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis),
+          ])),
+          if (onTap != null)
+            const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textHint)
+          else
+            Text(time,
+                style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+        ]),
+      ),
     );
   }
 
