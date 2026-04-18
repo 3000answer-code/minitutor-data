@@ -15,6 +15,23 @@ class _SupportScreenState extends State<SupportScreen> {
 
   final List<String> _faqCategories = ['전체', '이용방법', '결제/이용권', '계정/회원', '강의', '기술/오류'];
 
+  // 파스텔 톤 색상 팔레트 (카테고리별)
+  static const Map<String, Color> _pastelColors = {
+    '이용방법': Color(0xFFE8F5E9),     // 파스텔 그린
+    '결제/이용권': Color(0xFFFFF3E0),  // 파스텔 오렌지
+    '계정/회원': Color(0xFFE3F2FD),    // 파스텔 블루
+    '강의': Color(0xFFF3E5F5),         // 파스텔 퍼플
+    '기술/오류': Color(0xFFFFEBEE),    // 파스텔 레드
+  };
+
+  static const Map<String, Color> _pastelAccents = {
+    '이용방법': Color(0xFF66BB6A),
+    '결제/이용권': Color(0xFFFFA726),
+    '계정/회원': Color(0xFF42A5F5),
+    '강의': Color(0xFFAB47BC),
+    '기술/오류': Color(0xFFEF5350),
+  };
+
   @override
   void initState() {
     super.initState();
@@ -28,7 +45,7 @@ class _SupportScreenState extends State<SupportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF8F9FC),
       appBar: AppBar(
         title: const Text('고객센터', style: TextStyle(fontWeight: FontWeight.w800)),
         backgroundColor: Colors.white,
@@ -44,41 +61,48 @@ class _SupportScreenState extends State<SupportScreen> {
       // 카테고리 필터
       Container(
         color: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: SizedBox(
-          height: 34,
+          height: 32,
           child: ListView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             children: _faqCategories.map((cat) {
               final isSelected = _selectedFaqCategory == cat;
+              final accent = _pastelAccents[cat] ?? AppColors.primary;
+              final bg = _pastelColors[cat] ?? AppColors.primary.withValues(alpha: 0.08);
               return Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(right: 6),
                 child: FilterChip(
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   label: Text(cat, style: TextStyle(
-                    fontSize: 12,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    fontSize: 11.5,
+                    color: isSelected ? accent : AppColors.textSecondary,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400)),
                   selected: isSelected,
                   onSelected: (_) => setState(() => _selectedFaqCategory = cat),
-                  selectedColor: AppColors.primary.withValues(alpha: 0.12),
-                  checkmarkColor: AppColors.primary,
-                  backgroundColor: AppColors.background,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  side: BorderSide(color: isSelected ? AppColors.primary : AppColors.divider),
+                  selectedColor: isSelected ? bg : AppColors.background,
+                  checkmarkColor: accent,
+                  backgroundColor: const Color(0xFFF5F5F5),
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  side: BorderSide(
+                    color: isSelected ? accent.withValues(alpha: 0.4) : const Color(0xFFE8E8E8),
+                    width: 0.8,
+                  ),
+                  visualDensity: const VisualDensity(vertical: -4),
                 ),
               );
             }).toList(),
           ),
         ),
       ),
-      const Divider(height: 0),
+      Divider(height: 0, color: Colors.grey.shade200),
       // FAQ 리스트
       Expanded(
         child: _filteredFaq.isEmpty
             ? const Center(child: Text('해당 카테고리의 FAQ가 없습니다', style: TextStyle(color: AppColors.textSecondary)))
             : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 16),
                 itemCount: _filteredFaq.length,
                 itemBuilder: (_, i) => _buildFaqCard(_filteredFaq[i]),
               ),
@@ -87,76 +111,82 @@ class _SupportScreenState extends State<SupportScreen> {
   }
 
   Widget _buildFaqCard(FaqItem faq) {
+    final catColor = _pastelAccents[faq.category] ?? AppColors.primary;
+    final catBg = _pastelColors[faq.category] ?? AppColors.primary.withValues(alpha: 0.08);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: const EdgeInsets.only(bottom: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 2))],
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 4, offset: const Offset(0, 1))],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: ExpansionTile(
           key: PageStorageKey(faq.id),
           initiallyExpanded: faq.isExpanded,
           onExpansionChanged: (v) => setState(() => faq.isExpanded = v),
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
           childrenPadding: EdgeInsets.zero,
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          dense: true,
+          visualDensity: const VisualDensity(vertical: -2),
           leading: Container(
-            width: 32, height: 32,
+            width: 28, height: 28,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8)),
-            child: const Center(
-              child: Text('Q', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.primary))),
+              color: catBg,
+              borderRadius: BorderRadius.circular(7)),
+            child: Center(
+              child: Text('Q', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: catColor))),
           ),
           title: Text(faq.question,
             style: TextStyle(
               fontSize: 13,
               fontWeight: faq.isExpanded ? FontWeight.w700 : FontWeight.w500,
-              color: AppColors.textPrimary)),
+              color: AppColors.textPrimary,
+              height: 1.3)),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 2),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: catBg,
                 borderRadius: BorderRadius.circular(4)),
               child: Text(faq.category,
-                style: const TextStyle(fontSize: 10, color: AppColors.textSecondary)),
+                style: TextStyle(fontSize: 9.5, color: catColor, fontWeight: FontWeight.w600)),
             ),
           ),
           trailing: AnimatedRotation(
             turns: faq.isExpanded ? 0.5 : 0,
             duration: const Duration(milliseconds: 200),
-            child: const Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.textSecondary),
+            child: Icon(Icons.keyboard_arrow_down_rounded, color: catColor.withValues(alpha: 0.6), size: 20),
           ),
           children: [
             Container(
               width: double.infinity,
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              padding: const EdgeInsets.all(14),
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15))),
+                color: catBg.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: catColor.withValues(alpha: 0.15))),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
                   Container(
-                    width: 32, height: 32,
+                    width: 24, height: 24,
                     decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8)),
-                    child: const Center(
-                      child: Text('A', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w900, color: AppColors.accent))),
+                      color: catColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6)),
+                    child: Center(
+                      child: Text('A', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: catColor))),
                   ),
-                  const SizedBox(width: 8),
-                  const Text('답변', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.accent)),
+                  const SizedBox(width: 6),
+                  Text('답변', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: catColor)),
                 ]),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(faq.answer,
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.7)),
+                  style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.6)),
               ]),
             ),
           ],

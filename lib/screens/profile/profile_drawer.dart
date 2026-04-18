@@ -294,87 +294,9 @@ class ProfileDrawer extends StatelessWidget {
     );
   }
 
-  // ─── 프로필 수정 (58p 스펙) ──────────────────────
+  // ─── 프로필 수정 (전체 화면 페이지) ──────────────────────
   void _showEditProfile(BuildContext context, AppState appState) {
-    Navigator.pop(context);
-    final nickCtrl = TextEditingController(text: appState.nickname);
-    final emailCtrl = TextEditingController(text: appState.email);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20, MediaQuery.of(ctx).viewInsets.bottom + 20),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Center(child: Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
-          const SizedBox(height: 16),
-          const Text('프로필 수정', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 20),
-          // 프로필 사진 변경
-          Center(
-            child: Stack(children: [
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(appState.profileImageUrl),
-              ),
-              Positioned(
-                bottom: 0, right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-                  child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-                ),
-              ),
-            ]),
-          ),
-          const SizedBox(height: 20),
-          // ID (수정 불가)
-          TextField(
-            enabled: false,
-            decoration: InputDecoration(
-              labelText: 'ID',
-              hintText: appState.email.split('@').first,
-              helperText: '아이디는 변경할 수 없습니다',
-              filled: true,
-              fillColor: Colors.grey.shade100,
-            ),
-          ),
-          const SizedBox(height: 12),
-          // 닉네임
-          TextField(
-            controller: nickCtrl,
-            decoration: const InputDecoration(labelText: '닉네임'),
-          ),
-          const SizedBox(height: 12),
-          // 이메일
-          TextField(
-            controller: emailCtrl,
-            decoration: const InputDecoration(labelText: '이메일'),
-            keyboardType: TextInputType.emailAddress,
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                appState.updateProfile(nickname: nickCtrl.text, email: emailCtrl.text);
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('프로필이 수정되었습니다!')));
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-              child: const Text('수정 완료', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-            ),
-          ),
-        ]),
-      ),
-    );
+    _navigateAndReopenDrawer(context, _EditProfilePage(appState: appState));
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -437,4 +359,142 @@ class _MenuItem {
   final String label;
   final VoidCallback onTap;
   _MenuItem(this.icon, this.label, this.onTap);
+}
+
+// ─── 프로필 수정 전체 화면 ────────────────────────
+class _EditProfilePage extends StatefulWidget {
+  final AppState appState;
+  const _EditProfilePage({required this.appState});
+  @override
+  State<_EditProfilePage> createState() => _EditProfilePageState();
+}
+
+class _EditProfilePageState extends State<_EditProfilePage> {
+  late TextEditingController _nickCtrl;
+  late TextEditingController _emailCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _nickCtrl = TextEditingController(text: widget.appState.nickname);
+    _emailCtrl = TextEditingController(text: widget.appState.email);
+  }
+
+  @override
+  void dispose() {
+    _nickCtrl.dispose();
+    _emailCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: const Text('프로필 수정', style: TextStyle(fontWeight: FontWeight.w800)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const SizedBox(height: 8),
+          // 프로필 사진
+          Center(
+            child: Stack(children: [
+              CircleAvatar(
+                radius: 48,
+                backgroundImage: NetworkImage(widget.appState.profileImageUrl),
+              ),
+              Positioned(
+                bottom: 0, right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
+                ),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 28),
+          // ID (수정 불가)
+          _buildLabel('ID'),
+          const SizedBox(height: 6),
+          TextField(
+            enabled: false,
+            decoration: InputDecoration(
+              hintText: widget.appState.email.split('@').first,
+              helperText: '아이디는 변경할 수 없습니다',
+              helperStyle: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+              filled: true,
+              fillColor: Colors.grey.shade100,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            ),
+          ),
+          const SizedBox(height: 18),
+          // 닉네임
+          _buildLabel('닉네임'),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _nickCtrl,
+            decoration: InputDecoration(
+              hintText: '닉네임을 입력하세요',
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+            ),
+          ),
+          const SizedBox(height: 18),
+          // 이메일
+          _buildLabel('이메일'),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _emailCtrl,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              hintText: '이메일을 입력하세요',
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.divider)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+            ),
+          ),
+          const SizedBox(height: 32),
+          // 수정 완료 버튼
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                widget.appState.updateProfile(nickname: _nickCtrl.text, email: _emailCtrl.text);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('프로필이 수정되었습니다!'),
+                    behavior: SnackBarBehavior.floating,
+                  ));
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 0,
+              ),
+              child: const Text('수정 완료', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(text, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textSecondary));
+  }
 }
