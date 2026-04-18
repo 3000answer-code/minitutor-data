@@ -215,14 +215,12 @@ class ProfileDrawer extends StatelessWidget {
 
   // ─── 네비게이션 메서드들 ────────────────────────────
 
-  /// 공통: Drawer를 닫고 화면 이동 후 돌아오면 Drawer를 다시 열기
+  /// 공통: Drawer 닫기 + 화면 이동을 동시에 처리 (깜빡임 방지)
   void _navigateAndReopenDrawer(BuildContext context, Widget screen) {
-    Navigator.pop(context); // Drawer 닫기
-    Navigator.push(context, MaterialPageRoute(builder: (_) => screen)).then((_) {
-      // 하위 화면에서 돌아오면 Drawer 다시 열기
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        MainShell.scaffoldKey.currentState?.openEndDrawer();
-      });
+    // Drawer 닫기 전에 먼저 화면을 push → 메인화면 깜빡임 없음
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => screen)).then((_) {
+      // 하위 화면에서 돌아오면 Drawer가 이미 열려있으므로 별도 처리 불필요
+      // (Drawer 위에 push하면 pop 시 Drawer가 그대로 보임)
     });
   }
 
@@ -271,10 +269,10 @@ class ProfileDrawer extends StatelessWidget {
   }
 
   void _showAbout(BuildContext context) {
-    Navigator.pop(context);
+    // Drawer 위에 바로 Dialog 표시 (Drawer 닫지 않음)
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogCtx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(children: [
           Container(
@@ -291,7 +289,10 @@ class ProfileDrawer extends StatelessWidget {
           'Asome Tutor는 합격을 향한 키워드 학습 플랫폼입니다.\n\n핵심 개념만 쏙쏙 담은 강의로 공부 부담을 줄이고, 매일 꾸준히 학습하는 습관을 만들어드립니다.\n\n국내 최고 강사진의 강의로 공부의 혁신을 경험하세요!',
           style: TextStyle(fontSize: 14, height: 1.7, color: AppColors.textSecondary),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
+        actions: [TextButton(
+          onPressed: () => Navigator.pop(dialogCtx), // Dialog만 닫기 → Drawer로 복귀
+          child: const Text('확인'),
+        )],
       ),
     );
   }
