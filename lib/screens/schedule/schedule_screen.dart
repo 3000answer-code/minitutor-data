@@ -66,7 +66,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [Tab(text: '내 일정'), Tab(text: 'Asome Tutor 행사/이벤트')],
+          tabs: const [Tab(text: '나의 일정'), Tab(text: 'Asome Tutor 행사/이벤트')],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
@@ -95,7 +95,7 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     );
   }
 
-  // ── 내 일정 탭 ────────────────────────────────────
+  // ── 나의 일정 탭 ────────────────────────────────────
   Widget _buildMyScheduleTab() {
     return Column(children: [
       // 달력
@@ -367,9 +367,9 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                       color: e.color, isAppEvent: false,
                     )));
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('\'${e.title}\' 일정이 내 일정에 추가되었습니다!')));
+                      SnackBar(content: Text('\'${e.title}\' 일정이 나의 일정에 추가되었습니다!')));
                   },
-                  child: const Text('내 일정에 추가', style: TextStyle(fontWeight: FontWeight.w700)),
+                  child: const Text('나의 일정에 추가', style: TextStyle(fontWeight: FontWeight.w700)),
                 ),
               ]),
             ),

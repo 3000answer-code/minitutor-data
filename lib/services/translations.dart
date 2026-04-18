@@ -1221,7 +1221,7 @@ class AppTranslations {
     // 일정 화면
     // ────────────────────────────────────────────
     'schedule_title': {
-      'ko': '학습 일정', 'en': 'Study Schedule', 'ja': '学習スケジュール', 'zh': '学习日程', 'es': 'Horario de Estudio',
+      'ko': '나의 활동', 'en': 'My Activity', 'ja': '活動履歴', 'zh': '我的活动', 'es': 'Mi Actividad',
     },
     'add_schedule': {
       'ko': '일정 추가', 'en': 'Add Schedule', 'ja': '日程追加', 'zh': '添加日程', 'es': 'Agregar Horario',
