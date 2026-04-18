@@ -37,12 +37,15 @@ class LecturePlayerScreen extends StatefulWidget {
   final List<Lecture>? autoPlayList;
   /// 현재 강의의 목록 내 인덱스
   final int autoPlayIndex;
+  /// 가로 모드로 시작할지 여부 (재생목록에서 강의 전환 시 사용)
+  final bool startInLandscape;
 
   const LecturePlayerScreen({
     super.key,
     required this.lecture,
     this.autoPlayList,
     this.autoPlayIndex = 0,
+    this.startInLandscape = false,
   });
 
   @override
@@ -188,6 +191,15 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     _loadSlidePages();
     _scheduleHideControls();
     _loadSavedStrokes(); // 저장된 필기 불러오기
+
+    // 가로 모드로 시작 요청 (재생목록에서 강의 전환 시)
+    if (widget.startInLandscape) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_isLandscape) {
+          _toggleLandscapeMode();
+        }
+      });
+    }
   }
 
   // ── 강의별 SharedPreferences 키
@@ -3692,7 +3704,8 @@ function pauseVid(){vid.pause();}
                   ),
                 ),
                 onTap: isCurrent ? null : () {
-                  // 재생목록 탭에서 강의 선택 → 자동재생 목록 유지
+                  // 재생목록 탭에서 강의 선택 → 가로 모드 유지
+                  final wasLandscape = _isLandscape;
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
@@ -3700,6 +3713,7 @@ function pauseVid(){vid.pause();}
                         lecture: lec,
                         autoPlayList: lectures,
                         autoPlayIndex: i,
+                        startInLandscape: wasLandscape,
                       ),
                     ),
                   );
