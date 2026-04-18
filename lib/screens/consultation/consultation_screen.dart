@@ -373,7 +373,7 @@ class ConsultationScreen extends StatelessWidget {
       builder: (ctx) => Padding(
         padding: EdgeInsets.only(
           left: 16, right: 16, top: 14,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + MediaQuery.of(ctx).padding.bottom + 16,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -382,7 +382,7 @@ class ConsultationScreen extends StatelessWidget {
             Center(child: Container(width: 36, height: 4,
               decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
             const SizedBox(height: 10),
-            const Text('질문 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const Text('Q&A 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
             const SizedBox(height: 10),
             SizedBox(
               height: 44,
@@ -465,22 +465,23 @@ class ConsultationScreen extends StatelessWidget {
     );
   }
 
-  // ── 상세 보기 바텀시트 ─────────────────────────────────────
+  // ── 상세 보기 바텀시트 (내용에 따라 크기 자동 조절) ───────────
   void _openDetail(BuildContext context, Consultation c) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => DraggableScrollableSheet(
-        initialChildSize: 0.75,
-        maxChildSize: 0.92,
-        minChildSize: 0.4,
-        expand: false,
-        builder: (_, scrollCtrl) => ListView(
-          controller: scrollCtrl,
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          children: [
+      builder: (ctx) {
+        final bottomPad = MediaQuery.of(ctx).padding.bottom;
+        return Padding(
+          padding: EdgeInsets.only(bottom: bottomPad),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             Center(
                 child: Container(
                     width: 36,
@@ -575,6 +576,8 @@ class ConsultationScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+      },
     );
   }
 
