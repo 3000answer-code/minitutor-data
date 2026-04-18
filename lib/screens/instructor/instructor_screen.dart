@@ -18,6 +18,8 @@ class InstructorScreen extends StatefulWidget {
 
 class _InstructorScreenState extends State<InstructorScreen> {
   String _selectedSubject = '전체'; // 과목 필터
+  // 강사별 선택된 시리즈 (강사 name → 시리즈명, null이면 전체)
+  final Map<String, String?> _selectedSeries = {};
 
   // 학제별 과목 목록
   static const Map<String, List<String>> _subjectsByGrade = {
@@ -222,7 +224,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
           ]),
         ),
 
-        // 시리즈 목록 (정리된 레이아웃)
+        // 시리즈 목록 (선택 가능)
         if (instructor.series.isNotEmpty) ...[
           Container(
             width: double.infinity,
@@ -248,58 +250,97 @@ class _InstructorScreenState extends State<InstructorScreen> {
             child: Wrap(
               spacing: 7,
               runSpacing: 7,
-              children: instructor.series.take(4).map((s) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppColors.background,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: subjectColor.withValues(alpha: 0.3)),
-                ),
-                child: Text(s,
-                  style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
-              )).toList(),
+              children: instructor.series.map((s) {
+                final isSelected = _selectedSeries[instructor.name] == s;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      // 이미 선택된 시리즈를 다시 누르면 전체로 복귀
+                      if (_selectedSeries[instructor.name] == s) {
+                        _selectedSeries.remove(instructor.name);
+                      } else {
+                        _selectedSeries[instructor.name] = s;
+                      }
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? subjectColor : AppColors.background,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected ? subjectColor : subjectColor.withValues(alpha: 0.3),
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Text(s,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isSelected ? Colors.white : subjectColor,
+                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                      )),
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ],
 
-        // 강의 목록
+        // 강의 목록 (시리즈 필터 적용)
         if (lectures.isNotEmpty) ...[
-          Container(height: 1, color: AppColors.divider),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Row(children: [
-              Text('강의 ${lectures.length}개',
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-              const Spacer(),
-              TextButton(
-                onPressed: () => _openAllLectures(context, instructor, lectures),
-                child: const Text('전체보기', style: TextStyle(fontSize: 12)),
-              ),
-            ]),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Column(children: lectures.take(2).map((l) =>
+          () {
+            // 시리즈 필터 적용
+            final selectedSeries = _selectedSeries[instructor.name];
+            final filteredLectures = selectedSeries != null
+                ? lectures.where((l) => l.series == selectedSeries).toList()
+                : lectures;
+            final displayLectures = filteredLectures.take(5).toList();
+            final hasMore = filteredLectures.length > 5;
+
+            return Column(children: [
+              Container(height: 1, color: AppColors.divider),
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: LectureCard(
-                  lecture: l,
-                  onTap: () {
-                    appState.addRecentView(l.id);
-                    if (appState.pipActive && appState.pipLecture?.id != l.id) {
-                      appState.deactivatePip();
-                    }
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => LecturePlayerScreen(lecture: l)));
-                  },
-                  onTagTap: (tag) {
-                    appState.setSearchQuery(tag);
-                    appState.setNavIndex(3);
-                  },
-                ),
-              )
-            ).toList()),
-          ),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(children: [
+                  Text(
+                    selectedSeries != null
+                        ? '${selectedSeries} · ${filteredLectures.length}개'
+                        : '강의 ${lectures.length}개',
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                  const Spacer(),
+                  if (hasMore || selectedSeries == null)
+                    TextButton(
+                      onPressed: () => _openAllLectures(context, instructor, filteredLectures),
+                      child: const Text('전체보기', style: TextStyle(fontSize: 12)),
+                    ),
+                ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(children: displayLectures.map((l) =>
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: LectureCard(
+                      lecture: l,
+                      onTap: () {
+                        appState.addRecentView(l.id);
+                        if (appState.pipActive && appState.pipLecture?.id != l.id) {
+                          appState.deactivatePip();
+                        }
+                        Navigator.push(context, MaterialPageRoute(
+                          builder: (_) => LecturePlayerScreen(lecture: l)));
+                      },
+                      onTagTap: (tag) {
+                        appState.setSearchQuery(tag);
+                        appState.setNavIndex(3);
+                      },
+                    ),
+                  )
+                ).toList()),
+              ),
+            ]);
+          }(),
         ] else ...[
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
