@@ -252,7 +252,24 @@ class _InstructorScreenState extends State<InstructorScreen> {
               ),
               const Spacer(),
               GestureDetector(
-                onTap: () => _openSeriesAllLectures(context, instructor, lectures),
+                onTap: () {
+                  final sel = _selectedSeries[instructor.name];
+                  if (sel != null) {
+                    // 선택된 시리즈 내 강의만 표시
+                    final seriesLectures = lectures.where((l) => l.series == sel).toList();
+                    _openAllLectures(context, instructor, seriesLectures, seriesName: sel);
+                  } else {
+                    // 시리즈 미선택 → 시리즈를 먼저 선택하라는 안내
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text('시리즈를 먼저 선택해 주세요'),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: subjectColor,
+                      ),
+                    );
+                  }
+                },
                 child: Text('시리즈 전체보기',
                   style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
               ),
@@ -322,9 +339,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
                         : '강의 ${lectures.length}개',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   const Spacer(),
-                  if (hasMore)
+                  if (hasMore && selectedSeries != null)
                     TextButton(
-                      onPressed: () => _openAllLectures(context, instructor, filteredLectures),
+                      onPressed: () => _openAllLectures(context, instructor, filteredLectures, seriesName: selectedSeries),
                       child: const Text('시리즈 전체보기', style: TextStyle(fontSize: 12)),
                     ),
                 ]),
@@ -383,9 +400,15 @@ class _InstructorScreenState extends State<InstructorScreen> {
     ]);
   }
 
-  void _openAllLectures(BuildContext context, Instructor instructor, List<Lecture> lectures) {
+  void _openAllLectures(BuildContext context, Instructor instructor, List<Lecture> lectures, {String? seriesName}) {
     // ✅ 부모 context의 AppState를 미리 캡처 → 바텀시트 내부에서도 안전하게 사용
     final appState = context.read<AppState>();
+    final title = seriesName != null
+        ? '${instructor.name} · $seriesName'
+        : '${instructor.name} 강사의 강의';
+    final subtitle = seriesName != null
+        ? '$seriesName · ${lectures.length}개 강의'
+        : '${instructor.subject} · ${lectures.length}개 강의';
 
     showModalBottomSheet(
       context: context,
@@ -452,10 +475,10 @@ class _InstructorScreenState extends State<InstructorScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('${instructor.name} 강사의 강의',
+                          Text(title,
                             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800,
                                 color: AppColors.textPrimary)),
-                          Text('${instructor.subject} · ${lectures.length}개 강의',
+                          Text(subtitle,
                             style: TextStyle(fontSize: 12, color: subjectColor,
                                 fontWeight: FontWeight.w600)),
                         ]),
@@ -507,144 +530,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
     );
   }
 
-  // ── 시리즈별 전체 강의 바텀시트 ──────────────────────────────────────
-  void _openSeriesAllLectures(BuildContext context, Instructor instructor, List<Lecture> lectures) {
-    final appState = context.read<AppState>();
-    final subjectColor = _subjectColor(instructor.subject);
 
-    // 시리즈별 그룹핑
-    final Map<String, List<Lecture>> seriesMap = {};
-    for (final lec in lectures) {
-      final key = lec.series.isNotEmpty ? lec.series : '기타';
-      seriesMap.putIfAbsent(key, () => []).add(lec);
-    }
-    // 시리즈 키 정렬 (가나다순, '기타'는 맨 뒤)
-    final orderedKeys = seriesMap.keys.where((k) => k != '기타').toList()..sort();
-    if (seriesMap.containsKey('기타')) orderedKeys.add('기타');
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (sheetCtx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.85,
-          maxChildSize: 0.95,
-          minChildSize: 0.5,
-          expand: false,
-          builder: (_, scrollCtrl) => Column(children: [
-            // ── 헤더 ──
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 4, offset: const Offset(0, 2)),
-                ],
-              ),
-              child: Column(children: [
-                const SizedBox(height: 12),
-                Center(child: Container(width: 40, height: 4,
-                  decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-                  child: Row(children: [
-                    GestureDetector(
-                      onTap: () => Navigator.of(sheetCtx).pop(),
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.divider),
-                        ),
-                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.textPrimary),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(width: 6, height: 24,
-                      decoration: BoxDecoration(color: subjectColor, borderRadius: BorderRadius.circular(3))),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('${instructor.name} 시리즈 전체',
-                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                        Text('${instructor.subject} · ${orderedKeys.length}개 시리즈 · ${lectures.length}개 강의',
-                          style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
-                      ]),
-                    ),
-                  ]),
-                ),
-                Divider(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
-              ]),
-            ),
-
-            // ── 시리즈별 강의 목록 ──
-            Expanded(
-              child: ListView(
-                controller: scrollCtrl,
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                children: orderedKeys.expand((seriesName) {
-                  final seriesLectures = seriesMap[seriesName]!;
-                  return [
-                    // 시리즈 헤더
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12, bottom: 8),
-                      child: Row(children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: subjectColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: subjectColor.withValues(alpha: 0.3)),
-                          ),
-                          child: Text(seriesName,
-                            style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w700)),
-                        ),
-                        const SizedBox(width: 8),
-                        Text('${seriesLectures.length}개',
-                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
-                      ]),
-                    ),
-                    // 강의 카드들
-                    ...seriesLectures.map((lec) => Padding(
-                      padding: const EdgeInsets.only(bottom: 6),
-                      child: LectureCard(
-                        lecture: lec,
-                        onTagTap: (tag) {
-                          Navigator.pop(sheetCtx);
-                          appState.setSearchQuery(tag);
-                          appState.setNavIndex(3);
-                        },
-                        onTap: () {
-                          appState.addRecentView(lec.id);
-                          if (appState.pipActive && appState.pipLecture?.id != lec.id) {
-                            appState.deactivatePip();
-                          }
-                          Navigator.pop(sheetCtx);
-                          Navigator.push(context, MaterialPageRoute(
-                            builder: (_) => LecturePlayerScreen(
-                              lecture: lec,
-                              autoPlayList: seriesLectures,
-                              autoPlayIndex: seriesLectures.indexOf(lec),
-                            ),
-                          ));
-                        },
-                      ),
-                    )),
-                  ];
-                }).toList(),
-              ),
-            ),
-          ]),
-        );
-      },
-    );
-  }
 
   /// 과목별 색상 - AppColors 중앙 관리
   Color _subjectColor(String subject) {
