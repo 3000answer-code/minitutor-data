@@ -8,6 +8,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/lecture_card.dart';
 import '../lecture/lecture_player_screen.dart';
 import 'my_note_viewer_screen.dart';
+import '../schedule/schedule_screen.dart';
 
 class MyActivityScreen extends StatefulWidget {
   final int initialTab;
@@ -28,7 +29,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTab.clamp(0, 2));
+    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTab.clamp(0, 3));
     _tabController.addListener(() {
       if (_tabController.index == 1) _loadNotes();
       if (_tabController.index == 2) _loadPersonalQAs();
@@ -73,17 +74,19 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           controller: _tabController,
           isScrollable: false,
           tabs: [
-            Tab(child: Text(T('tab_recent'), style: const TextStyle(fontSize: 13))),
-            Tab(child: Text(T('tab_notes'), style: const TextStyle(fontSize: 13))),
-            Tab(child: Text(T('tab_my_qa'), style: const TextStyle(fontSize: 13))),
+            Tab(child: Text(T('tab_recent'), style: const TextStyle(fontSize: 12))),
+            Tab(child: Text(T('tab_notes'), style: const TextStyle(fontSize: 12))),
+            Tab(child: Text(T('tab_my_qa'), style: const TextStyle(fontSize: 12))),
+            Tab(child: Text(T('my_schedule'), style: const TextStyle(fontSize: 12))),
           ],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
           indicatorColor: AppColors.primary,
           dividerColor: AppColors.divider,
-          labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-          unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
+          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
           labelPadding: EdgeInsets.zero,
+          tabAlignment: TabAlignment.fill,
         ),
       ),
       body: SafeArea(
@@ -94,6 +97,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
             _buildRecentTab(lang),
             _buildNoteTab(lang),
             _buildQATab(lang),
+            const ScheduleScreen(embedded: true),
           ],
         ),
       ),

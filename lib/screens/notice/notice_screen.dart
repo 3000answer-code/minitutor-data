@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../models/note.dart';
+import '../../services/content_service.dart';
 import '../../theme/app_theme.dart';
 
 class NoticeItem {
@@ -327,29 +329,98 @@ class _NoticeScreenState extends State<NoticeScreen>
   }
 
   Widget _buildEventTab() {
-    final events = _notices.where((n) => n.category == '이벤트').toList();
-    return events.isEmpty
-        ? const Center(
-            child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.celebration_outlined, size: 64, color: AppColors.textHint),
-              SizedBox(height: 14),
-              Text('진행 중인 이벤트가 없습니다',
-                  style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textSecondary)),
-              SizedBox(height: 6),
-              Text('새로운 이벤트를 기대해주세요!',
-                  style: TextStyle(fontSize: 13, color: AppColors.textHint)),
-            ],
-          ))
-        : ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
-            itemCount: events.length,
-            itemBuilder: (_, i) => _buildEventCard(events[i]),
-          );
+    final noticeEvents = _notices.where((n) => n.category == '이벤트').toList();
+    // Asome Tutor 행사/이벤트 (content_service에서 isAppEvent == true인 항목)
+    final appEvents = ContentService().getScheduleEvents()
+        .where((e) => e.isAppEvent).toList();
+
+    if (noticeEvents.isEmpty && appEvents.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.celebration_outlined, size: 64, color: AppColors.textHint),
+            SizedBox(height: 14),
+            Text('진행 중인 이벤트가 없습니다',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
+            SizedBox(height: 6),
+            Text('새로운 이벤트를 기대해주세요!',
+                style: TextStyle(fontSize: 13, color: AppColors.textHint)),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+      children: [
+        // 공지 이벤트 카드
+        ...noticeEvents.map((e) => _buildEventCard(e)),
+        // Asome Tutor 행사/이벤트 카드
+        if (appEvents.isNotEmpty) ...[
+          if (noticeEvents.isNotEmpty) const SizedBox(height: 8),
+          ...appEvents.map((e) => _buildAppEventCard(e)),
+        ],
+      ],
+    );
+  }
+
+  String _weekdayText(int weekday) {
+    const days = ['월', '화', '수', '목', '금', '토', '일'];
+    return days[weekday - 1];
+  }
+
+  Widget _buildAppEventCard(ScheduleEvent event) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: LinearGradient(
+          colors: [event.color, event.color.withValues(alpha: 0.7)],
+          begin: Alignment.topLeft, end: Alignment.bottomRight),
+        boxShadow: [BoxShadow(
+            color: event.color.withValues(alpha: 0.3),
+            blurRadius: 10, offset: const Offset(0, 4))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // 헤더
+        Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+          child: Row(children: [
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(20)),
+                child: const Text('어썸튜터 이벤트',
+                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 6),
+              Text(event.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+            ])),
+            const Icon(Icons.celebration_rounded, color: Colors.white, size: 40),
+          ]),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              Icon(Icons.calendar_today_rounded, size: 14, color: Colors.white.withValues(alpha: 0.9)),
+              const SizedBox(width: 6),
+              Text(
+                '${event.dateTime.month}월 ${event.dateTime.day}일 (${_weekdayText(event.dateTime.weekday)}) ${event.dateTime.hour.toString().padLeft(2, '0')}:${event.dateTime.minute.toString().padLeft(2, '0')}',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white)),
+            ]),
+            const SizedBox(height: 6),
+            if (event.content.isNotEmpty)
+              Text(event.content,
+                style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.85), height: 1.4),
+                maxLines: 2, overflow: TextOverflow.ellipsis),
+          ]),
+        ),
+      ]),
+    );
   }
 
   Widget _buildEventCard(NoticeItem event) {

@@ -6,15 +6,16 @@ import '../../models/note.dart';
 import '../../services/content_service.dart';
 import '../../theme/app_theme.dart';
 
+/// 나의 일정 위젯 – MyActivityScreen의 탭에 임베드하거나 독립 화면으로 사용
 class ScheduleScreen extends StatefulWidget {
-  const ScheduleScreen({super.key});
+  /// true이면 AppBar 없이 탭 임베드용으로 렌더링
+  final bool embedded;
+  const ScheduleScreen({super.key, this.embedded = false});
   @override
   State<ScheduleScreen> createState() => _ScheduleScreenState();
 }
 
-class _ScheduleScreenState extends State<ScheduleScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ScheduleScreenState extends State<ScheduleScreen> {
   late List<ScheduleEvent> _events;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
@@ -29,20 +30,9 @@ class _ScheduleScreenState extends State<ScheduleScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    // FAB 탭 전환 반응 - 애니메이션 완료 후 setState
-    _tabController.addListener(() {
-      if (!_tabController.indexIsChanging) {
-        setState(() {});
-      }
-    });
-    _events = ContentService().getScheduleEvents();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    // 내 일정만 로드 (isAppEvent == false)
+    _events = ContentService().getScheduleEvents()
+        .where((e) => !e.isAppEvent).toList();
   }
 
   List<ScheduleEvent> _eventsForDay(DateTime day) => _events.where((e) =>
@@ -50,33 +40,22 @@ class _ScheduleScreenState extends State<ScheduleScreen>
     e.dateTime.month == day.month &&
     e.dateTime.day == day.day).toList();
 
-  List<ScheduleEvent> get _myEvents =>
-      _events.where((e) => !e.isAppEvent).toList();
-
-  List<ScheduleEvent> get _appEvents =>
-      _events.where((e) => e.isAppEvent).toList();
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(AppTranslations.tLang(context.read<AppState>().selectedLanguage, 'schedule_title'), style: const TextStyle(fontWeight: FontWeight.w800)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [Tab(text: '나의 일정'), Tab(text: 'Asome Tutor 행사/이벤트')],
-          labelColor: AppColors.primary,
-          unselectedLabelColor: AppColors.textSecondary,
-          indicatorColor: AppColors.primary,
-          dividerColor: AppColors.divider,
-        ),
-      ),
-      // FAB: 'Asome Tutor 행사/이벤트' 탭(index=1)에서는 완전히 숨김
-      floatingActionButton: _tabController.index == 1
-          ? const SizedBox.shrink()
-          : FloatingActionButton.extended(
+    final body = Column(children: [
+      _buildCalendar(),
+      Expanded(child: _buildDayEvents()),
+    ]);
+
+    if (widget.embedded) {
+      // 탭 안에 임베드 – AppBar/FAB 없음, 부모가 관리
+      return Stack(children: [
+        body,
+        Positioned(
+          bottom: 16, left: 0, right: 0,
+          child: Center(
+            child: FloatingActionButton.extended(
+              heroTag: 'schedule_fab',
               onPressed: () => _showAddEventSheet(),
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
@@ -84,33 +63,39 @@ class _ScheduleScreenState extends State<ScheduleScreen>
               icon: const Icon(Icons.add_rounded),
               label: const Text('일정 추가', style: TextStyle(fontWeight: FontWeight.w700)),
             ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildMyScheduleTab(),
-          _buildAppEventsTab(),
-        ],
+          ),
+        ),
+      ]);
+    }
+
+    // 독립 화면 – AppBar + FAB
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        title: Text(AppTranslations.tLang(context.read<AppState>().selectedLanguage, 'schedule_title'),
+            style: const TextStyle(fontWeight: FontWeight.w800)),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showAddEventSheet(),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        elevation: 2,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('일정 추가', style: TextStyle(fontWeight: FontWeight.w700)),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      body: body,
     );
   }
 
-  // ── 나의 일정 탭 ────────────────────────────────────
-  Widget _buildMyScheduleTab() {
-    return Column(children: [
-      // 달력
-      _buildCalendar(),
-      // 선택된 날 일정
-      Expanded(child: _buildDayEvents()),
-    ]);
-  }
-
+  // ── 달력 ────────────────────────────────────
   Widget _buildCalendar() {
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Column(children: [
-        // 월 네비게이션
         Row(children: [
           IconButton(
             icon: const Icon(Icons.chevron_left_rounded, color: AppColors.textPrimary),
@@ -130,14 +115,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
               _focusedDay = DateTime(_focusedDay.year, _focusedDay.month + 1)),
           ),
         ]),
-        // 요일 헤더
         Row(children: ['일', '월', '화', '수', '목', '금', '토'].map((d) =>
           Expanded(child: Center(child: Text(d,
             style: TextStyle(
               fontSize: 12, fontWeight: FontWeight.w700,
               color: d == '일' ? AppColors.korean : d == '토' ? AppColors.english : AppColors.textSecondary))))).toList()),
         const SizedBox(height: 6),
-        // 날짜 그리드
         _buildDayGrid(),
       ]),
     );
@@ -253,10 +236,8 @@ class _ScheduleScreenState extends State<ScheduleScreen>
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Row(children: [
-        // 왼쪽 컬러 바
         Container(
-          width: 5,
-          height: 72,
+          width: 5, height: 72,
           decoration: BoxDecoration(
             color: event.color,
             borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
@@ -293,95 +274,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
             ]),
           ),
         ),
-        // 삭제 버튼
         IconButton(
           icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.textHint),
           onPressed: () => _deleteEvent(event),
         ),
       ]),
     );
-  }
-
-  // ── Asome Tutor 행사/이벤트 탭 ───────────────────────────
-  Widget _buildAppEventsTab() {
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-      itemCount: _appEvents.length,
-      itemBuilder: (_, i) {
-        final e = _appEvents[i];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 2))],
-          ),
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            // 헤더 배너
-            Container(
-              height: 90,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [e.color, e.color.withValues(alpha: 0.7)],
-                  begin: Alignment.topLeft, end: Alignment.bottomRight),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-              ),
-              padding: const EdgeInsets.all(16),
-              child: Row(children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(20)),
-                    child: const Text('어썸튜터 이벤트',
-                      style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(e.title, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
-                ])),
-                const Icon(Icons.celebration_rounded, color: Colors.white, size: 40),
-              ]),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(14),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  Icon(Icons.calendar_today_rounded, size: 14, color: e.color),
-                  const SizedBox(width: 6),
-                  Text('${e.dateTime.month}월 ${e.dateTime.day}일 (${_weekdayText(e.dateTime.weekday)}) ${e.dateTime.hour.toString().padLeft(2, '0')}:${e.dateTime.minute.toString().padLeft(2, '0')}',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: e.color)),
-                ]),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: e.color,
-                    minimumSize: const Size(double.infinity, 40),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                  onPressed: () {
-                    setState(() => _events.add(ScheduleEvent(
-                      id: 'added_${e.id}', title: e.title, content: e.content,
-                      dateTime: e.dateTime, alertBefore: '1일전', repeat: '없음',
-                      color: e.color, isAppEvent: false,
-                    )));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('\'${e.title}\' 일정이 나의 일정에 추가되었습니다!')));
-                  },
-                  child: const Text('나의 일정에 추가', style: TextStyle(fontWeight: FontWeight.w700)),
-                ),
-              ]),
-            ),
-          ]),
-        );
-      },
-    );
-  }
-
-  String _weekdayText(int weekday) {
-    const days = ['월', '화', '수', '목', '금', '토', '일'];
-    return days[weekday - 1];
   }
 
   // ── 일정 추가 시트 ────────────────────────────────
@@ -426,15 +324,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
               const SizedBox(height: 16),
               const Text('일정 추가', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
-              // 제목
               TextField(controller: titleCtrl,
                 decoration: const InputDecoration(labelText: '제목 *', hintText: '일정 제목을 입력하세요')),
               const SizedBox(height: 10),
-              // 내용
               TextField(controller: contentCtrl, maxLines: 2,
                 decoration: const InputDecoration(labelText: '내용', hintText: '일정 내용을 입력하세요 (선택)')),
               const SizedBox(height: 14),
-              // 날짜/시간
               Row(children: [
                 Expanded(child: _buildPickerTile(
                   Icons.calendar_today_rounded,
@@ -458,15 +353,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                 )),
               ]),
               const SizedBox(height: 14),
-              // 알림
               _buildDropdownRow('알림', selectedAlert, _alertOptions,
                 (v) => setModalState(() => selectedAlert = v!)),
               const SizedBox(height: 10),
-              // 반복
               _buildDropdownRow('반복', selectedRepeat, _repeatOptions,
                 (v) => setModalState(() => selectedRepeat = v!)),
               const SizedBox(height: 14),
-              // 색상 선택
               const Text('색상', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary)),
               const SizedBox(height: 8),
               Row(children: _colorOptions.map((c) => GestureDetector(
@@ -508,12 +400,12 @@ class _ScheduleScreenState extends State<ScheduleScreen>
                 ),
               ),
             ]),
-            ),         // Padding
-          ),           // SingleChildScrollView
-          ),           // Container
-        ),             // AnimatedPadding
-        ),             // StatefulBuilder
-      ),               // DraggableScrollableSheet
+            ),
+          ),
+          ),
+        ),
+        ),
+      ),
     );
   }
 

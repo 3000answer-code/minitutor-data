@@ -8,7 +8,7 @@ import '../notice/notice_screen.dart';
 import '../profile/my_activity_screen.dart';
 import '../profile/settings_screen.dart';
 import '../profile/store_screen.dart';
-import '../schedule/schedule_screen.dart';
+// schedule_screen은 my_activity_screen 내 탭으로 통합 (v115)
 // storyboard_viewer_screen 삭제됨 (v112)
 import '../support/support_screen.dart';
 import '../curriculum/curriculum_screen.dart';
@@ -36,7 +36,7 @@ class ProfileDrawer extends StatelessWidget {
                 _MenuItem(Icons.history_rounded, T('recent_lectures'), () => _openMyActivity(context, 0)),
                 _MenuItem(Icons.note_alt_outlined, T('my_notes'), () => _openMyActivity(context, 1)),
                 _MenuItem(Icons.question_answer_outlined, T('my_qa'), () => _openMyActivity(context, 2)),
-                _MenuItem(Icons.calendar_month_outlined, T('my_schedule'), () => _openSchedule(context)),
+                _MenuItem(Icons.calendar_month_outlined, T('my_schedule'), () => _openMyActivity(context, 3)),
               ]),
               const Divider(height: 1),
               // 이용권 / 스토어
@@ -228,9 +228,6 @@ class ProfileDrawer extends StatelessWidget {
     _navigateAndReopenDrawer(context, MyActivityScreen(initialTab: tab));
   }
 
-  void _openSchedule(BuildContext context) {
-    _navigateAndReopenDrawer(context, const ScheduleScreen());
-  }
 
   void _openCurriculum(BuildContext context) {
     _navigateAndReopenDrawer(context, const CurriculumScreen());
