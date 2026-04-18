@@ -499,7 +499,7 @@ class MainShell extends StatelessWidget {
               const SizedBox(height: 4),
               const Divider(),
               const SizedBox(height: 8),
-              _notifItem('✅', '나의 Q&A', '이차방정식 질문에 답변이 달렸습니다.', '1시간 전', onTap: () {
+              _notifItem('✅', '나의 Q&A 답변', '이차방정식 질문에 답변이 달렸습니다.', '1시간 전', onTap: () {
                 Navigator.pop(ctx);
                 Navigator.push(context, MaterialPageRoute(
                   builder: (_) => const MyActivityScreen(initialTab: 2)));
