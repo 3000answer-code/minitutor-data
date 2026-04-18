@@ -191,7 +191,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                 : null;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 10),
+              margin: const EdgeInsets.only(bottom: 14),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
