@@ -334,8 +334,16 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
+    // 시스템 UI를 항상 일반 모드로 복원 (네비게이션 바 겹침 방지)
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ));
     super.dispose();
   }
 
@@ -909,7 +917,8 @@ function pauseVid(){vid.pause();}
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
       Future.delayed(const Duration(milliseconds: 150), () {
         if (mounted) setState(() { _isFullScreen = false; _isLandscape = false; });
       });
@@ -934,7 +943,8 @@ function pauseVid(){vid.pause();}
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
       ]);
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
       // 방향 전환 후 setState (딜레이로 블랙아웃 방지)
       Future.delayed(const Duration(milliseconds: 150), () {
         if (mounted) setState(() => _isLandscape = false);
@@ -4922,7 +4932,8 @@ function pauseVid(){vid.pause();}
                         DeviceOrientation.portraitUp,
                         DeviceOrientation.portraitDown,
                       ]);
-                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+                        overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

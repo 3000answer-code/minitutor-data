@@ -28,7 +28,11 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.white,
+    systemNavigationBarIconBrightness: Brightness.dark,
   ));
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+    overlays: [SystemUiOverlay.top, SystemUiOverlay.bottom]);
   // NAS 터널 URL 동적 업데이트 (백그라운드)
   ApiService.fetchTunnelUrl();
   runApp(const AsomeTutorApp());
