@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../models/personal_qa.dart';
 import '../../services/app_state.dart';
 import '../../services/note_repository.dart';
 import '../../services/translations.dart';
@@ -22,6 +23,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
   late TabController _tabController;
   List<NoteMetaData> _notes = [];
   bool _notesLoading = true;
+  bool _showTrash = false;  // 휴지통 보기 토글
 
   @override
   void initState() {
@@ -29,8 +31,14 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTab.clamp(0, 2));
     _tabController.addListener(() {
       if (_tabController.index == 1) _loadNotes();
+      if (_tabController.index == 2) _loadPersonalQAs();
     });
     _loadNotes();
+    _loadPersonalQAs();
+  }
+
+  Future<void> _loadPersonalQAs() async {
+    await context.read<AppState>().loadPersonalQAs();
   }
 
   Future<void> _loadNotes() async {
@@ -374,138 +382,785 @@ class _MyActivityScreenState extends State<MyActivityScreen>
       child: Icon(Icons.edit_note_rounded, color: color, size: 32));
   }
 
-  // ── 탭 3: 강의 Q&A ────────────────────────────────
+  // ── 탭 3: 나의 Q&A (개인용 · 질문하기/작성/수정/휴지통) ──────────
   Widget _buildQATab(String lang) {
-    final T = (String key) => AppTranslations.tLang(lang, key);
-    final qaList = [
-      {'subject': '수학', 'lectureTitle': '이차방정식 근의 공식', 'question': '판별식이 0일 때 중근이 되는 이유가 뭔가요?', 'answer': '판별식 D = b²-4ac = 0 이면 근의 공식에서 ±√0 = 0이 되어 두 근이 같아지기 때문입니다.', 'answered': true, 'time': '2일 전'},
-      {'subject': '과학', 'lectureTitle': '뉴턴의 운동법칙', 'question': '무게와 질량의 차이가 헷갈려요', 'answer': '질량은 물체가 가진 물질의 양(kg), 무게는 지구가 당기는 중력의 크기(N)입니다. 달에서는 질량은 같지만 무게가 달라져요!', 'answered': true, 'time': '1주 전'},
-    ];
+    final appState = context.watch<AppState>();
+    final activeList = appState.personalQAs;
+    final trashList = appState.trashQAs;
+    final displayList = _showTrash ? trashList : activeList;
 
-    return qaList.isEmpty
-        ? _buildEmptyState(Icons.question_answer_outlined, T('empty_qa'), T('empty_qa_sub'))
-        : ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            itemCount: qaList.length,
-            itemBuilder: (_, i) {
-              final qa = qaList[i];
-              final answered = qa['answered'] as bool;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
+    return Column(children: [
+      // ── 상단 헤더: 개수 + 휴지통 토글 + 질문하기 ──
+      Container(
+        padding: const EdgeInsets.fromLTRB(16, 10, 12, 6),
+        child: Row(children: [
+          Text(
+            _showTrash
+                ? '휴지통 ${trashList.length}개'
+                : '나의 Q&A ${activeList.length}개',
+            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+          ),
+          const Spacer(),
+          // 휴지통 토글 버튼
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => setState(() => _showTrash = !_showTrash),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+                  color: _showTrash
+                      ? AppColors.error.withValues(alpha: 0.1)
+                      : AppColors.background,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _showTrash ? AppColors.error.withValues(alpha: 0.3) : AppColors.divider,
+                  ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(14),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                    Row(children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4)),
-                        child: Text(qa['subject'] as String,
-                          style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600))),
-                      const SizedBox(width: 6),
-                      Expanded(child: Text(qa['lectureTitle'] as String,
-                        style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                        maxLines: 1, overflow: TextOverflow.ellipsis)),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: answered ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20)),
-                        child: Text(answered ? T('answer_complete') : T('answer_pending'),
-                          style: TextStyle(fontSize: 10,
-                            color: answered ? AppColors.success : AppColors.warning,
-                            fontWeight: FontWeight.w700))),
-                    ]),
-                    const SizedBox(height: 8),
-                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      const Icon(Icons.help_outline_rounded, size: 15, color: AppColors.primary),
-                      const SizedBox(width: 6),
-                      Expanded(child: Text(qa['question'] as String,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary))),
-                    ]),
-                    if (answered && (qa['answer'] as String).isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.success.withValues(alpha: 0.2))),
-                        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Icon(Icons.subdirectory_arrow_right_rounded, size: 14, color: AppColors.success),
-                          const SizedBox(width: 6),
-                          Expanded(child: Text(qa['answer'] as String,
-                            style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4))),
-                        ]),
-                      ),
-                    ],
-                    const SizedBox(height: 6),
-                    Text(qa['time'] as String, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(
+                    _showTrash ? Icons.arrow_back_rounded : Icons.delete_outline_rounded,
+                    size: 14,
+                    color: _showTrash ? AppColors.error : AppColors.textHint,
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    _showTrash ? '목록으로' : '휴지통${trashList.isNotEmpty ? "(${trashList.length})" : ""}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: _showTrash ? AppColors.error : AppColors.textHint,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ]),
+              ),
+            ),
+          ),
+          if (!_showTrash) ...[
+            const SizedBox(width: 6),
+            // 질문하기 버튼
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _showWriteQADialog(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.edit_rounded, size: 13, color: Colors.white),
+                    SizedBox(width: 3),
+                    Text('질문하기', style: TextStyle(fontSize: 11, color: Colors.white, fontWeight: FontWeight.w700)),
                   ]),
                 ),
-              );
-            },
-          );
+              ),
+            ),
+          ],
+          if (_showTrash && trashList.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                onTap: () => _confirmEmptyTrash(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+                  ),
+                  child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(Icons.delete_forever_rounded, size: 13, color: AppColors.error),
+                    SizedBox(width: 3),
+                    Text('비우기', style: TextStyle(fontSize: 11, color: AppColors.error, fontWeight: FontWeight.w700)),
+                  ]),
+                ),
+              ),
+            ),
+          ],
+        ]),
+      ),
+      // ── Q&A 목록 ──
+      Expanded(
+        child: displayList.isEmpty
+            ? _buildEmptyState(
+                _showTrash ? Icons.delete_outline_rounded : Icons.question_answer_outlined,
+                _showTrash ? '휴지통이 비어 있어요' : '나의 Q&A가 없어요',
+                _showTrash ? '삭제된 Q&A가 여기에 보관됩니다' : '질문하기 버튼으로 첫 질문을 남겨보세요',
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                itemCount: displayList.length,
+                itemBuilder: (_, i) => _showTrash
+                    ? _buildTrashQACard(context, displayList[i])
+                    : _buildPersonalQACard(context, displayList[i]),
+              ),
+      ),
+    ]);
   }
 
-  // ── 탭 4: 내 상담 ─────────────────────────────
-  Widget _buildConsultationTab(String lang) {
-    final T = (String key) => AppTranslations.tLang(lang, key);
-    final myConsultations = [
-      {'subject': '수학', 'title': '이차방정식 근의 공식 언제 쓰는 건가요?', 'answered': true, 'time': '2일 전', 'views': 234},
-      {'subject': '과학', 'title': '뉴턴 제2법칙 F=ma에서 a가 음수면 어떻게 되나요?', 'answered': false, 'time': '5시간 전', 'views': 45},
-    ];
-
-    return myConsultations.isEmpty
-        ? _buildEmptyState(Icons.chat_bubble_outline_rounded, T('empty_consult'), T('empty_consult_sub'))
-        : ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-            itemCount: myConsultations.length,
-            itemBuilder: (_, i) {
-              final c = myConsultations[i];
-              final answered = c['answered'] as bool;
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(14),
+  // ── 개인 Q&A 카드 (Active) ──
+  Widget _buildPersonalQACard(BuildContext context, PersonalQA qa) {
+    final subjectColor = _subjectColor(qa.subject);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _showQADetailSheet(context, qa),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+            // 1행: 과목 + 학제 + 수정/삭제
+            Row(children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
+                  color: subjectColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4)),
+                child: Text(qa.subject,
+                  style: TextStyle(fontSize: 10, color: subjectColor, fontWeight: FontWeight.w600)),
+              ),
+              const SizedBox(width: 5),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.textHint.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(4)),
+                child: Text(qa.gradeLabel,
+                  style: const TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+              ),
+              if (qa.lectureTitle != null && qa.lectureTitle!.isNotEmpty) ...[
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(qa.lectureTitle!,
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 10, color: AppColors.textHint)),
                 ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                  Row(children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
-                      child: Text(c['subject'] as String, style: const TextStyle(fontSize: 10, color: AppColors.primary, fontWeight: FontWeight.w600))),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: answered ? AppColors.success.withValues(alpha: 0.1) : AppColors.warning.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20)),
-                      child: Text(answered ? T('answer_complete') : T('answer_pending'),
-                        style: TextStyle(fontSize: 10, color: answered ? AppColors.success : AppColors.warning, fontWeight: FontWeight.w700))),
-                  ]),
-                  const SizedBox(height: 8),
-                  Text(c['title'] as String, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 6),
-                  Row(children: [
-                    const Icon(Icons.visibility_outlined, size: 12, color: AppColors.textHint),
-                    Text(' ${c['views']}', style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
-                    const SizedBox(width: 8),
-                    Text(c['time'] as String, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
-                  ]),
+              ] else
+                const Spacer(),
+              // 수정 버튼
+              GestureDetector(
+                onTap: () => _showEditQADialog(context, qa),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.edit_outlined, size: 16, color: AppColors.primary),
+                ),
+              ),
+              // 휴지통 버튼
+              GestureDetector(
+                onTap: () => _confirmTrashQA(context, qa),
+                child: const Padding(
+                  padding: EdgeInsets.all(4),
+                  child: Icon(Icons.delete_outline_rounded, size: 16, color: AppColors.error),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 8),
+            // 2행: 제목
+            Text(qa.title,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+              maxLines: 2, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 4),
+            // 3행: 내용 미리보기
+            Text(qa.content,
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
+              maxLines: 2, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 6),
+            // 4행: 시간
+            Text(qa.timeAgo,
+              style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  // ── 휴지통 Q&A 카드 ──
+  Widget _buildTrashQACard(BuildContext context, PersonalQA qa) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.15)),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 2))],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+          Row(children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(4)),
+              child: Text(qa.subject,
+                style: const TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.w600)),
+            ),
+            const SizedBox(width: 5),
+            const Icon(Icons.delete_outline_rounded, size: 12, color: AppColors.textHint),
+            const SizedBox(width: 2),
+            const Text('휴지통', style: TextStyle(fontSize: 10, color: AppColors.textHint, fontWeight: FontWeight.w500)),
+            const Spacer(),
+            // 복원 버튼
+            GestureDetector(
+              onTap: () async {
+                await context.read<AppState>().restorePersonalQA(qa.id);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Q&A가 복원되었습니다'), duration: Duration(seconds: 2)));
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12)),
+                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.restore_rounded, size: 13, color: AppColors.success),
+                  SizedBox(width: 2),
+                  Text('복원', style: TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.w700)),
                 ]),
-              );
+              ),
+            ),
+            const SizedBox(width: 6),
+            // 영구 삭제
+            GestureDetector(
+              onTap: () => _confirmPermanentDelete(context, qa),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12)),
+                child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.delete_forever_rounded, size: 13, color: AppColors.error),
+                  SizedBox(width: 2),
+                  Text('삭제', style: TextStyle(fontSize: 10, color: AppColors.error, fontWeight: FontWeight.w700)),
+                ]),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 8),
+          Text(qa.title,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textSecondary,
+              decoration: TextDecoration.lineThrough, decorationColor: AppColors.textHint),
+            maxLines: 1, overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 4),
+          Text(qa.content,
+            style: const TextStyle(fontSize: 11, color: AppColors.textHint, height: 1.3),
+            maxLines: 1, overflow: TextOverflow.ellipsis),
+        ]),
+      ),
+    );
+  }
+
+  // ── Q&A 상세 보기 바텀시트 ──
+  void _showQADetailSheet(BuildContext context, PersonalQA qa) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) {
+        final bottomPad = MediaQuery.of(ctx).padding.bottom;
+        return Padding(
+          padding: EdgeInsets.only(bottom: bottomPad),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(child: Container(width: 36, height: 4,
+                  decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
+                const SizedBox(height: 14),
+                // 과목 + 학제 배지
+                Row(children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _subjectColor(qa.subject).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6)),
+                    child: Text(qa.subject,
+                      style: TextStyle(fontSize: 11, color: _subjectColor(qa.subject), fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: AppColors.textHint.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6)),
+                    child: Text(qa.gradeLabel,
+                      style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
+                  ),
+                  const Spacer(),
+                  Text(qa.timeAgo, style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+                ]),
+                if (qa.lectureTitle != null && qa.lectureTitle!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    const Icon(Icons.ondemand_video_rounded, size: 13, color: AppColors.textHint),
+                    const SizedBox(width: 4),
+                    Expanded(child: Text(qa.lectureTitle!,
+                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))),
+                  ]),
+                ],
+                const SizedBox(height: 14),
+                // 제목
+                Text(qa.title,
+                  style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                const SizedBox(height: 12),
+                // 내용
+                Text(qa.content,
+                  style: const TextStyle(fontSize: 14, color: AppColors.textSecondary, height: 1.7)),
+                const SizedBox(height: 20),
+                // 하단 액션 버튼
+                Row(children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _showEditQADialog(context, qa);
+                      },
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: const Text('수정', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.primary,
+                        side: BorderSide(color: AppColors.primary.withValues(alpha: 0.3)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _confirmTrashQA(context, qa);
+                      },
+                      icon: const Icon(Icons.delete_outline_rounded, size: 16),
+                      label: const Text('삭제', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        side: BorderSide(color: AppColors.error.withValues(alpha: 0.3)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                      ),
+                    ),
+                  ),
+                ]),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ── Q&A 작성 다이얼로그 ──
+  void _showWriteQADialog(BuildContext context) {
+    final titleCtrl = TextEditingController();
+    final contentCtrl = TextEditingController();
+    String selectedSubject = '수학';
+    String selectedGrade = 'middle';
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 16, right: 16, top: 14,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + MediaQuery.of(ctx).padding.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Container(width: 36, height: 4,
+                decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 10),
+              const Text('나의 Q&A 작성', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 10),
+              // 과목 / 학제 드롭다운
+              Row(children: [
+                _compactDropdown<String>(
+                  value: selectedSubject,
+                  items: ['수학', '과학', '공통과학', '물리', '화학', '생명과학', '지구과학', '국어', '영어'],
+                  onChanged: (v) => setModalState(() => selectedSubject = v!),
+                ),
+                const SizedBox(width: 8),
+                _compactDropdown<String>(
+                  value: selectedGrade,
+                  items: ['elementary', 'middle', 'high'],
+                  labels: {'elementary': '예비중', 'middle': '중등', 'high': '고등'},
+                  onChanged: (v) => setModalState(() => selectedGrade = v!),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              // 제목
+              SizedBox(
+                height: 44,
+                child: TextField(
+                  controller: titleCtrl,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: '질문 제목',
+                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              // 내용
+              SizedBox(
+                height: 100,
+                child: TextField(
+                  controller: contentCtrl,
+                  maxLines: null, expands: true,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: '질문 내용을 자세히 작성해주세요',
+                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // 등록 버튼
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    final title = titleCtrl.text.trim();
+                    if (title.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('제목을 입력해주세요')));
+                      return;
+                    }
+                    final now = DateTime.now();
+                    final newQA = PersonalQA(
+                      id: 'pqa_${now.millisecondsSinceEpoch}',
+                      title: title,
+                      content: contentCtrl.text.trim().isEmpty ? '(내용 없음)' : contentCtrl.text.trim(),
+                      subject: selectedSubject,
+                      grade: selectedGrade,
+                      createdAt: now,
+                      updatedAt: now,
+                    );
+                    await context.read<AppState>().addPersonalQA(newQA);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('나의 Q&A가 등록되었습니다!'), duration: Duration(seconds: 2)));
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: const Text('질문 등록하기', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Q&A 수정 다이얼로그 ──
+  void _showEditQADialog(BuildContext context, PersonalQA qa) {
+    final titleCtrl = TextEditingController(text: qa.title);
+    final contentCtrl = TextEditingController(text: qa.content);
+    String selectedSubject = qa.subject;
+    String selectedGrade = qa.grade;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            left: 16, right: 16, top: 14,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + MediaQuery.of(ctx).padding.bottom + 16,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(child: Container(width: 36, height: 4,
+                decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
+              const SizedBox(height: 10),
+              const Text('나의 Q&A 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 10),
+              Row(children: [
+                _compactDropdown<String>(
+                  value: selectedSubject,
+                  items: ['수학', '과학', '공통과학', '물리', '화학', '생명과학', '지구과학', '국어', '영어'],
+                  onChanged: (v) => setModalState(() => selectedSubject = v!),
+                ),
+                const SizedBox(width: 8),
+                _compactDropdown<String>(
+                  value: selectedGrade,
+                  items: ['elementary', 'middle', 'high'],
+                  labels: {'elementary': '예비중', 'middle': '중등', 'high': '고등'},
+                  onChanged: (v) => setModalState(() => selectedGrade = v!),
+                ),
+              ]),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 44,
+                child: TextField(
+                  controller: titleCtrl,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: '질문 제목',
+                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 100,
+                child: TextField(
+                  controller: contentCtrl,
+                  maxLines: null, expands: true,
+                  style: const TextStyle(fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: '질문 내용',
+                    hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      side: BorderSide(color: AppColors.divider),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('취소', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final title = titleCtrl.text.trim();
+                      if (title.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('제목을 입력해주세요')));
+                        return;
+                      }
+                      await context.read<AppState>().updatePersonalQA(
+                        qa.id,
+                        title: title,
+                        content: contentCtrl.text.trim().isEmpty ? '(내용 없음)' : contentCtrl.text.trim(),
+                        subject: selectedSubject,
+                        grade: selectedGrade,
+                      );
+                      if (ctx.mounted) Navigator.pop(ctx);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Q&A가 수정되었습니다'), duration: Duration(seconds: 2)));
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('저장', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── 휴지통 이동 확인 ──
+  void _confirmTrashQA(BuildContext context, PersonalQA qa) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('휴지통으로 이동', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        content: Text('"${qa.title}"을(를) 휴지통으로 이동할까요?\n휴지통에서 복원할 수 있습니다.',
+          style: const TextStyle(fontSize: 13, height: 1.5)),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소', style: TextStyle(color: AppColors.textSecondary))),
+          ElevatedButton(
+            onPressed: () async {
+              await context.read<AppState>().trashPersonalQA(qa.id);
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Q&A가 휴지통으로 이동되었습니다'), duration: Duration(seconds: 2)));
+              }
             },
-          );
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+            child: const Text('이동', style: TextStyle(fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 영구 삭제 확인 ──
+  void _confirmPermanentDelete(BuildContext context, PersonalQA qa) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('영구 삭제', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        content: Text('"${qa.title}"을(를) 완전히 삭제할까요?\n삭제 후 복구할 수 없습니다.',
+          style: const TextStyle(fontSize: 13, height: 1.5)),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소', style: TextStyle(color: AppColors.textSecondary))),
+          ElevatedButton(
+            onPressed: () async {
+              await context.read<AppState>().deletePersonalQAPermanently(qa.id);
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Q&A가 영구 삭제되었습니다'), duration: Duration(seconds: 2)));
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+            child: const Text('영구 삭제', style: TextStyle(fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 휴지통 비우기 확인 ──
+  void _confirmEmptyTrash(BuildContext context) {
+    final trashCount = context.read<AppState>().trashQAs.length;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('휴지통 비우기', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        content: Text('휴지통의 $trashCount개 Q&A를 모두 삭제할까요?\n삭제 후 복구할 수 없습니다.',
+          style: const TextStyle(fontSize: 13, height: 1.5)),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('취소', style: TextStyle(color: AppColors.textSecondary))),
+          ElevatedButton(
+            onPressed: () async {
+              await context.read<AppState>().emptyPersonalQATrash();
+              if (context.mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('휴지통을 비웠습니다'), duration: Duration(seconds: 2)));
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+            child: const Text('모두 삭제', style: TextStyle(fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── 컴팩트 드롭다운 위젯 ──
+  Widget _compactDropdown<T>({
+    required T value,
+    required List<T> items,
+    Map<T, String>? labels,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return Container(
+      height: 36,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppColors.divider),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isDense: true,
+          menuMaxHeight: items.length * 36.0,
+          icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 16),
+          style: const TextStyle(fontSize: 13, color: AppColors.textPrimary, fontWeight: FontWeight.w600),
+          onChanged: onChanged,
+          items: items.map((item) {
+            return DropdownMenuItem<T>(
+              value: item,
+              child: SizedBox(
+                height: 34,
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(labels?[item] ?? item.toString(), style: const TextStyle(fontSize: 13)),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
   }
 
   // ── 공통 빈 상태 ──────────────────────────────────

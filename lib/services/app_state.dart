@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lecture.dart';
 import '../models/instructor.dart';
 import '../models/consultation.dart';
+import '../models/personal_qa.dart';
 import 'data_service.dart';
 import 'api_service.dart';
 import 'instructor_service.dart';
@@ -63,6 +64,10 @@ class AppState extends ChangeNotifier {
   String _consultationSort = '최신순';
   // 사용자가 등록한 질문 목록 (추가/삭제 가능)
   final List<Consultation> _userConsultations = [];
+
+  // ─── 개인 Q&A (나의 활동 > 나의 Q&A 전용 · 로컬 저장) ───
+  List<PersonalQA> _personalQAs = [];
+  bool _personalQALoaded = false;
 
   // ─── 언어 설정 ───
   String _selectedLanguage = 'ko';
@@ -661,4 +666,100 @@ class AppState extends ChangeNotifier {
   /// 해당 id가 사용자가 직접 등록한 질문인지 여부
   bool isMyConsultation(String id) =>
       _userConsultations.any((c) => c.id == id);
+
+  // ══════════════════════════════════════════════════════
+  // ── 개인 Q&A (나의 활동 전용 · soft-delete 휴지통) ──
+  // ══════════════════════════════════════════════════════
+
+  /// 활성 Q&A 목록 (삭제되지 않은 것만)
+  List<PersonalQA> get personalQAs =>
+      _personalQAs.where((q) => !q.isDeleted).toList()
+        ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+  /// 휴지통 Q&A 목록
+  List<PersonalQA> get trashQAs =>
+      _personalQAs.where((q) => q.isDeleted).toList()
+        ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+  /// SharedPreferences 에서 로드
+  Future<void> loadPersonalQAs() async {
+    if (_personalQALoaded) return;
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getStringList('personal_qas') ?? [];
+    _personalQAs = raw.map((s) {
+      final map = json.decode(s) as Map<String, dynamic>;
+      return PersonalQA.fromJson(map);
+    }).toList();
+    _personalQALoaded = true;
+    notifyListeners();
+  }
+
+  Future<void> _savePersonalQAs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = _personalQAs.map((q) => json.encode(q.toJson())).toList();
+    await prefs.setStringList('personal_qas', raw);
+  }
+
+  /// 새 개인 Q&A 추가
+  Future<void> addPersonalQA(PersonalQA qa) async {
+    _personalQAs.add(qa);
+    await _savePersonalQAs();
+    notifyListeners();
+  }
+
+  /// 개인 Q&A 수정
+  Future<void> updatePersonalQA(String id, {required String title, required String content, String? subject, String? grade}) async {
+    final idx = _personalQAs.indexWhere((q) => q.id == id);
+    if (idx != -1) {
+      _personalQAs[idx] = _personalQAs[idx].copyWith(
+        title: title,
+        content: content,
+        subject: subject,
+        grade: grade,
+        updatedAt: DateTime.now(),
+      );
+      await _savePersonalQAs();
+      notifyListeners();
+    }
+  }
+
+  /// 개인 Q&A → 휴지통 이동 (soft delete)
+  Future<void> trashPersonalQA(String id) async {
+    final idx = _personalQAs.indexWhere((q) => q.id == id);
+    if (idx != -1) {
+      _personalQAs[idx] = _personalQAs[idx].copyWith(
+        isDeleted: true,
+        updatedAt: DateTime.now(),
+      );
+      await _savePersonalQAs();
+      notifyListeners();
+    }
+  }
+
+  /// 휴지통에서 복원
+  Future<void> restorePersonalQA(String id) async {
+    final idx = _personalQAs.indexWhere((q) => q.id == id);
+    if (idx != -1) {
+      _personalQAs[idx] = _personalQAs[idx].copyWith(
+        isDeleted: false,
+        updatedAt: DateTime.now(),
+      );
+      await _savePersonalQAs();
+      notifyListeners();
+    }
+  }
+
+  /// 완전 삭제 (휴지통에서 영구 삭제)
+  Future<void> deletePersonalQAPermanently(String id) async {
+    _personalQAs.removeWhere((q) => q.id == id);
+    await _savePersonalQAs();
+    notifyListeners();
+  }
+
+  /// 휴지통 비우기
+  Future<void> emptyPersonalQATrash() async {
+    _personalQAs.removeWhere((q) => q.isDeleted);
+    await _savePersonalQAs();
+    notifyListeners();
+  }
 }
