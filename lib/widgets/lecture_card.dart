@@ -106,12 +106,14 @@ class LectureCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // ─── 상단: 썸네일 + 강의 정보 + 재생버튼 ──
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 썸네일 — CachedNetworkImage로 안정적 표시
-                    _buildThumbnail(105, 78, subjectColor),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 썸네일 — CachedNetworkImage로 안정적 표시 (고정 크기)
+                  SizedBox(
+                    width: 105, height: 78,
+                    child: _buildThumbnail(105, 78, subjectColor),
+                  ),
 
                     // 강의 정보
                     Expanded(
@@ -158,7 +160,6 @@ class LectureCard extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
 
               // ─── 해시태그 영역 ───────────────────────
               if (lecture.hashtags.isNotEmpty)

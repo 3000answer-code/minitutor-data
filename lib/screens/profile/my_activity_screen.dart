@@ -226,25 +226,28 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
-                    // ── 교안 미리보기 썸네일 ──
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: Container(
-                        width: 100, height: 78,
-                        color: Colors.white,
-                        alignment: Alignment.center,
-                        child: previewUrl != null
-                            ? (previewUrl.startsWith('assets/')
-                                ? Image.asset(previewUrl,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) =>
-                                        _noteThumbnailFallback(subjectColor))
-                                : Image.network(previewUrl,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) =>
-                                        _noteThumbnailFallback(subjectColor)))
-                            : _noteThumbnailFallback(subjectColor),
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    // ── 교안 미리보기 썸네일 (고정 크기) ──
+                    SizedBox(
+                      width: 100, height: 78,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Container(
+                          width: 100, height: 78,
+                          color: Colors.white,
+                          alignment: Alignment.center,
+                          child: previewUrl != null
+                              ? (previewUrl.startsWith('assets/')
+                                  ? Image.asset(previewUrl,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (_, __, ___) =>
+                                          _noteThumbnailFallback(subjectColor))
+                                  : Image.network(previewUrl,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (_, __, ___) =>
+                                          _noteThumbnailFallback(subjectColor)))
+                              : _noteThumbnailFallback(subjectColor),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
