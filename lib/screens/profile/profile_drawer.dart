@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../main.dart';
 import '../../services/app_state.dart';
 import '../../services/translations.dart';
 import '../../theme/app_theme.dart';
@@ -133,6 +134,19 @@ class ProfileDrawer extends StatelessWidget {
             ),
             child: Text(T('edit_profile'), style: const TextStyle(fontSize: 12)),
           ),
+          const SizedBox(width: 4),
+          // X (닫기) 버튼
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
+            ),
+          ),
         ]),
         const SizedBox(height: 10),
         // 닉네임
@@ -207,68 +221,65 @@ class ProfileDrawer extends StatelessWidget {
 
   // ─── 네비게이션 메서드들 ────────────────────────────
 
+  /// 공통: Drawer를 닫고 화면 이동 후 돌아오면 Drawer를 다시 열기
+  void _navigateAndReopenDrawer(BuildContext context, Widget screen) {
+    Navigator.pop(context); // Drawer 닫기
+    Navigator.push(context, MaterialPageRoute(builder: (_) => screen)).then((_) {
+      // 하위 화면에서 돌아오면 Drawer 다시 열기
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        MainShell.scaffoldKey.currentState?.openEndDrawer();
+      });
+    });
+  }
+
   void _openMyActivity(BuildContext context, int tab) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => MyActivityScreen(initialTab: tab),
-    ));
+    _navigateAndReopenDrawer(context, MyActivityScreen(initialTab: tab));
   }
 
   void _openSchedule(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const ScheduleScreen()));
+    _navigateAndReopenDrawer(context, const ScheduleScreen());
   }
 
   void _openCurriculum(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const CurriculumScreen()));
+    _navigateAndReopenDrawer(context, const CurriculumScreen());
   }
 
   void _openStore(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const StoreScreen()));
+    _navigateAndReopenDrawer(context, const StoreScreen());
   }
 
   void _openStorePayment(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const StoreScreen()));
+    _navigateAndReopenDrawer(context, const StoreScreen());
   }
 
   void _openNotice(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()));
+    _navigateAndReopenDrawer(context, const NoticeScreen());
   }
 
   void _openSupport(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportScreen()));
+    _navigateAndReopenDrawer(context, const SupportScreen());
   }
 
   void _openStoryboard(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const StoryboardViewerScreen()));
+    _navigateAndReopenDrawer(context, const StoryboardViewerScreen());
   }
 
   void _openSettings(BuildContext context) {
-    Navigator.pop(context);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+    _navigateAndReopenDrawer(context, const SettingsScreen());
   }
 
   void _openLegalPage(BuildContext context, String title) {
-    Navigator.pop(context);
     final content = title == '이용약관' ? _termsContent : _privacyContent;
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => Scaffold(
-        appBar: AppBar(
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-          backgroundColor: Colors.white,
-          elevation: 0,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Text(content,
-            style: const TextStyle(fontSize: 14, height: 1.8, color: AppColors.textSecondary)),
-        ),
+    _navigateAndReopenDrawer(context, Scaffold(
+      appBar: AppBar(
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Text(content,
+          style: const TextStyle(fontSize: 14, height: 1.8, color: AppColors.textSecondary)),
       ),
     ));
   }

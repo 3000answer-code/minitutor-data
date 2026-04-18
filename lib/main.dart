@@ -264,9 +264,17 @@ class _SplashScreenState extends State<_SplashScreen>
   }
 }
 
-class MainShell extends StatelessWidget {
+class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
+  /// Drawer를 외부에서 열기 위한 GlobalKey
+  static final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  State<MainShell> createState() => _MainShellState();
+}
+
+class _MainShellState extends State<MainShell> {
   static const _screens = [
     HomeScreen(),
     ProgressScreen(),
@@ -300,6 +308,7 @@ class MainShell extends StatelessWidget {
         }
       },
       child: Scaffold(
+        key: MainShell.scaffoldKey,
         backgroundColor: AppColors.background,
         appBar: isHome ? _buildHomeAppBar(context) : null,
         endDrawer: const ProfileDrawer(),

@@ -120,7 +120,7 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
           content: Text(_t('desc')),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 120),
           duration: const Duration(seconds: 2),
         ),
       );
