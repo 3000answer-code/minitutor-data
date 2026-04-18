@@ -240,8 +240,14 @@ class _InstructorScreenState extends State<InstructorScreen> {
                   color: subjectColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('시리즈 ${instructor.series.length}',
+                child: Text('시리즈',
                   style: TextStyle(fontSize: 11, color: subjectColor, fontWeight: FontWeight.w700)),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => _openSeriesAllLectures(context, instructor, lectures),
+                child: Text('전체보기',
+                  style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
               ),
             ]),
           ),
@@ -489,6 +495,150 @@ class _InstructorScreenState extends State<InstructorScreen> {
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+
+  // ── 시리즈별 전체 강의 바텀시트 ──────────────────────────────────────
+  void _openSeriesAllLectures(BuildContext context, Instructor instructor, List<Lecture> lectures) {
+    final appState = context.read<AppState>();
+    final subjectColor = _subjectColor(instructor.subject);
+
+    // 시리즈별 그룹핑
+    final Map<String, List<Lecture>> seriesMap = {};
+    for (final lec in lectures) {
+      final key = lec.series.isNotEmpty ? lec.series : '기타';
+      seriesMap.putIfAbsent(key, () => []).add(lec);
+    }
+    // 강사의 시리즈 순서대로 정렬, 나머지는 뒤에
+    final orderedKeys = <String>[];
+    for (final s in instructor.series) {
+      if (seriesMap.containsKey(s)) orderedKeys.add(s);
+    }
+    for (final k in seriesMap.keys) {
+      if (!orderedKeys.contains(k)) orderedKeys.add(k);
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (sheetCtx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.85,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (_, scrollCtrl) => Column(children: [
+            // ── 헤더 ──
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 4, offset: const Offset(0, 2)),
+                ],
+              ),
+              child: Column(children: [
+                const SizedBox(height: 12),
+                Center(child: Container(width: 40, height: 4,
+                  decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+                  child: Row(children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(sheetCtx).pop(),
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.divider),
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: AppColors.textPrimary),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(width: 6, height: 24,
+                      decoration: BoxDecoration(color: subjectColor, borderRadius: BorderRadius.circular(3))),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('${instructor.name} 시리즈 전체',
+                          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                        Text('${instructor.subject} · ${orderedKeys.length}개 시리즈 · ${lectures.length}개 강의',
+                          style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
+                      ]),
+                    ),
+                  ]),
+                ),
+                Divider(height: 1, color: AppColors.divider.withValues(alpha: 0.5)),
+              ]),
+            ),
+
+            // ── 시리즈별 강의 목록 ──
+            Expanded(
+              child: ListView(
+                controller: scrollCtrl,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+                children: orderedKeys.expand((seriesName) {
+                  final seriesLectures = seriesMap[seriesName]!;
+                  return [
+                    // 시리즈 헤더
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12, bottom: 8),
+                      child: Row(children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: subjectColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: subjectColor.withValues(alpha: 0.3)),
+                          ),
+                          child: Text(seriesName,
+                            style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w700)),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('${seriesLectures.length}개',
+                          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+                      ]),
+                    ),
+                    // 강의 카드들
+                    ...seriesLectures.map((lec) => Padding(
+                      padding: const EdgeInsets.only(bottom: 6),
+                      child: LectureCard(
+                        lecture: lec,
+                        onTagTap: (tag) {
+                          Navigator.pop(sheetCtx);
+                          appState.setSearchQuery(tag);
+                          appState.setNavIndex(3);
+                        },
+                        onTap: () {
+                          appState.addRecentView(lec.id);
+                          if (appState.pipActive && appState.pipLecture?.id != lec.id) {
+                            appState.deactivatePip();
+                          }
+                          Navigator.pop(sheetCtx);
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => LecturePlayerScreen(
+                              lecture: lec,
+                              autoPlayList: seriesLectures,
+                              autoPlayIndex: seriesLectures.indexOf(lec),
+                            ),
+                          ));
+                        },
+                      ),
+                    )),
+                  ];
+                }).toList(),
+              ),
+            ),
+          ]),
         );
       },
     );
