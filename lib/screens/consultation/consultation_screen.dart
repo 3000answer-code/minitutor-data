@@ -75,15 +75,26 @@ class ConsultationScreen extends StatelessWidget {
           ),
         ],
       ),
-      // ── 질문하기 버튼: 확장 FAB ──
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showWriteDialog(context),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.edit_rounded, size: 18),
-        label: const Text('질문 쓰기',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-        elevation: 4,
+      // ── 질문하기 버튼: 소형 필 버튼 ──
+      floatingActionButton: GestureDetector(
+        onTap: () => _showWriteDialog(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 12, offset: const Offset(0, 4)),
+            ],
+          ),
+          child: const Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.edit_rounded, size: 15, color: Colors.white),
+            SizedBox(width: 5),
+            Text('질문쓰기', style: TextStyle(
+              fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
+          ]),
+        ),
       ),
     );
   }
@@ -586,7 +597,7 @@ class ConsultationScreen extends StatelessWidget {
             left: 16,
             right: 16,
             top: 14,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + MediaQuery.of(ctx).padding.bottom + 16,
           ),
           child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -601,7 +612,7 @@ class ConsultationScreen extends StatelessWidget {
                             color: AppColors.divider,
                             borderRadius: BorderRadius.circular(2)))),
                 const SizedBox(height: 10),
-                const Text('질문 작성',
+                const Text('Q&A 작성',
                     style: TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w800)),
                 const SizedBox(height: 10),
