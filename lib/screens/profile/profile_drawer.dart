@@ -36,7 +36,6 @@ class ProfileDrawer extends StatelessWidget {
                   _MenuItem(Icons.history_rounded, T('recent_lectures'), () => _openMyActivity(context, 0)),
                   _MenuItem(Icons.note_alt_outlined, T('my_notes'), () => _openMyActivity(context, 1)),
                   _MenuItem(Icons.question_answer_outlined, T('my_qa'), () => _openMyActivity(context, 2)),
-                  _MenuItem(Icons.support_agent_rounded, T('my_consult'), () => _openMyActivity(context, 3)),
                 ]),
                 const Divider(height: 1),
                 // 학습 관리

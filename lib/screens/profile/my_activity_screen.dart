@@ -26,7 +26,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this, initialIndex: widget.initialTab.clamp(0, 3));
+    _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTab.clamp(0, 2));
     _tabController.addListener(() {
       if (_tabController.index == 1) _loadNotes();
     });
@@ -68,7 +68,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
             Tab(child: Text(T('tab_recent'), style: const TextStyle(fontSize: 13))),
             Tab(child: Text(T('tab_notes'), style: const TextStyle(fontSize: 13))),
             Tab(child: Text(T('tab_my_qa'), style: const TextStyle(fontSize: 13))),
-            Tab(child: Text(T('tab_expert'), style: const TextStyle(fontSize: 13))),
           ],
           labelColor: AppColors.primary,
           unselectedLabelColor: AppColors.textSecondary,
@@ -87,7 +86,6 @@ class _MyActivityScreenState extends State<MyActivityScreen>
             _buildRecentTab(lang),
             _buildNoteTab(lang),
             _buildQATab(lang),
-            _buildConsultationTab(lang),
           ],
         ),
       ),
