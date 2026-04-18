@@ -58,7 +58,9 @@ class AppTheme {
         error: AppColors.error,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      fontFamily: 'Pretendard',
+      // fontFamily 제거 – Pretendard 폰트 파일이 번들에 없어
+      // Android APK에서 아이콘/이모지가 □(박스)로 표시되는 원인이었음.
+      // 시스템 기본 폰트(Roboto 등) 사용으로 모든 글리프 정상 렌더링.
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         foregroundColor: AppColors.textPrimary,

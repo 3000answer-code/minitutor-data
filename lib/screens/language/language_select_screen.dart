@@ -115,15 +115,38 @@ class _LanguageSelectScreenState extends State<LanguageSelectScreen>
 
   void _onStart() {
     if (_selectedLang == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_t('desc')),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 120),
-          duration: const Duration(seconds: 2),
+      // 스낵바 대신 상단 오버레이 안내 (시작 버튼을 가리지 않음)
+      final overlay = OverlayEntry(builder: (ctx) => Positioned(
+        top: MediaQuery.of(context).padding.top + 20,
+        left: 32, right: 32,
+        child: Material(
+          color: Colors.transparent,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 300),
+            builder: (_, opacity, child) => Opacity(opacity: opacity, child: child),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  blurRadius: 16, offset: const Offset(0, 4))],
+              ),
+              child: Row(children: [
+                const Icon(Icons.language_rounded, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                Expanded(child: Text(_t('desc'),
+                  style: const TextStyle(color: Colors.white, fontSize: 14,
+                    fontWeight: FontWeight.w600))),
+              ]),
+            ),
+          ),
         ),
-      );
+      ));
+      Overlay.of(context).insert(overlay);
+      Future.delayed(const Duration(seconds: 2), () => overlay.remove());
       return;
     }
     final appState = context.read<AppState>();
