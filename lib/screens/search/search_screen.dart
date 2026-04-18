@@ -1550,153 +1550,37 @@ class _SearchScreenState extends State<SearchScreen>
       _buildResultHeader(results.length),
       // ── 구분선
       Container(height: 1, color: const Color(0xFFEEEEEE)),
-      // ── 결과 목록 + Q&A 연동
+      // ── 결과 목록
       Expanded(
-        child: results.isEmpty && _getMatchingQA(appState, _searchResult).isEmpty
+        child: results.isEmpty
             ? _buildEmptyState()
-            : ListView(
+            : ListView.builder(
                 padding: const EdgeInsets.only(bottom: 80),
-                children: [
-                  // ── 동영상 결과
-                  ...results.asMap().entries.map((e) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: LectureCard(
-                      lecture: e.value,
-                      onTap: () {
-                        appState.addRecentView(e.value.id);
-                        if (appState.pipActive &&
-                            appState.pipLecture?.id == e.value.id) {
-                          appState.deactivatePip();
-                        }
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => LecturePlayerScreen(
-                                      lecture: e.value,
-                                      autoPlayList: _autoPlay ? results : null,
-                                      autoPlayIndex: _autoPlay ? e.key : 0,
-                                    )));
-                      },
-                    ),
-                  )),
-                  // ── Q&A 키워드 매칭 결과 자동 연동
-                  if (_searchResult.isNotEmpty)
-                    ..._buildQAMatchSection(appState, _searchResult),
-                ],
+                itemCount: results.length,
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: LectureCard(
+                    lecture: results[i],
+                    onTap: () {
+                      appState.addRecentView(results[i].id);
+                      if (appState.pipActive &&
+                          appState.pipLecture?.id == results[i].id) {
+                        appState.deactivatePip();
+                      }
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => LecturePlayerScreen(
+                                    lecture: results[i],
+                                    autoPlayList: _autoPlay ? results : null,
+                                    autoPlayIndex: _autoPlay ? i : 0,
+                                  )));
+                    },
+                  ),
+                ),
               ),
       ),
     ]);
-  }
-
-  // ── 검색어에 매칭되는 Q&A 목록 가져오기 ────────────────────
-  List<Consultation> _getMatchingQA(AppState appState, String query) {
-    if (query.trim().isEmpty) return [];
-    final nq = query.trim().toLowerCase();
-    return appState.consultations.where((c) {
-      final inTitle   = c.title.toLowerCase().contains(nq);
-      final inContent = c.content.toLowerCase().contains(nq);
-      final inAnswer  = c.answer != null && c.answer!.toLowerCase().contains(nq);
-      return inTitle || inContent || inAnswer;
-    }).toList();
-  }
-
-  // ── 동영상 결과 하단에 Q&A 연동 섹션 ──────────────────────
-  List<Widget> _buildQAMatchSection(AppState appState, String query) {
-    final matchedQA = _getMatchingQA(appState, query);
-    if (matchedQA.isEmpty) return [];
-
-    return [
-      const SizedBox(height: 8),
-      Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF10B981).withValues(alpha: 0.07),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.18)),
-        ),
-        child: Row(children: [
-          const Icon(Icons.question_answer_rounded, size: 16, color: Color(0xFF10B981)),
-          const SizedBox(width: 8),
-          Text('관련 Q&A ${matchedQA.length}건',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF10B981))),
-          const Spacer(),
-          GestureDetector(
-            onTap: () {
-              // Q&A 탭으로 이동
-              _tabController.animateTo(1);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Text('전체 보기', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF10B981))),
-            ),
-          ),
-        ]),
-      ),
-      const SizedBox(height: 4),
-      // 최대 2개만 미리보기 표시
-      ...matchedQA.take(2).map((c) => _buildMiniQACard(c, query)),
-    ];
-  }
-
-  // ── Q&A 미니 카드 (동영상 결과에 표시) ─────────────────────
-  Widget _buildMiniQACard(Consultation c, String query) {
-    return GestureDetector(
-      onTap: () => _openConsultationDetail(context, c),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.15)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 6, offset: const Offset(0, 1)),
-          ],
-        ),
-        child: Row(children: [
-          Container(
-            width: 32, height: 32,
-            decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              c.isAnswered ? Icons.check_circle_rounded : Icons.schedule_rounded,
-              size: 16,
-              color: c.isAnswered ? const Color(0xFF10B981) : const Color(0xFFF59E0B),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(c.title, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-              const SizedBox(height: 2),
-              Text(c.content, maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-            ]),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-            decoration: BoxDecoration(
-              color: c.isAnswered
-                  ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                  : const Color(0xFFF59E0B).withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(c.statusText,
-                style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
-                    color: c.isAnswered ? const Color(0xFF10B981) : const Color(0xFFF59E0B))),
-          ),
-        ]),
-      ),
-    );
   }
 
   // ── 카테고리 검색 컨텍스트 배너
