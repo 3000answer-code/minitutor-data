@@ -226,7 +226,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(12),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
                     // ── 교안 미리보기 썸네일 (고정 크기) ──
                     SizedBox(
                       width: 100, height: 78,
@@ -239,10 +239,12 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                           child: previewUrl != null
                               ? (previewUrl.startsWith('assets/')
                                   ? Image.asset(previewUrl,
+                                      width: 100, height: 78,
                                       fit: BoxFit.contain,
                                       errorBuilder: (_, __, ___) =>
                                           _noteThumbnailFallback(subjectColor))
                                   : Image.network(previewUrl,
+                                      width: 100, height: 78,
                                       fit: BoxFit.contain,
                                       errorBuilder: (_, __, ___) =>
                                           _noteThumbnailFallback(subjectColor)))
@@ -318,6 +320,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                       }(),
                     ),
                     // ── 휴지통 삭제 버튼 ──
+                    const SizedBox(width: 4),
                     IconButton(
                       icon: const Icon(Icons.delete_outline_rounded,
                         size: 20, color: AppColors.textHint),
@@ -387,7 +390,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
               final qa = qaList[i];
               final answered = qa['answered'] as bool;
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -395,7 +398,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(14),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                     Row(children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -467,14 +470,14 @@ class _MyActivityScreenState extends State<MyActivityScreen>
               final c = myConsultations[i];
               final answered = c['answered'] as bool;
               return Container(
-                margin: const EdgeInsets.only(bottom: 10),
+                margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
                 ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
                   Row(children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

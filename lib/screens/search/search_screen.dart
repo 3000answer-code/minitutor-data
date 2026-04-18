@@ -465,18 +465,20 @@ class _SearchScreenState extends State<SearchScreen>
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(14),
-          child: IntrinsicHeight(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+          child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── 썸네일: 고정 너비 105 ──────────────
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
-                  child: Container(
-                    width: 105,
-                    color: Colors.white,
-                    alignment: Alignment.center,
-                    child: thumbInner,
+                // ── 썸네일: 고정 크기 ──────────────
+                SizedBox(
+                  width: 105, height: 78,
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
+                    child: Container(
+                      width: 105, height: 78,
+                      color: Colors.white,
+                      alignment: Alignment.center,
+                      child: thumbInner,
+                    ),
                   ),
                 ),
 
@@ -573,8 +575,7 @@ class _SearchScreenState extends State<SearchScreen>
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 
   // ── 520 스타일 배지 헬퍼 (LectureCard와 동일) ──────────
