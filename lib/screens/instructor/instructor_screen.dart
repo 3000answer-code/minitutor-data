@@ -253,7 +253,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
               const Spacer(),
               GestureDetector(
                 onTap: () => _openSeriesAllLectures(context, instructor, lectures),
-                child: Text('전체보기',
+                child: Text('시리즈 전체보기',
                   style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
               ),
             ]),
@@ -322,12 +322,10 @@ class _InstructorScreenState extends State<InstructorScreen> {
                         : '강의 ${lectures.length}개',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   const Spacer(),
-                  if (hasMore || selectedSeries == null)
+                  if (hasMore)
                     TextButton(
-                      onPressed: () => selectedSeries != null
-                          ? _openAllLectures(context, instructor, filteredLectures)
-                          : _openSeriesAllLectures(context, instructor, lectures),
-                      child: const Text('전체보기', style: TextStyle(fontSize: 12)),
+                      onPressed: () => _openAllLectures(context, instructor, filteredLectures),
+                      child: const Text('시리즈 전체보기', style: TextStyle(fontSize: 12)),
                     ),
                 ]),
               ),
