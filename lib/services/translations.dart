@@ -54,7 +54,7 @@ class AppTranslations {
       'es': 'Buscar',
     },
     'nav_consultation': {
-      'ko': '상담',
+      'ko': 'Q&A',
       'en': 'Q&A',
       'ja': '相談',
       'zh': '咨询',
@@ -557,7 +557,7 @@ class AppTranslations {
     // 상담 화면
     // ────────────────────────────────────────────
     'consultation_title': {
-      'ko': '상담',
+      'ko': 'Q&A',
       'en': 'Q&A',
       'ja': '相談',
       'zh': '咨询',
@@ -796,7 +796,7 @@ class AppTranslations {
     // 상담 화면
     // ────────────────────────────────────────────
     'consultation_expert': {
-      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+      'ko': 'Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
     },
     'sort_latest': {
       'ko': '최신순', 'en': 'Latest', 'ja': '最新順', 'zh': '最新', 'es': 'Reciente',
@@ -867,10 +867,10 @@ class AppTranslations {
       'ko': '나의 Q&A', 'en': 'My Q&A', 'ja': 'Q&A', 'zh': '我的Q&A', 'es': 'Mi Q&A',
     },
     'expert_consult': {
-      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+      'ko': 'Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
     },
     'my_consult': {
-      'ko': '내 상담', 'en': 'My Q&A', 'ja': '相談履歴', 'zh': '我的咨询', 'es': 'Mi Consulta',
+      'ko': 'Q&A', 'en': 'Q&A', 'ja': 'Q&A', 'zh': 'Q&A', 'es': 'Q&A',
     },
     'favorites': {
       'ko': '즐겨찾기', 'en': 'Favorites', 'ja': 'お気に入り', 'zh': '收藏', 'es': 'Favoritos',

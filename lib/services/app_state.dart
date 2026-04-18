@@ -627,6 +627,31 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 질문 수정 (id 기준)
+  void updateConsultation(String id, {required String title, required String content}) {
+    final idx = _userConsultations.indexWhere((c) => c.id == id);
+    if (idx != -1) {
+      final old = _userConsultations[idx];
+      _userConsultations[idx] = Consultation(
+        id: old.id,
+        title: title,
+        content: content,
+        authorNickname: old.authorNickname,
+        authorProfileUrl: old.authorProfileUrl,
+        subject: old.subject,
+        grade: old.grade,
+        createdAt: old.createdAt,
+        isAnswered: old.isAnswered,
+        viewCount: old.viewCount,
+        answer: old.answer,
+        answerAuthor: old.answerAuthor,
+        answeredAt: old.answeredAt,
+        attachments: old.attachments,
+      );
+      notifyListeners();
+    }
+  }
+
   /// 질문 삭제 (id 기준, 사용자 등록 질문만 삭제 가능)
   void deleteConsultation(String id) {
     _userConsultations.removeWhere((c) => c.id == id);

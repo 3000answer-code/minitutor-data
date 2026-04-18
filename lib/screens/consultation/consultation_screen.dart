@@ -75,13 +75,15 @@ class ConsultationScreen extends StatelessWidget {
           ),
         ],
       ),
-      // ── 질문하기 버튼: 슬림한 소형 FAB ──
-      floatingActionButton: FloatingActionButton.small(
+      // ── 질문하기 버튼: 확장 FAB ──
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showWriteDialog(context),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        tooltip: T('ask_question'),
-        child: const Icon(Icons.add_comment_rounded, size: 20),
+        icon: const Icon(Icons.edit_rounded, size: 18),
+        label: const Text('질문 쓰기',
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+        elevation: 4,
       ),
     );
   }
@@ -201,15 +203,23 @@ class ConsultationScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600)),
               ]),
             ),
-            // ── 내 질문이면 휴지통 아이콘 표시 ──
+            // ── 내 질문이면 수정/삭제 버튼 ──
             if (isMine) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: 2),
+              GestureDetector(
+                onTap: () => _showEditDialog(context, c),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  child: const Icon(Icons.edit_outlined,
+                      size: 17, color: AppColors.primary),
+                ),
+              ),
               GestureDetector(
                 onTap: () => _confirmDelete(context, c.id),
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   child: const Icon(Icons.delete_outline_rounded,
-                      size: 18, color: AppColors.textHint),
+                      size: 17, color: AppColors.error),
                 ),
               ),
             ],
@@ -254,7 +264,7 @@ class ConsultationScreen extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(c.answerAuthor ?? '내 상담',
+                    Text(c.answerAuthor ?? 'Q&A',
                         style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
@@ -339,6 +349,111 @@ class ConsultationScreen extends StatelessWidget {
     );
   }
 
+  // ── 질문 수정 다이얼로그 ─────────────────────────────────────
+  void _showEditDialog(BuildContext context, Consultation c) {
+    final titleCtrl = TextEditingController(text: c.title);
+    final contentCtrl = TextEditingController(text: c.content);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 16, right: 16, top: 14,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(child: Container(width: 36, height: 4,
+              decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)))),
+            const SizedBox(height: 10),
+            const Text('질문 수정', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 44,
+              child: TextField(
+                controller: titleCtrl,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: '질문 제목',
+                  hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 90,
+              child: TextField(
+                controller: contentCtrl,
+                maxLines: null, expands: true,
+                style: const TextStyle(fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: '질문 내용',
+                  hintStyle: const TextStyle(fontSize: 13, color: AppColors.textHint),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: AppColors.divider)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.textSecondary,
+                    side: BorderSide(color: AppColors.divider),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('취소', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    final title = titleCtrl.text.trim();
+                    if (title.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('제목을 입력해주세요')));
+                      return;
+                    }
+                    context.read<AppState>().updateConsultation(
+                      c.id,
+                      title: title,
+                      content: contentCtrl.text.trim().isEmpty ? '(내용 없음)' : contentCtrl.text.trim(),
+                    );
+                    Navigator.pop(ctx);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('질문이 수정되었습니다'), duration: Duration(seconds: 2)));
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  child: const Text('저장', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── 상세 보기 바텀시트 ─────────────────────────────────────
   void _openDetail(BuildContext context, Consultation c) {
     showModalBottomSheet(
@@ -419,7 +534,7 @@ class ConsultationScreen extends StatelessWidget {
                     const Icon(Icons.check_circle_rounded,
                         size: 14, color: AppColors.success),
                     const SizedBox(width: 5),
-                    Text(c.answerAuthor ?? '내 상담',
+                    Text(c.answerAuthor ?? 'Q&A',
                         style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
