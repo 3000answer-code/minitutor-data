@@ -317,6 +317,9 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     await _saveStrokes();
   }
 
+  // 가로 모드 유지 플래그 (재생목록에서 강의 전환 시 dispose에서 세로 복원 방지)
+  bool _keepLandscapeOnDispose = false;
+
   @override
   void dispose() {
     _tabController.dispose();
@@ -325,11 +328,14 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
     _noteController.dispose();
     _driveChewieCtrl?.dispose();
     _driveVideoCtrl?.dispose();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // 가로 모드 유지 요청이 없을 때만 세로로 복원
+    if (!_keepLandscapeOnDispose) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
     super.dispose();
   }
 
@@ -3709,6 +3715,7 @@ function pauseVid(){vid.pause();}
                 onTap: isCurrent ? null : () {
                   // 재생목록 탭에서 강의 선택 → 가로 모드 유지
                   final wasLandscape = _isLandscape;
+                  if (wasLandscape) _keepLandscapeOnDispose = true;
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
