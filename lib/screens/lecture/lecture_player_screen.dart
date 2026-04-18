@@ -4612,7 +4612,7 @@ function pauseVid(){vid.pause();}
                             ],
                           ),
                         ),
-                        // ③ 강의정보 (항상 표시 / 탭하면 세로모드로 전환하여 상세 탭 영역 확인)
+                        // ③ 강의정보 (세로화면과 동일한 순서: 제목→시리즈→학제/학년/과목/강사→태그)
                         Expanded(
                           child: Container(
                             color: const Color(0xFFF8F9FA),
@@ -4622,7 +4622,7 @@ function pauseVid(){vid.pause();}
                                 mainAxisSize: MainAxisSize.min,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // 강의 제목
+                                  // 행 1: 강의 제목
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(10, 7, 10, 3),
                                     child: Text(lec.title,
@@ -4630,32 +4630,37 @@ function pauseVid(){vid.pause();}
                                           fontSize: 12, fontWeight: FontWeight.w700),
                                       maxLines: 2, overflow: TextOverflow.ellipsis),
                                   ),
-                                  // 배지 + 강사
+                                  // 행 2: 시리즈명 (세로화면과 동일)
+                                  if (lec.series.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 3),
+                                      child: Row(children: [
+                                        const Icon(Icons.playlist_play_rounded, color: Color(0xFF6B7280), size: 12),
+                                        const SizedBox(width: 3),
+                                        Expanded(child: Text(lec.series,
+                                          style: const TextStyle(color: Color(0xFF6B7280), fontSize: 10, fontWeight: FontWeight.w500),
+                                          maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                      ]),
+                                    ),
+                                  // 행 3: 학제 + 학년 + 과목 + 강사명 (세로화면과 동일)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
                                     child: Row(children: [
                                       _buildLandscapeBadge(lec.gradeText),
                                       const SizedBox(width: 3),
+                                      _buildLandscapeBadge(
+                                        lec.gradeYear.isEmpty || lec.gradeYear == 'All'
+                                            ? 'All' : '${lec.gradeYear}학년',
+                                      ),
+                                      const SizedBox(width: 3),
                                       _buildLandscapeBadge(lec.subject),
                                       const SizedBox(width: 5),
                                       Expanded(child: Text(lec.instructor,
-                                        style: const TextStyle(color: Color(0xFF666666), fontSize: 10),
+                                        style: const TextStyle(color: Color(0xFF666666), fontSize: 10, fontWeight: FontWeight.w500),
                                         maxLines: 1, overflow: TextOverflow.ellipsis)),
                                     ]),
                                   ),
-                                  // 시리즈 (있는 경우)
-                                  if (lec.series.isNotEmpty)
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
-                                      child: Row(children: [
-                                        const Icon(Icons.list_rounded, color: Color(0xFF999999), size: 11),
-                                        const SizedBox(width: 3),
-                                        Expanded(child: Text(lec.series,
-                                          style: const TextStyle(color: Color(0xFF888888), fontSize: 10),
-                                          maxLines: 1, overflow: TextOverflow.ellipsis)),
-                                      ]),
-                                    ),
-                                  // 해시태그 (있는 경우)
+                                  // 행 4~5: 해시태그 (세로화면과 동일)
                                   if (lec.hashtags.isNotEmpty)
                                     Padding(
                                       padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
@@ -4803,6 +4808,7 @@ function pauseVid(){vid.pause();}
   Widget _buildLandscapeBadge(String label) {
     Color color;
     switch (label) {
+      // 과목 색상
       case '수학':     color = const Color(0xFF2563EB); break;
       case '과학':     color = const Color(0xFF16A34A); break;
       case '공통과학': color = const Color(0xFF7C3AED); break;
@@ -4812,7 +4818,19 @@ function pauseVid(){vid.pause();}
       case '지구과학': color = const Color(0xFF6366F1); break;
       case '국어':     color = const Color(0xFFDC2626); break;
       case '영어':     color = const Color(0xFF0891B2); break;
-      default:          color = _kOrange;
+      // 학제 색상 (세로화면 메타바와 동일)
+      case '고등':     color = const Color(0xFF7C3AED); break;
+      case '중등':     color = const Color(0xFF059669); break;
+      case '예비중':   color = const Color(0xFFFF6B35); break;
+      // 학년 배지
+      case 'All':      color = _kOrange; break;
+      default:
+        // '1학년', '2학년', '3학년' 등
+        if (label.contains('학년')) {
+          color = const Color(0xFF6B7280);
+        } else {
+          color = _kOrange;
+        }
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
