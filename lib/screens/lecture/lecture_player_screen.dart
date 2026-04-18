@@ -4518,15 +4518,15 @@ function pauseVid(){vid.pause();}
           children: [
             // ── 왼쪽: 영상 + 진행바 + 강의안내 (LayoutBuilder로 비율 계산)
             Expanded(
-              flex: 52,
+              flex: 50,
               child: Container(
                 color: Colors.white,
                 child: LayoutBuilder(
                   builder: (ctx, constraints) {
                     final totalH = constraints.maxHeight;
                     final totalW = constraints.maxWidth;
-                    // 영상: 16:9 비율, 최대 높이 72%
-                    final videoH = (totalW * 9 / 16).clamp(0.0, totalH * 0.72);
+                    // 영상: 16:9 비율, 최대 높이 68% (영상 아래 정보 영역 확보)
+                    final videoH = (totalW * 9 / 16).clamp(0.0, totalH * 0.68);
 
                     return Column(
                       children: [
@@ -4707,7 +4707,7 @@ function pauseVid(){vid.pause();}
             ),
             // ── 오른쪽: 사이드 패널
             Expanded(
-              flex: 48,
+              flex: 50,
               child: Container(
                 color: Colors.white,
                 child: Column(
