@@ -9,7 +9,7 @@ import '../profile/my_activity_screen.dart';
 import '../profile/settings_screen.dart';
 import '../profile/store_screen.dart';
 import '../schedule/schedule_screen.dart';
-import '../storyboard/storyboard_viewer_screen.dart';
+// storyboard_viewer_screen 삭제됨 (v112)
 import '../support/support_screen.dart';
 import '../curriculum/curriculum_screen.dart';
 
@@ -30,55 +30,48 @@ class ProfileDrawer extends StatelessWidget {
           _buildProfileHeader(context, appState),
           // ─── 메뉴 스크롤 영역 ───
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(children: [
-                // 나의 활동
-                _buildMenuSection(T('my_activity'), [
-                  _MenuItem(Icons.history_rounded, T('recent_lectures'), () => _openMyActivity(context, 0)),
-                  _MenuItem(Icons.note_alt_outlined, T('my_notes'), () => _openMyActivity(context, 1)),
-                  _MenuItem(Icons.question_answer_outlined, T('my_qa'), () => _openMyActivity(context, 2)),
-                ]),
-                const Divider(height: 1),
-                // 학습 관리
-                _buildMenuSection(T('study_manage'), [
-                  _MenuItem(Icons.calendar_month_outlined, T('my_schedule'), () => _openSchedule(context)),
-                  _MenuItem(Icons.bar_chart_rounded, T('study_stats'), () => _showStats(context, appState)),
-                ]),
-                const Divider(height: 1),
-                // 이용권 / 스토어
-                _buildMenuSection(T('subscription'), [
-                  _MenuItem(Icons.stars_rounded, T('extend_period'), () => _openStore(context)),
-                  _MenuItem(Icons.receipt_long_outlined, T('payment_history'), () => _openStorePayment(context)),
-                ]),
-                const Divider(height: 1),
-                // Asome Tutor
-                _buildMenuSection(T('app_info'), [
-                  _MenuItem(Icons.info_outline_rounded, T('about_app'), () => _showAbout(context)),
-                  _MenuItem(Icons.slideshow_rounded, T('storyboard'), () => _openStoryboard(context)),
-                  _MenuItem(Icons.campaign_outlined, T('notice'), () => _openNotice(context)),
-                  _MenuItem(Icons.support_agent_outlined, T('support'), () => _openSupport(context)),
-                ]),
-                const Divider(height: 1),
-                // 설정
-                _buildMenuSection(T('settings'), [
-                  _MenuItem(Icons.settings_outlined, T('app_settings'), () => _openSettings(context)),
-                  _MenuItem(Icons.description_outlined, T('terms'), () => _openLegalPage(context, '이용약관')),
-                  _MenuItem(Icons.privacy_tip_outlined, T('privacy'), () => _openLegalPage(context, '개인정보처리방침')),
-                ]),
-                // 앱 버전
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Text('버전 v1.0.0',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
-                ),
+            child: Column(children: [
+              // 나의 활동
+              _buildMenuSection(T('my_activity'), [
+                _MenuItem(Icons.history_rounded, T('recent_lectures'), () => _openMyActivity(context, 0)),
+                _MenuItem(Icons.note_alt_outlined, T('my_notes'), () => _openMyActivity(context, 1)),
+                _MenuItem(Icons.question_answer_outlined, T('my_qa'), () => _openMyActivity(context, 2)),
+                _MenuItem(Icons.calendar_month_outlined, T('my_schedule'), () => _openSchedule(context)),
               ]),
-            ),
+              const Divider(height: 1),
+              // 이용권 / 스토어
+              _buildMenuSection(T('subscription'), [
+                _MenuItem(Icons.stars_rounded, T('extend_period'), () => _openStore(context)),
+              ]),
+              const Divider(height: 1),
+              // Asome Tutor
+              _buildMenuSection(T('app_info'), [
+                _MenuItem(Icons.info_outline_rounded, T('about_app'), () => _showAbout(context)),
+                _MenuItem(Icons.campaign_outlined, T('notice'), () => _openNotice(context)),
+                _MenuItem(Icons.support_agent_outlined, T('support'), () => _openSupport(context)),
+              ]),
+              const Divider(height: 1),
+              // 설정
+              _buildMenuSection(T('settings'), [
+                _MenuItem(Icons.settings_outlined, T('app_settings'), () => _openSettings(context)),
+                _MenuItem(Icons.description_outlined, T('terms'), () => _openLegalPage(context, '이용약관')),
+                _MenuItem(Icons.privacy_tip_outlined, T('privacy'), () => _openLegalPage(context, '개인정보처리방침')),
+              ]),
+              // 앱 버전
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text('버전 v1.0.0',
+                  style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
+              ),
+            ]),
           ),
           // ─── 로그아웃 ───
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.logout_rounded, color: AppColors.error, size: 20),
             title: Text(T('logout'), style: const TextStyle(fontSize: 14, color: AppColors.error)),
+            dense: true,
+            visualDensity: const VisualDensity(vertical: -2),
             onTap: () => _showLogoutDialog(context),
           ),
         ]),
@@ -204,7 +197,7 @@ class ProfileDrawer extends StatelessWidget {
   Widget _buildMenuSection(String title, List<_MenuItem> items) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
         child: Text(title,
           style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
             color: AppColors.textHint, letterSpacing: 0.5)),
@@ -214,6 +207,7 @@ class ProfileDrawer extends StatelessWidget {
         title: Text(item.label, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
         trailing: const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textHint),
         dense: true,
+        visualDensity: const VisualDensity(vertical: -2),
         onTap: item.onTap,
       )),
     ]);
@@ -248,20 +242,12 @@ class ProfileDrawer extends StatelessWidget {
     _navigateAndReopenDrawer(context, const StoreScreen());
   }
 
-  void _openStorePayment(BuildContext context) {
-    _navigateAndReopenDrawer(context, const StoreScreen());
-  }
-
   void _openNotice(BuildContext context) {
     _navigateAndReopenDrawer(context, const NoticeScreen());
   }
 
   void _openSupport(BuildContext context) {
     _navigateAndReopenDrawer(context, const SupportScreen());
-  }
-
-  void _openStoryboard(BuildContext context) {
-    _navigateAndReopenDrawer(context, const StoryboardViewerScreen());
   }
 
   void _openSettings(BuildContext context) {
@@ -307,39 +293,6 @@ class ProfileDrawer extends StatelessWidget {
         ),
         actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('확인'))],
       ),
-    );
-  }
-
-  void _showStats(BuildContext context, AppState appState) {
-    Navigator.pop(context);
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (_) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 40, height: 4,
-            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 16),
-          const Text('나의 학습 통계', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 16),
-          _buildStatRow('🔥 연속 학습', '${appState.streakDays}일'),
-          _buildStatRow('⏱️ 오늘 학습', '${appState.todayStudyMinutes}분'),
-          _buildStatRow('📚 총 학습', '${appState.totalStudyMinutes}분'),
-          _buildStatRow('✅ 완료 강의', '${appState.completedLectures}개'),
-        ]),
-      ),
-    );
-  }
-
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(children: [
-        Text(label, style: const TextStyle(fontSize: 14, color: AppColors.textSecondary)),
-        const Spacer(),
-        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primary)),
-      ]),
     );
   }
 
