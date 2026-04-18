@@ -194,11 +194,14 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
 
     // 가로 모드로 시작 요청 (재생목록에서 강의 전환 시)
     if (widget.startInLandscape) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_isLandscape) {
-          _toggleLandscapeMode();
-        }
-      });
+      // 즉시 가로 상태 플래그 설정 (첫 build부터 가로 레이아웃 사용)
+      _isLandscape = true;
+      // 화면 방향을 가로로 강제 (기기 회전)
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
   }
 
