@@ -150,6 +150,13 @@ class _InstructorScreenState extends State<InstructorScreen> {
     // ✅ 강의 데이터 기반 동적 강의 목록 (새 콘텐츠 업로드 시 자동 반영)
     final lectures = appState.getLecturesByInstructor(instructor.name);
 
+    // ✅ 강의 데이터에서 시리즈 직접 추출 (정확성 보장 - instructor.series 대신 실제 강의 기준)
+    final liveSeries = <String>{};
+    for (final l in lectures) {
+      if (l.series.isNotEmpty) liveSeries.add(l.series);
+    }
+    final seriesList = liveSeries.toList();
+
     // 강사 과목 색상 - AppColors 사용으로 통일
     final subjectColor = _subjectColor(instructor.subject);
 
@@ -224,8 +231,8 @@ class _InstructorScreenState extends State<InstructorScreen> {
           ]),
         ),
 
-        // 시리즈 목록 (선택 가능)
-        if (instructor.series.isNotEmpty) ...[
+        // 시리즈 목록 (강의 데이터에서 직접 추출, 선택 가능)
+        if (seriesList.isNotEmpty) ...[
           Container(
             width: double.infinity,
             height: 1,
@@ -256,7 +263,7 @@ class _InstructorScreenState extends State<InstructorScreen> {
             child: Wrap(
               spacing: 7,
               runSpacing: 7,
-              children: instructor.series.map((s) {
+              children: seriesList.map((s) {
                 final isSelected = _selectedSeries[instructor.name] == s;
                 return GestureDetector(
                   onTap: () {
@@ -317,7 +324,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
                   const Spacer(),
                   if (hasMore || selectedSeries == null)
                     TextButton(
-                      onPressed: () => _openAllLectures(context, instructor, filteredLectures),
+                      onPressed: () => selectedSeries != null
+                          ? _openAllLectures(context, instructor, filteredLectures)
+                          : _openSeriesAllLectures(context, instructor, lectures),
                       child: const Text('전체보기', style: TextStyle(fontSize: 12)),
                     ),
                 ]),
@@ -511,14 +520,9 @@ class _InstructorScreenState extends State<InstructorScreen> {
       final key = lec.series.isNotEmpty ? lec.series : '기타';
       seriesMap.putIfAbsent(key, () => []).add(lec);
     }
-    // 강사의 시리즈 순서대로 정렬, 나머지는 뒤에
-    final orderedKeys = <String>[];
-    for (final s in instructor.series) {
-      if (seriesMap.containsKey(s)) orderedKeys.add(s);
-    }
-    for (final k in seriesMap.keys) {
-      if (!orderedKeys.contains(k)) orderedKeys.add(k);
-    }
+    // 시리즈 키 정렬 (가나다순, '기타'는 맨 뒤)
+    final orderedKeys = seriesMap.keys.where((k) => k != '기타').toList()..sort();
+    if (seriesMap.containsKey('기타')) orderedKeys.add('기타');
 
     showModalBottomSheet(
       context: context,
