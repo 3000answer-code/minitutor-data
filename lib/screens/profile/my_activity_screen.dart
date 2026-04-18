@@ -79,14 +79,17 @@ class _MyActivityScreenState extends State<MyActivityScreen>
           labelPadding: EdgeInsets.zero,
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildRecentTab(lang),
-          _buildNoteTab(lang),
-          _buildQATab(lang),
-          _buildConsultationTab(lang),
-        ],
+      body: SafeArea(
+        top: false,  // AppBar가 이미 처리
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildRecentTab(lang),
+            _buildNoteTab(lang),
+            _buildQATab(lang),
+            _buildConsultationTab(lang),
+          ],
+        ),
       ),
     );
   }
@@ -125,7 +128,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
         child: recent.isEmpty
             ? _buildEmptyState(Icons.history_rounded, T('empty_recent'), T('empty_recent_sub'))
             : ListView.builder(
-                padding: EdgeInsets.fromLTRB(16, 4, 16, MediaQuery.of(context).padding.bottom + 120),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
                 itemCount: recent.length,
                 itemBuilder: (_, i) => Padding(
                   padding: const EdgeInsets.only(bottom: 8),
@@ -178,7 +181,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     return RefreshIndicator(
       onRefresh: _loadNotes,
       child: ListView.builder(
-        padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 120),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         itemCount: sortedNotes.length,
         itemBuilder: (_, i) {
           final note = sortedNotes[i];
@@ -384,7 +387,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     return qaList.isEmpty
         ? _buildEmptyState(Icons.question_answer_outlined, T('empty_qa'), T('empty_qa_sub'))
         : ListView.builder(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 120),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             itemCount: qaList.length,
             itemBuilder: (_, i) {
               final qa = qaList[i];
@@ -464,7 +467,7 @@ class _MyActivityScreenState extends State<MyActivityScreen>
     return myConsultations.isEmpty
         ? _buildEmptyState(Icons.chat_bubble_outline_rounded, T('empty_consult'), T('empty_consult_sub'))
         : ListView.builder(
-            padding: EdgeInsets.fromLTRB(16, 12, 16, MediaQuery.of(context).padding.bottom + 120),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
             itemCount: myConsultations.length,
             itemBuilder: (_, i) {
               final c = myConsultations[i];
