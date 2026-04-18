@@ -255,19 +255,19 @@ class _InstructorScreenState extends State<InstructorScreen> {
                     final seriesLectures = lectures.where((l) => l.series == sel).toList();
                     _openAllLectures(context, instructor, seriesLectures, seriesName: sel);
                   } else {
-                    // 시리즈 미선택 → 시리즈를 먼저 선택하라는 안내
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('시리즈를 먼저 선택해 주세요'),
-                        duration: const Duration(seconds: 2),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: subjectColor,
-                      ),
-                    );
+                    // 시리즈 미선택 → 시리즈 선택 바텀시트
+                    _showSeriesPickerSheet(context, instructor, lectures, seriesList, subjectColor);
                   }
                 },
-                child: Text('시리즈 전체보기',
-                  style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.playlist_play_rounded, size: 16, color: subjectColor),
+                    const SizedBox(width: 3),
+                    Text('시리즈 전체보기',
+                      style: TextStyle(fontSize: 12, color: subjectColor, fontWeight: FontWeight.w600)),
+                  ],
+                ),
               ),
             ]),
           ),
@@ -335,10 +335,15 @@ class _InstructorScreenState extends State<InstructorScreen> {
                         : '강의 ${lectures.length}개',
                     style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                   const Spacer(),
-                  if (hasMore && selectedSeries != null)
+                  if (selectedSeries != null && hasMore)
                     TextButton(
                       onPressed: () => _openAllLectures(context, instructor, filteredLectures, seriesName: selectedSeries),
-                      child: const Text('시리즈 전체보기', style: TextStyle(fontSize: 12)),
+                      child: Text('$selectedSeries 전체보기', style: const TextStyle(fontSize: 12)),
+                    )
+                  else if (selectedSeries == null)
+                    TextButton(
+                      onPressed: () => _showSeriesPickerSheet(context, instructor, lectures, seriesList, subjectColor),
+                      child: Text('시리즈 선택', style: TextStyle(fontSize: 12, color: subjectColor)),
                     ),
                 ]),
               ),
@@ -394,6 +399,128 @@ class _InstructorScreenState extends State<InstructorScreen> {
       const SizedBox(width: 3),
       Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
     ]);
+  }
+
+  /// 시리즈 선택 바텀시트 - 시리즈를 선택하면 해당 시리즈의 강의 목록을 바로 표시
+  void _showSeriesPickerSheet(
+    BuildContext context,
+    Instructor instructor,
+    List<Lecture> allLectures,
+    List<String> seriesList,
+    Color subjectColor,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: false,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 드래그 핸들
+                Center(
+                  child: Container(
+                    width: 36, height: 4,
+                    margin: const EdgeInsets.only(bottom: 14),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                // 제목
+                Row(children: [
+                  Icon(Icons.collections_bookmark_rounded, size: 18, color: subjectColor),
+                  const SizedBox(width: 6),
+                  Text('시리즈 선택',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.grey[800],
+                    )),
+                  const Spacer(),
+                  Text('${instructor.name} 강사',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                ]),
+                const SizedBox(height: 6),
+                Text('시리즈를 선택하면 해당 시리즈의 전체 강의를 볼 수 있습니다',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                const SizedBox(height: 8),
+                Divider(color: Colors.grey[100], thickness: 1, height: 1),
+                const SizedBox(height: 4),
+                // 시리즈 목록
+                ...seriesList.map((s) {
+                  final count = allLectures.where((l) => l.series == s).length;
+                  return InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      // 시리즈 선택 상태 업데이트
+                      setState(() => _selectedSeries[instructor.name] = s);
+                      // 해당 시리즈 강의 목록 바로 표시
+                      final seriesLectures = allLectures.where((l) => l.series == s).toList();
+                      _openAllLectures(context, instructor, seriesLectures, seriesName: s);
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(children: [
+                        Container(
+                          width: 32, height: 32,
+                          decoration: BoxDecoration(
+                            color: subjectColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            Icons.play_lesson_rounded,
+                            size: 17,
+                            color: subjectColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(s,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[800],
+                                )),
+                              Text('$count개 강의',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey[500],
+                                )),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded,
+                          size: 20, color: subjectColor.withValues(alpha: 0.5)),
+                      ]),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _openAllLectures(BuildContext context, Instructor instructor, List<Lecture> lectures, {String? seriesName}) {
