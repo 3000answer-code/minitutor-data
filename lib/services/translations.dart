@@ -596,8 +596,8 @@ class AppTranslations {
       'es': 'Mi Perfil',
     },
     'settings_title': {
-      'ko': '설정',
-      'en': 'Settings',
+      'ko': '앱 설정',
+      'en': 'App Settings',
       'ja': '設定',
       'zh': '设置',
       'es': 'Configuración',

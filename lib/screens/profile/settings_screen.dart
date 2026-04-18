@@ -76,22 +76,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             color: Colors.white,
             child: Column(children: [
-              SwitchListTile(
+              _buildCompactSwitchTile(
+                icon: Icons.closed_caption_outlined,
+                title: '자막 기본 표시',
+                subtitle: '강의 재생 시 자막을 기본으로 표시합니다',
                 value: _subtitleOn,
                 onChanged: (v) => setState(() => _subtitleOn = v),
-                secondary: const Icon(Icons.closed_caption_outlined, color: AppColors.textSecondary),
-                title: const Text('자막 기본 표시', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                subtitle: const Text('강의 재생 시 자막을 기본으로 표시합니다', style: TextStyle(fontSize: 12)),
-                activeThumbColor: AppColors.primary,
               ),
               const Divider(height: 1, indent: 56),
-              SwitchListTile(
+              _buildCompactSwitchTile(
+                icon: Icons.signal_cellular_alt,
+                title: '모바일 데이터 허용',
+                subtitle: 'Wi-Fi 미연결 시 경고 없이 재생합니다',
                 value: _mobileDataAllowed,
                 onChanged: (v) => setState(() => _mobileDataAllowed = v),
-                secondary: const Icon(Icons.signal_cellular_alt, color: AppColors.textSecondary),
-                title: const Text('모바일 데이터 허용', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                subtitle: const Text('Wi-Fi 미연결 시 경고 없이 재생합니다', style: TextStyle(fontSize: 12)),
-                activeThumbColor: AppColors.primary,
               ),
             ]),
           ),
@@ -101,36 +99,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Container(
             color: Colors.white,
             child: Column(children: [
-              SwitchListTile(
+              _buildCompactSwitchTile(
+                icon: Icons.play_circle_outline,
+                title: '새 강의 업로드 알림',
                 value: _pushNewLecture,
                 onChanged: (v) => setState(() => _pushNewLecture = v),
-                secondary: const Icon(Icons.play_circle_outline, color: AppColors.textSecondary),
-                title: const Text('새 강의 업로드 알림', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                activeThumbColor: AppColors.primary,
               ),
               const Divider(height: 1, indent: 56),
-              SwitchListTile(
+              _buildCompactSwitchTile(
+                icon: Icons.question_answer_outlined,
+                title: 'Q&A 답변 알림',
                 value: _pushQAAnswer,
                 onChanged: (v) => setState(() => _pushQAAnswer = v),
-                secondary: const Icon(Icons.question_answer_outlined, color: AppColors.textSecondary),
-                title: const Text('Q&A 답변 알림', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                activeThumbColor: AppColors.primary,
               ),
               const Divider(height: 1, indent: 56),
-              SwitchListTile(
+              _buildCompactSwitchTile(
+                icon: Icons.campaign_outlined,
+                title: '이벤트/공지 알림',
                 value: _pushEvent,
                 onChanged: (v) => setState(() => _pushEvent = v),
-                secondary: const Icon(Icons.campaign_outlined, color: AppColors.textSecondary),
-                title: const Text('이벤트/공지 알림', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                activeThumbColor: AppColors.primary,
               ),
               const Divider(height: 1, indent: 56),
-              SwitchListTile(
+              _buildCompactSwitchTile(
+                icon: Icons.calendar_today_outlined,
+                title: '일정 알림',
                 value: _pushSchedule,
                 onChanged: (v) => setState(() => _pushSchedule = v),
-                secondary: const Icon(Icons.calendar_today_outlined, color: AppColors.textSecondary),
-                title: const Text('일정 알림', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                activeThumbColor: AppColors.primary,
               ),
             ]),
           ),
@@ -141,12 +135,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: Colors.white,
             child: Column(children: [
               _buildInfoTile(Icons.info_outline, '앱 버전', 'v1.0.0'),
-              const Divider(height: 1, indent: 56),
-              _buildLinkTile(Icons.description_outlined, '이용약관',
-                  () => _openLegalPage(context, '이용약관', _termsContent)),
-              const Divider(height: 1, indent: 56),
-              _buildLinkTile(Icons.privacy_tip_outlined, '개인정보처리방침',
-                  () => _openLegalPage(context, '개인정보처리방침', _privacyContent)),
             ]),
           ),
 
@@ -204,20 +192,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildCompactSwitchTile({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: AppColors.textSecondary, size: 22),
+      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      subtitle: subtitle != null
+          ? Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))
+          : null,
+      trailing: SizedBox(
+        width: 42, height: 24,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: Switch(
+            value: value,
+            onChanged: onChanged,
+            activeColor: AppColors.primary,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+        ),
+      ),
+      dense: true,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+    );
+  }
+
   Widget _buildInfoTile(IconData icon, String title, String value) {
     return ListTile(
       leading: Icon(icon, color: AppColors.textSecondary, size: 22),
       title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       trailing: Text(value, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
-    );
-  }
-
-  Widget _buildLinkTile(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Icon(icon, color: AppColors.textSecondary, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-      trailing: const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textHint),
-      onTap: onTap,
     );
   }
 
@@ -251,79 +260,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _openLegalPage(BuildContext context, String title, String content) {
-    Navigator.push(context, MaterialPageRoute(
-      builder: (_) => Scaffold(
-        appBar: AppBar(
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-          backgroundColor: Colors.white,
-          elevation: 0,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Text(content, style: const TextStyle(fontSize: 14, height: 1.8, color: AppColors.textSecondary)),
-        ),
-      ),
-    ));
-  }
-
-  static const String _termsContent = '''
-제1조 (목적)
-본 약관은 Asome Tutor 서비스(이하 "서비스")를 이용함에 있어 서비스 제공자와 이용자 간의 권리, 의무 및 책임 사항을 규정함을 목적으로 합니다.
-
-제2조 (정의)
-① "서비스"란 Asome Tutor이 제공하는 모든 온라인 교육 콘텐츠 및 관련 서비스를 의미합니다.
-② "이용자"란 본 약관에 따라 서비스를 이용하는 회원 및 비회원을 의미합니다.
-
-제3조 (서비스 이용)
-① 이용자는 본 약관 및 관련 법령을 준수하여야 합니다.
-② 서비스의 모든 콘텐츠는 저작권법에 의해 보호됩니다.
-③ 이용자는 서비스를 통해 제공되는 콘텐츠를 무단으로 복제, 배포할 수 없습니다.
-
-제4조 (이용권 및 결제)
-① 이용권은 결제일로부터 해당 기간 동안 유효합니다.
-② 결제 완료 후 환불은 이용약관에 따라 처리됩니다.
-③ 이용권 기간 내 서비스 이용이 불가한 경우 고객센터로 문의하시기 바랍니다.
-
-제5조 (개인정보 보호)
-Asome Tutor은 관련 법령에 따라 이용자의 개인정보를 보호합니다.
-
-제6조 (면책 조항)
-Asome Tutor은 천재지변, 네트워크 장애 등 불가항력적 사유로 인한 서비스 중단에 대해 책임을 지지 않습니다.
-
-부칙
-본 약관은 2025년 1월 1일부터 시행됩니다.
-''';
-
-  static const String _privacyContent = '''
-개인정보처리방침
-
-Asome Tutor은 이용자의 개인정보를 소중히 여기며, 개인정보 보호법 및 관련 법령을 준수합니다.
-
-1. 수집하는 개인정보 항목
-- 필수: 이메일, 닉네임, 비밀번호
-- 선택: 프로필 사진, 학년, 과목 설정
-
-2. 개인정보 수집 목적
-- 서비스 제공 및 회원 관리
-- 학습 콘텐츠 추천 및 맞춤형 서비스 제공
-- 이용권 결제 및 환불 처리
-
-3. 개인정보 보유 및 이용기간
-- 회원 탈퇴 시까지 보유
-- 단, 관련 법령에 따라 일정 기간 보관이 필요한 경우 해당 기간 동안 보존
-
-4. 개인정보의 제3자 제공
-Asome Tutor은 원칙적으로 이용자의 개인정보를 외부에 제공하지 않습니다.
-단, 법령에 의거하거나 이용자의 동의가 있는 경우 제외됩니다.
-
-5. 개인정보 보호책임자
-- 이름: 개인정보 보호팀
-- 이메일: privacy@2gong.com
-- 전화: 02-1234-5678
-
-6. 개인정보 처리방침 변경
-본 방침은 2025년 1월 1일부터 시행됩니다.
-변경 사항은 서비스 내 공지사항을 통해 안내드립니다.
-''';
 }

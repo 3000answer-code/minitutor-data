@@ -48,7 +48,7 @@ class _NoticeScreenState extends State<NoticeScreen>
   late TabController _tabController;
   String _selectedCategory = '전체';
 
-  final List<String> _categories = ['전체', '공지', '업데이트', '이벤트', '정책'];
+  final List<String> _categories = ['전체', '공지', '업데이트'];
 
   final List<NoticeItem> _notices = [
     NoticeItem(
