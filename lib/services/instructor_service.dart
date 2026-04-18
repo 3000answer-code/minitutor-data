@@ -9,17 +9,17 @@ class InstructorService {
   factory InstructorService() => _instance;
   InstructorService._internal();
 
-  // ─── 과목별 소개 문구 템플릿 ───────────────────────────────────────────────
-  static const Map<String, String> _subjectIntros = {
-    '수학':    '강의를 통해 수학 개념을 명확하고 빠르게 이해합니다.',
-    '과학':    '과학의 핵심 원리를 쉽고 체계적으로 풀어드립니다.',
-    '공통과학': '공통과학 전 영역을 체계적으로 다룹니다.',
-    '물리':    '물리 역학·전자기 개념을 직관적으로 설명합니다.',
-    '화학':    '화학 반응과 원리를 핵심만 빠르게 정리합니다.',
-    '생명과학': '생명과학 개념을 쉽고 명확하게 설명합니다.',
-    '지구과학': '지구과학 지질·대기·천체를 핵심만 짚어드립니다.',
-    '영어':    '영어 어법과 독해를 체계적으로 다룹니다.',
-    '국어':    '국어 문학과 언어를 핵심만 빠르게 정리합니다.',
+  // ─── 과목별 전문 분야 키워드 ───────────────────────────────────────────────
+  static const Map<String, String> _subjectSpecialty = {
+    '수학':     '개념·풀이 전문',
+    '과학':     '원리·실험 전문',
+    '공통과학': '통합과학 전문',
+    '물리':     '역학·전자기 전문',
+    '화학':     '반응·원리 전문',
+    '생명과학': '유전·생태 전문',
+    '지구과학': '지질·천체 전문',
+    '영어':     '어법·독해 전문',
+    '국어':     '문학·언어 전문',
   };
 
   // ─── 강사명 → 시드 해시 (일관된 프로필 이미지 보장) ──────────────────────
@@ -91,19 +91,15 @@ class InstructorService {
           .reduce((a, b) => a.value >= b.value ? a : b)
           .key;
 
-      // 소개 문구
-      final intro = _subjectIntros[subject] ??
-          '$subject 개념을 명확하고 빠르게 이해합니다.';
-
-      // 평점 평균 (강의 데이터 기반)
-      final ratings = lecList.where((l) => l.rating > 0).map((l) => l.rating);
-      final avgRating = ratings.isEmpty
-          ? 0.0
-          : ratings.reduce((a, b) => a + b) / ratings.length;
-
-      // 총 조회수 → 팔로워 추정 (조회수의 10배, 최소 500)
-      final totalViews = lecList.fold<int>(0, (s, l) => s + l.viewCount);
-      final followerCount = (totalViews * 10).clamp(500, 999999);
+      // 소개 문구: "학제 · 과목 · 전문분야, 시리즈명" 형태로 간결하게
+      final specialty = _subjectSpecialty[subject] ?? '$subject 전문';
+      final gradeLabel = gradeText(grade);
+      final seriesText = seriesList.isNotEmpty
+          ? seriesList.join(', ')
+          : '';
+      final introduction = seriesText.isNotEmpty
+          ? '$gradeLabel $subject $specialty\n$seriesText'
+          : '$gradeLabel $subject $specialty';
 
       autoMap[key] = Instructor(
         id: 'auto_${key.replaceAll(' ', '_')}',
@@ -112,10 +108,10 @@ class InstructorService {
         subject: subject,
         profileImageUrl:
             'https://picsum.photos/seed/${_nameSeed(name)}/150/150',
-        introduction: '$gradeText(grade) $subject 강사. $intro',
+        introduction: introduction,
         lectureCount: lecList.length,
-        rating: double.parse(avgRating.toStringAsFixed(1)),
-        followerCount: followerCount,
+        rating: 0.0,
+        followerCount: 0,
         series: seriesList,
       );
     }

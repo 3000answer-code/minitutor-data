@@ -221,12 +221,8 @@ class _InstructorScreenState extends State<InstructorScreen> {
                 style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.4),
                 maxLines: 2, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 8),
-              // 통계 영역
-              Wrap(spacing: 12, children: [
-                _statChip(Icons.star_rounded, '${instructor.rating}', const Color(0xFFFBBF24)),
-                _statChip(Icons.play_lesson_outlined, _lectureCountLabel(lectures, instructor.lectureCount), AppColors.textHint),
-                _statChip(Icons.play_circle_outline_rounded, '${_formatCount(instructor.followerCount)}회', AppColors.textHint),
-              ]),
+              // 통계 영역 (강의수만 실제 개수로 표시)
+              _statChip(Icons.play_lesson_outlined, _lectureCountLabel(lectures, instructor.lectureCount), AppColors.textHint),
             ])),
           ]),
         ),
@@ -556,9 +552,5 @@ class _InstructorScreenState extends State<InstructorScreen> {
     return '강의 $total개';
   }
 
-  String _formatCount(int count) {
-    if (count >= 10000) return '${(count / 10000).toStringAsFixed(1)}만';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}천';
-    return count.toString();
-  }
+
 }
