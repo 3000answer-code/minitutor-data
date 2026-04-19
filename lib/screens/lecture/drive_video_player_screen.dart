@@ -40,6 +40,8 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
   Duration? _pointB;
   bool _abActive = false;     // A-B 반복 활성 여부
   Timer? _abTimer;
+  Timer? _positionTimer;       // 현재 위치 표시용 타이머
+  Duration _currentPosition = Duration.zero;
 
   // ── Drive 파일 ID 추출
   static String? _extractDriveFileId(String url) {
@@ -160,6 +162,15 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
         _chewieController = chewieCtrl;
         _isLoading = false;
       });
+      // 위치 추적 타이머 시작
+      _positionTimer?.cancel();
+      _positionTimer = Timer.periodic(const Duration(milliseconds: 300), (_) {
+        if (!mounted || _videoController == null) return;
+        final pos = _videoController!.value.position;
+        if (pos != _currentPosition) {
+          setState(() => _currentPosition = pos);
+        }
+      });
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -173,6 +184,7 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
   @override
   void dispose() {
     _abTimer?.cancel();
+    _positionTimer?.cancel();
     _chewieController?.dispose();
     _videoController?.dispose();
     SystemChrome.setPreferredOrientations([
@@ -314,37 +326,43 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
 
   Widget _buildTopBar() {
     return Container(
-      height: 50,
       color: Colors.black,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(children: [
-        // 뒤로가기
-        IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: Colors.white, size: 30),
-          onPressed: () => Navigator.pop(context),
-          padding: EdgeInsets.zero,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        // 1행: 뒤로가기 + 제목 + 브라우저
+        SizedBox(
+          height: 44,
+          child: Row(children: [
+            IconButton(
+              icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                  color: Colors.white, size: 30),
+              onPressed: () => Navigator.pop(context),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 40),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                widget.lecture.title,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 14,
+                    fontWeight: FontWeight.w700),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.open_in_new_rounded,
+                  color: Colors.white54, size: 20),
+              onPressed: _openInBrowser,
+              tooltip: '브라우저에서 열기',
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 40),
+            ),
+          ]),
         ),
-        const SizedBox(width: 4),
-        // 제목
-        Expanded(
-          child: Text(
-            widget.lecture.title,
-            style: const TextStyle(
-                color: Colors.white, fontSize: 14,
-                fontWeight: FontWeight.w700),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-        // 브라우저로 열기
-        IconButton(
-          icon: const Icon(Icons.open_in_new_rounded,
-              color: Colors.white54, size: 20),
-          onPressed: _openInBrowser,
-          tooltip: '브라우저에서 열기',
-          padding: EdgeInsets.zero,
-        ),
+        // 2행: A-B 구간반복 컨트롤 바 (플레이어 로딩 완료 후)
+        if (_chewieController != null) _buildABControlBar(),
       ]),
     );
   }
@@ -378,135 +396,133 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
     }
 
     if (_chewieController != null) {
-      return Stack(children: [
-        Chewie(controller: _chewieController!),
-        // A-B 구간반복 컨트롤 오버레이
-        Positioned(
-          right: 10,
-          top: 10,
-          child: _buildABRepeatControl(),
-        ),
-        // A-B 활성 상태 표시바
-        if (_abActive && _pointA != null && _pointB != null)
-          Positioned(
-            left: 0, right: 0, bottom: 52,
-            child: _buildABStatusBar(),
-          ),
-      ]);
+      return Chewie(controller: _chewieController!);
     }
 
     return _buildErrorWidget('플레이어 초기화 실패');
   }
 
-  // ── A-B 구간반복 컨트롤 ──────────────────────────────
-  Widget _buildABRepeatControl() {
-    // 상태: 미설정 / A만 설정 / A-B 활성
+  // ── A-B 구간반복 컨트롤 바 (상단바 내부) ──────────────
+  Widget _buildABControlBar() {
     final bool hasA = _pointA != null;
     final bool hasB = _pointB != null;
+    final pos = _currentPosition;
 
     return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      margin: const EdgeInsets.only(bottom: 2),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
+        color: _abActive
+            ? AppColors.primary.withValues(alpha: 0.15)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(mainAxisSize: MainAxisSize.min, children: [
-        // A 버튼
-        _abButton(
-          label: 'A',
-          isSet: hasA,
-          isActive: hasA && !hasB,
+      child: Row(children: [
+        // 구간반복 아이콘
+        Icon(Icons.repeat_rounded,
+            size: 16,
+            color: _abActive ? AppColors.primary : Colors.white38),
+        const SizedBox(width: 6),
+
+        // 현재 위치 표시
+        Text(
+          _formatDuration(pos),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 11, fontWeight: FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(width: 8),
+
+        // [A] 버튼
+        _abChip(
+          label: hasA ? 'A ${_formatDuration(_pointA!)}' : 'A 설정',
+          color: hasA
+              ? (hasA && !hasB ? const Color(0xFF3B82F6) : const Color(0xFF22C55E))
+              : Colors.white24,
+          textColor: hasA ? Colors.white : Colors.white54,
           onTap: () {
-            if (_abActive) {
-              // 반복 중이면 해제
-              _clearABRepeat();
-            } else if (!hasA) {
-              // A 설정
-              final pos = _videoController?.value.position;
-              if (pos != null) setState(() => _pointA = pos);
-            } else if (hasA && !hasB) {
-              // A만 설정된 상태에서 A 다시 누르면 A 해제
-              setState(() => _pointA = null);
+            if (_abActive) return;   // 반복 중에는 A 변경 불가
+            if (!hasA) {
+              setState(() => _pointA = pos);
+            } else if (!hasB) {
+              setState(() => _pointA = null);  // A만 설정 → 재탭으로 해제
             }
           },
         ),
-        Container(width: 1, height: 20, color: Colors.white24),
-        // B 버튼
-        _abButton(
-          label: 'B',
-          isSet: hasB,
-          isActive: _abActive,
+        const SizedBox(width: 6),
+
+        // [B] 버튼
+        _abChip(
+          label: hasB ? 'B ${_formatDuration(_pointB!)}' : 'B 설정',
+          color: hasB ? const Color(0xFFEF4444) : Colors.white24,
+          textColor: (hasA && !hasB) ? Colors.white : Colors.white54,
           onTap: () {
-            if (_abActive) {
-              _clearABRepeat();
-            } else if (hasA && !hasB) {
-              // B 설정 + 반복 시작
-              final pos = _videoController?.value.position;
-              if (pos != null && pos > _pointA!) {
+            if (_abActive) return;   // 반복 중에는 B 변경 불가
+            if (hasA && !hasB) {
+              if (pos > _pointA!) {
                 setState(() {
                   _pointB = pos;
                   _abActive = true;
                 });
                 _startABLoop();
+                _videoController?.seekTo(_pointA!);
               }
             }
           },
         ),
-        if (_abActive || hasA) ...[
-          Container(width: 1, height: 20, color: Colors.white24),
-          // 해제(X) 버튼
+
+        const Spacer(),
+
+        // 반복 활성 시 상태 표시 + 해제 버튼
+        if (_abActive) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.loop_rounded, size: 12, color: AppColors.primary),
+              const SizedBox(width: 3),
+              Text('반복 중',
+                style: TextStyle(color: AppColors.primary, fontSize: 10, fontWeight: FontWeight.w700)),
+            ]),
+          ),
+          const SizedBox(width: 4),
+        ],
+
+        // 해제(X) 버튼 - A가 설정되어 있으면 항상 표시
+        if (hasA)
           GestureDetector(
             onTap: _clearABRepeat,
+            behavior: HitTestBehavior.opaque,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 14),
             ),
           ),
-        ],
       ]),
     );
   }
 
-  Widget _abButton({required String label, required bool isSet, required bool isActive, required VoidCallback onTap}) {
-    Color bg = Colors.transparent;
-    Color textColor = Colors.white54;
-    if (isActive) {
-      bg = AppColors.primary;
-      textColor = Colors.white;
-    } else if (isSet) {
-      bg = Colors.white.withValues(alpha: 0.15);
-      textColor = const Color(0xFF60A5FA);
-    }
+  Widget _abChip({required String label, required Color color, required Color textColor, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: bg,
-          borderRadius: BorderRadius.circular(4),
+          color: color,
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Text(label,
-          style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w800)),
-      ),
-    );
-  }
-
-  Widget _buildABStatusBar() {
-    return IgnorePointer(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-        decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.85),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
-          const Icon(Icons.repeat_rounded, color: Colors.white, size: 14),
-          const SizedBox(width: 6),
-          Text(
-            'A ${_formatDuration(_pointA!)}  →  B ${_formatDuration(_pointB!)}',
-            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
-          ),
-        ]),
+          style: TextStyle(color: textColor, fontSize: 11, fontWeight: FontWeight.w700)),
       ),
     );
   }
