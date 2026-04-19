@@ -160,11 +160,11 @@ class AppTranslations {
       'es': '📚 Clases',
     },
     'section_recent': {
-      'ko': '📺 최근 본 강의',
-      'en': '📺 Recently Viewed',
-      'ja': '📺 最近見た授業',
-      'zh': '📺 最近观看',
-      'es': '📺 Vistas Recientes',
+      'ko': '최근 본 강의',
+      'en': 'Recently Viewed',
+      'ja': '最近見た授業',
+      'zh': '最近观看',
+      'es': 'Vistas Recientes',
     },
     'btn_view_all': {
       'ko': '전체보기',

@@ -17,7 +17,7 @@ class AppColors {
   static const Color science = Color(0xFF8B5CF6);      // 과학(중등) - 보라
   static const Color commonScience = Color(0xFF7C3AED); // 공통과학(고등) - 진보라
   static const Color physics = Color(0xFF0EA5E9);      // 물리 - 하늘
-  static const Color chemistry = Color(0xFFFF6B35);    // 화학 - 주황
+  static const Color chemistry = Color(0xFF0D9488);    // 화학 - 틸(청록)
   static const Color biology = Color(0xFF22C55E);      // 생명과학 - 연초록
   static const Color earth = Color(0xFF6366F1);        // 지구과학 - 인디고
   static const Color social = Color(0xFFF59E0B);       // 사회 - 노랑

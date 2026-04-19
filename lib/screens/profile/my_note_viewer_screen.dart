@@ -175,34 +175,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
         backgroundColor: Colors.black87,
         foregroundColor: Colors.white,
         elevation: 0,
-        actions: [
-          // 저장 버튼
-          GestureDetector(
-            onTap: _saveStrokes,
-            child: Container(
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _strokesSaved
-                    ? Colors.white24
-                    : const Color(0xFF2563EB),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Icon(
-                  _strokesSaved ? Icons.check_rounded : Icons.save_outlined,
-                  size: 15, color: Colors.white,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  _strokesSaved ? '저장됨' : '저장',
-                  style: const TextStyle(
-                      fontSize: 12, color: Colors.white, fontWeight: FontWeight.w700),
-                ),
-              ]),
-            ),
-          ),
-        ],
+        actions: const [],
       ),
       body: _slidesLoading
           ? const Center(child: CircularProgressIndicator(color: _kOrange))
