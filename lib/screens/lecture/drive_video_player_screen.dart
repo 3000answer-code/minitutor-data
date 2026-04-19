@@ -35,6 +35,12 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
   bool _hasError = false;
   String _errorMsg = '';
 
+  // ── A-B 구간반복 ────────────────────────────────
+  Duration? _pointA;
+  Duration? _pointB;
+  bool _abActive = false;     // A-B 반복 활성 여부
+  Timer? _abTimer;
+
   // ── Drive 파일 ID 추출
   static String? _extractDriveFileId(String url) {
     final patterns = [
@@ -166,6 +172,7 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
 
   @override
   void dispose() {
+    _abTimer?.cancel();
     _chewieController?.dispose();
     _videoController?.dispose();
     SystemChrome.setPreferredOrientations([
@@ -371,10 +378,169 @@ class _DriveVideoPlayerScreenState extends State<DriveVideoPlayerScreen> {
     }
 
     if (_chewieController != null) {
-      return Chewie(controller: _chewieController!);
+      return Stack(children: [
+        Chewie(controller: _chewieController!),
+        // A-B 구간반복 컨트롤 오버레이
+        Positioned(
+          right: 10,
+          top: 10,
+          child: _buildABRepeatControl(),
+        ),
+        // A-B 활성 상태 표시바
+        if (_abActive && _pointA != null && _pointB != null)
+          Positioned(
+            left: 0, right: 0, bottom: 52,
+            child: _buildABStatusBar(),
+          ),
+      ]);
     }
 
     return _buildErrorWidget('플레이어 초기화 실패');
+  }
+
+  // ── A-B 구간반복 컨트롤 ──────────────────────────────
+  Widget _buildABRepeatControl() {
+    // 상태: 미설정 / A만 설정 / A-B 활성
+    final bool hasA = _pointA != null;
+    final bool hasB = _pointB != null;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        // A 버튼
+        _abButton(
+          label: 'A',
+          isSet: hasA,
+          isActive: hasA && !hasB,
+          onTap: () {
+            if (_abActive) {
+              // 반복 중이면 해제
+              _clearABRepeat();
+            } else if (!hasA) {
+              // A 설정
+              final pos = _videoController?.value.position;
+              if (pos != null) setState(() => _pointA = pos);
+            } else if (hasA && !hasB) {
+              // A만 설정된 상태에서 A 다시 누르면 A 해제
+              setState(() => _pointA = null);
+            }
+          },
+        ),
+        Container(width: 1, height: 20, color: Colors.white24),
+        // B 버튼
+        _abButton(
+          label: 'B',
+          isSet: hasB,
+          isActive: _abActive,
+          onTap: () {
+            if (_abActive) {
+              _clearABRepeat();
+            } else if (hasA && !hasB) {
+              // B 설정 + 반복 시작
+              final pos = _videoController?.value.position;
+              if (pos != null && pos > _pointA!) {
+                setState(() {
+                  _pointB = pos;
+                  _abActive = true;
+                });
+                _startABLoop();
+              }
+            }
+          },
+        ),
+        if (_abActive || hasA) ...[
+          Container(width: 1, height: 20, color: Colors.white24),
+          // 해제(X) 버튼
+          GestureDetector(
+            onTap: _clearABRepeat,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  Widget _abButton({required String label, required bool isSet, required bool isActive, required VoidCallback onTap}) {
+    Color bg = Colors.transparent;
+    Color textColor = Colors.white54;
+    if (isActive) {
+      bg = AppColors.primary;
+      textColor = Colors.white;
+    } else if (isSet) {
+      bg = Colors.white.withValues(alpha: 0.15);
+      textColor = const Color(0xFF60A5FA);
+    }
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(label,
+          style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w800)),
+      ),
+    );
+  }
+
+  Widget _buildABStatusBar() {
+    return IgnorePointer(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: AppColors.primary.withValues(alpha: 0.85),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.center, children: [
+          const Icon(Icons.repeat_rounded, color: Colors.white, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            'A ${_formatDuration(_pointA!)}  →  B ${_formatDuration(_pointB!)}',
+            style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  String _formatDuration(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  void _startABLoop() {
+    _abTimer?.cancel();
+    // 200ms 간격으로 현재 위치 확인, B 지점 도달 시 A로 되돌림
+    _abTimer = Timer.periodic(const Duration(milliseconds: 200), (_) {
+      if (!_abActive || _pointA == null || _pointB == null) {
+        _abTimer?.cancel();
+        return;
+      }
+      final ctrl = _videoController;
+      if (ctrl == null || !ctrl.value.isInitialized) return;
+      final pos = ctrl.value.position;
+      if (pos >= _pointB!) {
+        ctrl.seekTo(_pointA!);
+      }
+    });
+  }
+
+  void _clearABRepeat() {
+    _abTimer?.cancel();
+    setState(() {
+      _pointA = null;
+      _pointB = null;
+      _abActive = false;
+    });
   }
 
   Widget _buildInfoBar() {

@@ -964,10 +964,11 @@ class _HomeScreenState extends State<HomeScreen>
         badgeColor: const Color(0xFF9B59B6),
         title: '키워드로 합격을!',
         subtitle: '끼리에.끼리를 묻는 핵심 개념\n학습으로 합격을 잡으세요!',
-        btnText: '강의 목록 보기 ▶',
+        btnText: '검색 화면 보기 ▶',
         gradientColors: [const Color(0xFF4A0E8F), const Color(0xFF7B2FBE)],
         accentEmoji: '💡',
         lecture: null,
+        goSearch: true,
         imagePath: 'assets/images/banners/banner_study_new.jpg',
       ),
       // 배너3: HOT - 이번 주 인기 강의 (현대 도서관)
@@ -1023,7 +1024,11 @@ class _HomeScreenState extends State<HomeScreen>
             return GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: () {
-                if (b.lecture != null) {
+                if (b.goSearch) {
+                  // 검색 화면으로 이동
+                  final appState = context.read<AppState>();
+                  appState.setNavIndex(3);
+                } else if (b.lecture != null) {
                   _openLecture(b.lecture);
                 } else if (b.tabTarget != null) {
                   // 수학/과학 탭으로 이동
@@ -1674,6 +1679,7 @@ class _BannerData {
   final dynamic lecture;
   final String? tabTarget;
   final String? imagePath;
+  final bool goSearch;
 
   const _BannerData({
     required this.badge,
@@ -1686,6 +1692,7 @@ class _BannerData {
     this.lecture,
     this.tabTarget,
     this.imagePath,
+    this.goSearch = false,
   });
 }
 
