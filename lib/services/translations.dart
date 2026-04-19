@@ -1159,7 +1159,7 @@ class AppTranslations {
     // 스토어 화면
     // ────────────────────────────────────────────
     'store_title': {
-      'ko': '스토어', 'en': 'Store', 'ja': 'ストア', 'zh': '商店', 'es': 'Tienda',
+      'ko': '사용 기간 연장', 'en': 'Extend Subscription', 'ja': '利用期間延長', 'zh': '延长使用期限', 'es': 'Extender Suscripción',
     },
     'premium_benefits': {
       'ko': '프리미엄 혜택', 'en': 'Premium Benefits', 'ja': 'プレミアム特典', 'zh': '高级权益', 'es': 'Beneficios Premium',

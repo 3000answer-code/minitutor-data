@@ -70,47 +70,47 @@ class _StoreScreenState extends State<StoreScreen>
   Widget _buildStoreTab(String lang) {
     final T = (String key) => AppTranslations.tLang(lang, key);
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppColors.primary, AppColors.primaryLight],
               begin: Alignment.topLeft, end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(T('premium_benefits'), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+              child: Text(T('premium_benefits'), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
             ),
-            const SizedBox(height: 10),
-            Text(T('unlimited_lectures'), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
+            Text(T('unlimited_lectures'), style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 4),
             Text(T('store_subtitle'),
-              style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 13)),
-            const SizedBox(height: 12),
-            Wrap(spacing: 8, children: ['광고 없음', '오프라인 다운로드', '강의 Q&A'].map((b) =>
+              style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 12)),
+            const SizedBox(height: 10),
+            Wrap(spacing: 6, children: ['광고 없음', '강의 Q&A'].map((b) =>
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(20)),
-                child: Text('✓ $b', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                  borderRadius: BorderRadius.circular(16)),
+                child: Text('✓ $b', style: const TextStyle(color: Colors.white, fontSize: 11)),
               )
             ).toList()),
           ]),
         ),
-        const SizedBox(height: 24),
-        Text(T('select_plan'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-        const SizedBox(height: 12),
+        const SizedBox(height: 18),
+        Text(T('select_plan'), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+        const SizedBox(height: 10),
         ...List.generate(_plans.length, (i) {
           final plan = _plans[i];
           final isSelected = _selectedPlanIndex == i;
@@ -118,79 +118,79 @@ class _StoreScreenState extends State<StoreScreen>
             onTap: () => setState(() => _selectedPlanIndex = i),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isSelected ? AppColors.primary : AppColors.divider,
                   width: isSelected ? 2 : 1,
                 ),
-                boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.1),
-                  blurRadius: 12, offset: const Offset(0, 4))] : [],
+                boxShadow: isSelected ? [BoxShadow(color: AppColors.primary.withValues(alpha: 0.08),
+                  blurRadius: 8, offset: const Offset(0, 2))] : [],
               ),
               child: Row(children: [
                 Container(
-                  width: 22, height: 22,
+                  width: 20, height: 20,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(color: isSelected ? AppColors.primary : AppColors.divider, width: 2),
                     color: isSelected ? AppColors.primary : Colors.transparent,
                   ),
-                  child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+                  child: isSelected ? const Icon(Icons.check, size: 12, color: Colors.white) : null,
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 12),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Row(children: [
                     Text(plan['label'] as String,
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800,
                         color: isSelected ? AppColors.primary : AppColors.textPrimary)),
                     if ((plan['badge'] as String).isNotEmpty) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
                         decoration: BoxDecoration(
                           color: plan['badge'] == '인기' ? AppColors.accent : AppColors.primary,
-                          borderRadius: BorderRadius.circular(10)),
+                          borderRadius: BorderRadius.circular(8)),
                         child: Text(plan['badge'] as String,
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w700)),
+                          style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ]),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Text(plan['desc'] as String,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                 ])),
                 Text('${plan['price']}원',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900,
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900,
                     color: isSelected ? AppColors.primary : AppColors.textPrimary)),
               ]),
             ),
           );
         }),
-        const SizedBox(height: 20),
+        const SizedBox(height: 14),
         SizedBox(
           width: double.infinity,
-          height: 52,
+          height: 48,
           child: ElevatedButton(
             onPressed: () => _showPurchaseConfirm(lang),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               elevation: 0,
             ),
             child: Text(
               '${_plans[_selectedPlanIndex]['label']} ${T('buy_plan')} (${_plans[_selectedPlanIndex]['price']}원)',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
             ),
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Center(
           child: Text(T('payment_notice'),
-            style: const TextStyle(fontSize: 12, color: AppColors.textHint)),
+            style: const TextStyle(fontSize: 11, color: AppColors.textHint)),
         ),
       ]),
     );
@@ -208,46 +208,46 @@ class _StoreScreenState extends State<StoreScreen>
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       itemCount: _paymentHistory.length,
       itemBuilder: (context, i) {
         final p = _paymentHistory[i];
         return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8, offset: const Offset(0, 2))],
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 6, offset: const Offset(0, 1))],
           ),
           child: Row(children: [
             Container(
-              width: 44, height: 44,
+              width: 40, height: 40,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.receipt_outlined, color: AppColors.primary, size: 22),
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10)),
+              child: const Icon(Icons.receipt_outlined, color: AppColors.primary, size: 20),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(p['type'] as String,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-              const SizedBox(height: 4),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              const SizedBox(height: 2),
               Text(p['date'] as String,
-                style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                style: const TextStyle(fontSize: 11, color: AppColors.textSecondary)),
             ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text(p['amount'] as String,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.primary)),
-              const SizedBox(height: 4),
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: AppColors.primary)),
+              const SizedBox(height: 2),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 1),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8)),
+                  borderRadius: BorderRadius.circular(6)),
                 child: Text(p['status'] as String,
-                  style: const TextStyle(fontSize: 11, color: AppColors.success, fontWeight: FontWeight.w600)),
+                  style: const TextStyle(fontSize: 10, color: AppColors.success, fontWeight: FontWeight.w600)),
               ),
             ]),
           ]),
