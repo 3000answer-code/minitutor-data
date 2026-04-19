@@ -93,6 +93,11 @@ class _LecturePlayerScreenState extends State<LecturePlayerScreen>
   bool _drivePlayerError = false;
   bool _drivePlayerActive = false; // 인라인 재생 활성화 여부
 
+  // ── A-B 구간반복
+  int? _abPointA;              // A 지점 (초)
+  int? _abPointB;              // B 지점 (초)
+  bool _abActive = false;      // 반복 활성 여부
+
   // ── 노트 필기
   bool _isDrawingMode = false;
   Color _penColor = const Color(0xFF2563EB);
@@ -869,6 +874,14 @@ function pauseVid(){vid.pause();}
       if (_currentTime < _totalTime) {
         setState(() {
           _currentTime++;
+          // ── A-B 구간반복: B 지점 도달 시 A로 되돌림
+          if (_abActive && _abPointA != null && _abPointB != null &&
+              _currentTime >= _abPointB!) {
+            _currentTime = _abPointA!;
+            _webViewController?.runJavaScript('try{seekTo($_currentTime);}catch(e){}');
+            // Drive Chewie 플레이어도 지원
+            _driveVideoCtrl?.seekTo(Duration(seconds: _currentTime));
+          }
           _saveProgressIfNeeded();
         });
       } else {
@@ -903,6 +916,146 @@ function pauseVid(){vid.pause();}
   void _seekTo(double ratio) {
     setState(() => _currentTime = (ratio * _totalTime).toInt().clamp(0, _totalTime));
     _webViewController?.runJavaScript('try{seekTo($_currentTime);}catch(e){}');
+  }
+
+  // ── A-B 구간반복 조작 메서드 ─────────────────────────
+  void _setPointA() {
+    if (_abActive) return;
+    setState(() => _abPointA = _currentTime);
+  }
+
+  void _setPointB() {
+    if (_abActive) return;
+    if (_abPointA == null) return;
+    if (_currentTime <= _abPointA!) return;
+    setState(() {
+      _abPointB = _currentTime;
+      _abActive = true;
+    });
+    // A 지점으로 이동 후 반복 시작
+    setState(() => _currentTime = _abPointA!);
+    _webViewController?.runJavaScript('try{seekTo($_currentTime);}catch(e){}');
+    _driveVideoCtrl?.seekTo(Duration(seconds: _currentTime));
+  }
+
+  void _clearABRepeat() {
+    setState(() {
+      _abPointA = null;
+      _abPointB = null;
+      _abActive = false;
+    });
+  }
+
+  // ── A-B 구간반복 컨트롤 바 위젯 (공통 - 세로/가로/전체화면에서 사용)
+  Widget _buildABControlBar({bool onDark = false}) {
+    final bool hasA = _abPointA != null;
+    final bool hasB = _abPointB != null;
+    final bg = onDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : (_abActive ? const Color(0xFFFFF3E0) : const Color(0xFFF5F5F5));
+    final borderColor = _abActive ? _kOrange : (onDark ? Colors.white12 : const Color(0xFFE0E0E0));
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: borderColor, width: 0.5),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        // 구간반복 아이콘
+        Icon(Icons.repeat_rounded, size: 14,
+          color: _abActive ? _kOrange : (onDark ? Colors.white38 : Colors.grey)),
+        const SizedBox(width: 4),
+        // [A] 버튼
+        _abChipBtn(
+          label: hasA ? 'A ${_formatTime(_abPointA!)}' : 'A',
+          isSet: hasA,
+          isActive: hasA && !hasB,
+          onDark: onDark,
+          onTap: () {
+            if (_abActive) return;
+            if (!hasA) {
+              _setPointA();
+            } else if (!hasB) {
+              setState(() => _abPointA = null);
+            }
+          },
+        ),
+        const SizedBox(width: 4),
+        // [B] 버튼
+        _abChipBtn(
+          label: hasB ? 'B ${_formatTime(_abPointB!)}' : 'B',
+          isSet: hasB,
+          isActive: _abActive,
+          onDark: onDark,
+          onTap: () {
+            if (_abActive) return;
+            if (hasA && !hasB) _setPointB();
+          },
+        ),
+        // 반복 중 표시
+        if (_abActive) ...[
+          const SizedBox(width: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+            decoration: BoxDecoration(
+              color: _kOrange.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.loop_rounded, size: 10, color: _kOrange),
+              const SizedBox(width: 2),
+              const Text('반복', style: TextStyle(color: _kOrange, fontSize: 9, fontWeight: FontWeight.w700)),
+            ]),
+          ),
+        ],
+        // 해제 버튼
+        if (hasA) ...[
+          const SizedBox(width: 3),
+          GestureDetector(
+            onTap: _clearABRepeat,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: onDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.close_rounded, size: 12,
+                color: onDark ? Colors.white60 : Colors.grey[600]),
+            ),
+          ),
+        ],
+      ]),
+    );
+  }
+
+  Widget _abChipBtn({required String label, required bool isSet, required bool isActive, required bool onDark, required VoidCallback onTap}) {
+    Color bg, textColor;
+    if (isActive) {
+      bg = _kOrange;
+      textColor = Colors.white;
+    } else if (isSet) {
+      bg = const Color(0xFF3B82F6);
+      textColor = Colors.white;
+    } else {
+      bg = onDark ? Colors.white.withValues(alpha: 0.15) : const Color(0xFFE0E0E0);
+      textColor = onDark ? Colors.white54 : Colors.grey[600]!;
+    }
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(label,
+          style: TextStyle(color: textColor, fontSize: 10, fontWeight: FontWeight.w700)),
+      ),
+    );
   }
 
   void _setPlaybackSpeed(double speed) {
@@ -1356,6 +1509,18 @@ function pauseVid(){vid.pause();}
       color: Colors.black,
       child: Column(mainAxisSize: MainAxisSize.min, children: [
         _buildPlayerTopBar(),
+        // A-B 구간반복 컨트롤 바 (세로화면)
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          child: Row(children: [
+            _buildABControlBar(),
+            const Spacer(),
+            Text(_formatTime(_currentTime),
+              style: TextStyle(color: Colors.grey[500], fontSize: 10,
+                fontFeatures: const [FontFeature.tabularFigures()])),
+          ]),
+        ),
         // ── AspectRatio로 영상 크기 정확히 맞춤 ──
         LayoutBuilder(
           builder: (ctx, constraints) {
@@ -4582,7 +4747,11 @@ function pauseVid(){vid.pause();}
                             _buildControlOverlay(),
                             Positioned(
                               top: 6, right: 6,
-                              child: _buildSpeedChip(onDark: true),
+                              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                _buildABControlBar(onDark: true),
+                                const SizedBox(width: 6),
+                                _buildSpeedChip(onDark: true),
+                              ]),
                             ),
                           ]),
                         ),
@@ -4904,7 +5073,9 @@ function pauseVid(){vid.pause();}
                       style: const TextStyle(color: Colors.white, fontSize: 14,
                         fontWeight: FontWeight.w600),
                       maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  // CC 버튼 제거 (모든 강의에 자막 있어 불필요)
+                  // A-B 구간반복 (전체화면)
+                  _buildABControlBar(onDark: true),
+                  const SizedBox(width: 8),
                   // 속도 버튼 (전체화면)
                   _buildSpeedChip(onDark: true),
                   const SizedBox(width: 6),
