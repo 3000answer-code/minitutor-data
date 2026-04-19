@@ -162,17 +162,7 @@ class _NoteSearchViewerScreenState extends State<NoteSearchViewerScreen> {
         thumbnailUrl:   _lecture.thumbnailUrl,
       ));
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Row(children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Text('필기가 저장되었습니다'),
-          ]),
-          backgroundColor: Color(0xFF2563EB),
-          duration: Duration(seconds: 2),
-        ));
-      }
+      // 저장 완료 (저장됨 아이콘으로 확인 가능하므로 SnackBar 생략)
     } catch (_) {}
   }
 

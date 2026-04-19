@@ -145,19 +145,7 @@ class _MyNoteViewerScreenState extends State<MyNoteViewerScreen> {
         thumbnailUrl: _currentLecture.thumbnailUrl,
       ));
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: const Row(children: [
-            Icon(Icons.check_circle, color: Colors.white, size: 18),
-            SizedBox(width: 8),
-            Text('내 노트가 저장되었습니다'),
-          ]),
-          backgroundColor: const Color(0xFF2563EB),
-          behavior: SnackBarBehavior.floating,
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 80),
-          duration: const Duration(seconds: 2),
-        ));
-      }
+      // 저장 완료 (저장됨 아이콘으로 확인 가능하므로 SnackBar 생략)
     } catch (_) {}
   }
 
