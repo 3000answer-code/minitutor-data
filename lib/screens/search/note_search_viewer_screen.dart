@@ -632,120 +632,125 @@ class _NoteSearchViewerScreenState extends State<NoteSearchViewerScreen> {
                     ]),
                   ),
                   // 이미지 + 필기 레이어 + 터치 이벤트 (통합)
+                  // ★ 필기 모드: Listener로 터치 이벤트 처리
+                  // ★ 확대/축소 모드: InteractiveViewer로 이미지+필기 전체를 감싸서 함께 확대축소
                   LayoutBuilder(builder: (lbCtx, lbConstraints) {
                     final imgW = lbConstraints.maxWidth > 0
                         ? lbConstraints.maxWidth
                         : MediaQuery.of(lbCtx).size.width;
-                    final imgH = imgW * 577 / 1024;
-                    return SizedBox(
-                      width: imgW,
-                      height: imgH,
-                      child: GestureDetector(
-                        onTapDown: _isDrawingMode
-                            ? (d) => setState(() {
-                                _currentNotePageIndex = pageIdx;
-                                _currentStroke = [d.localPosition];
-                              })
-                            : null,
-                        onPanStart: _isDrawingMode
-                            ? (d) => setState(() {
-                                _currentNotePageIndex = pageIdx;
-                                _currentStroke = [d.localPosition];
-                              })
-                            : null,
-                        onPanUpdate: _isDrawingMode
-                            ? (d) {
-                                setState(() {
-                                  _currentStroke.add(d.localPosition);
-                                  if (_isEraser) {
-                                    _eraserPosition = d.localPosition;
-                                    _showEraserCursor = true;
-                                    final strokes = List<_DrawingStroke>.from(
-                                        _pageStrokes[pageIdx] ?? []);
-                                    const eraseRadius = 20.0;
-                                    final idx = strokes.indexWhere((s) =>
-                                        s.points.whereType<Offset>().any(
-                                            (p) => (p - d.localPosition).distance < eraseRadius));
-                                    if (idx != -1) {
-                                      strokes.removeAt(idx);
-                                      _pageStrokes[pageIdx] = strokes;
-                                      _strokesSaved = false;
-                                    }
-                                  }
-                                });
-                              }
-                            : null,
-                        onPanEnd: _isDrawingMode
-                            ? (_) {
-                                if (!_isEraser && _currentStroke.isNotEmpty) {
-                                  final strokes = List<_DrawingStroke>.from(
-                                      _pageStrokes[pageIdx] ?? []);
-                                  strokes.add(_DrawingStroke(
-                                    points: List.from(_currentStroke),
-                                    color: _penColor, width: _strokeWidth));
-                                  setState(() {
-                                    _pageStrokes[pageIdx] = strokes;
-                                    _strokesSaved = false;
-                                  });
-                                }
-                                setState(() {
-                                  _currentStroke = [];
-                                  _showEraserCursor = false;
-                                  _eraserPosition = null;
-                                });
-                              }
-                            : null,
-                        child: Stack(
-                          children: [
-                            // 교안 이미지 (1024×577 비율로 정확히 표시)
-                            Positioned.fill(
-                              child: Image(
-                                image: pageUrl.startsWith('assets/')
-                                    ? AssetImage(pageUrl) as ImageProvider
-                                    : NetworkImage(pageUrl),
-                                width: imgW,
-                                height: imgH,
-                                fit: BoxFit.fill,
-                                errorBuilder: (_, __, ___) => _buildHandoutError(pageIdx),
-                              ),
-                            ),
-                            // 필기 레이어
-                            Positioned.fill(
-                              child: CustomPaint(
-                                painter: _DrawingPainter(
-                                  strokes: _pageStrokes[pageIdx] ?? [],
-                                  currentStroke: _currentNotePageIndex == pageIdx
-                                      ? _currentStroke
-                                      : [],
-                                  currentColor: _penColor,
-                                  currentWidth: _strokeWidth,
-                                  isEraser: _isEraser,
-                                ),
-                              ),
-                            ),
-                            // 지우개 커서
-                            if (_isDrawingMode &&
-                                _isEraser &&
-                                _showEraserCursor &&
-                                _eraserPosition != null &&
-                                _currentNotePageIndex == pageIdx)
-                              Positioned(
-                                left: _eraserPosition!.dx - 10,
-                                top: _eraserPosition!.dy - 10,
-                                child: Container(
-                                  width: 20,
-                                  height: 20,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: _kOrange, width: 1.5),
-                                    color: Colors.white.withValues(alpha: 0.5),
-                                  ),
-                                ),
-                              ),
-                          ],
+
+                    final pageStrokesForPage = _pageStrokes[pageIdx] ?? [];
+
+                    Widget pageContent = Stack(children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: Image(
+                          image: pageUrl.startsWith('assets/')
+                              ? AssetImage(pageUrl) as ImageProvider
+                              : NetworkImage(pageUrl),
+                          width: imgW,
+                          fit: BoxFit.fitWidth,
+                          errorBuilder: (_, __, ___) => _buildHandoutError(pageIdx),
                         ),
                       ),
-                    );
+                      // 필기 레이어 (항상 표시)
+                      Positioned.fill(
+                        child: CustomPaint(
+                          painter: _DrawingPainter(
+                            strokes: _isDrawingMode && _currentNotePageIndex == pageIdx
+                                ? [
+                                    ...pageStrokesForPage,
+                                    if (_currentStroke.isNotEmpty && !_isEraser)
+                                      _DrawingStroke(
+                                        points: List.from(_currentStroke),
+                                        color: _penColor, width: _strokeWidth),
+                                  ]
+                                : pageStrokesForPage,
+                            currentStroke: [],
+                            currentColor: _penColor,
+                            currentWidth: _strokeWidth,
+                            isEraser: _isEraser,
+                          ),
+                        ),
+                      ),
+                      // 지우개 커서
+                      if (_isEraser && _showEraserCursor &&
+                          _eraserPosition != null &&
+                          _currentNotePageIndex == pageIdx)
+                        Positioned(
+                          left: _eraserPosition!.dx - 16,
+                          top: _eraserPosition!.dy - 16,
+                          child: IgnorePointer(
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: _kOrange, width: 1.5),
+                                color: Colors.white.withValues(alpha: 0.5),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ]);
+
+                    return _isDrawingMode
+                        ? Listener(
+                            behavior: HitTestBehavior.opaque,
+                            onPointerDown: (e) => setState(() {
+                              _currentNotePageIndex = pageIdx;
+                              _currentStroke = [e.localPosition];
+                            }),
+                            onPointerMove: (e) {
+                              setState(() {
+                                _currentStroke.add(e.localPosition);
+                                if (_isEraser) {
+                                  _eraserPosition = e.localPosition;
+                                  _showEraserCursor = true;
+                                  final strokes = List<_DrawingStroke>.from(
+                                      _pageStrokes[pageIdx] ?? []);
+                                  const eraseRadius = 20.0;
+                                  final idx = strokes.indexWhere((s) =>
+                                      s.points.whereType<Offset>().any(
+                                          (p) => (p - e.localPosition).distance < eraseRadius));
+                                  if (idx != -1) {
+                                    strokes.removeAt(idx);
+                                    _pageStrokes[pageIdx] = strokes;
+                                    _strokesSaved = false;
+                                  }
+                                }
+                              });
+                            },
+                            onPointerUp: (_) {
+                              if (!_isEraser && _currentStroke.isNotEmpty) {
+                                final strokes = List<_DrawingStroke>.from(
+                                    _pageStrokes[pageIdx] ?? []);
+                                strokes.add(_DrawingStroke(
+                                  points: List.from(_currentStroke),
+                                  color: _penColor, width: _strokeWidth));
+                                setState(() {
+                                  _pageStrokes[pageIdx] = strokes;
+                                  _strokesSaved = false;
+                                });
+                              }
+                              setState(() {
+                                _currentStroke = [];
+                                _showEraserCursor = false;
+                                _eraserPosition = null;
+                              });
+                            },
+                            onPointerCancel: (_) => setState(() {
+                              _currentStroke = [];
+                              _showEraserCursor = false;
+                              _eraserPosition = null;
+                            }),
+                            child: pageContent,
+                          )
+                        : InteractiveViewer(
+                            minScale: 0.5,
+                            maxScale: 5.0,
+                            child: pageContent,
+                          );
                   }),
                 ]),
               );

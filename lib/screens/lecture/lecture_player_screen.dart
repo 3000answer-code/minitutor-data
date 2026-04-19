@@ -2375,108 +2375,39 @@ function pauseVid(){vid.pause();}
                     ]),
                   ),
                   // 이미지 + 필기 레이어
-                  // ★ Listener 사용: GestureDetector 대신 Listener로 교체하여
-                  //   PageView/ScrollView와의 터치 이벤트 충돌(떨림)을 완전 제거
-                  Listener(
-                    behavior: HitTestBehavior.opaque,
-                    onPointerDown: _isDrawingMode
-                        ? (e) => setState(() {
-                            _currentNotePageIndex = pageIdx;
-                            _currentStroke = [e.localPosition];
-                          })
-                        : null,
-                    onPointerMove: _isDrawingMode
-                        ? (e) {
-                            setState(() {
-                              _currentStroke.add(e.localPosition);
-                              if (_isEraser) {
-                                _eraserPosition = e.localPosition;
-                                _showEraserCursor = true;
-                                final strokes = List<_DrawingStroke>.from(
-                                    _pageStrokes[pageIdx] ?? []);
-                                const eraseRadius = 20.0;
-                                final idx = strokes.indexWhere((s) =>
-                                    s.points.whereType<Offset>().any(
-                                        (p) => (p - e.localPosition).distance < eraseRadius));
-                                if (idx != -1) {
-                                  strokes.removeAt(idx);
-                                  _pageStrokes[pageIdx] = strokes;
-                                  _strokesSaved = false;
-                                }
-                              }
-                            });
-                          }
-                        : null,
-                    onPointerUp: _isDrawingMode
-                        ? (_) {
-                            if (!_isEraser && _currentStroke.isNotEmpty) {
-                              final strokes = List<_DrawingStroke>.from(
-                                  _pageStrokes[pageIdx] ?? []);
-                              strokes.add(_DrawingStroke(
-                                points: List.from(_currentStroke),
-                                color: _penColor, width: _strokeWidth));
-                              setState(() {
-                                _pageStrokes[pageIdx] = strokes;
-                                _strokesSaved = false;
-                              });
-                            }
-                            setState(() {
-                              _currentStroke = [];
-                              _showEraserCursor = false;
-                              _eraserPosition = null;
-                            });
-                          }
-                        : null,
-                    onPointerCancel: _isDrawingMode
-                        ? (_) => setState(() {
-                            _currentStroke = [];
-                            _showEraserCursor = false;
-                            _eraserPosition = null;
-                          })
-                        : null,
-                    child: Stack(children: [
-                      // 교안 이미지
-                      // 필기 모드 or 지우개 모드: 교안 완전 고정 (InteractiveViewer 비활성)
-                      // 확대/축소 모드: InteractiveViewer 활성
-                      (_isDrawingMode)
-                          ? SizedBox(
-                              width: double.infinity,
-                              child: _buildHandoutImage(pageUrl, pageIdx, isAsset),
-                            )
-                          : InteractiveViewer(
-                              minScale: 0.5,
-                              maxScale: 5.0,
-                              constrained: true,
-                              clipBehavior: Clip.none,
-                              child: SizedBox(
-                                width: double.infinity,
-                                child: _buildHandoutImage(pageUrl, pageIdx, isAsset),
-                              ),
-                            ),
+                  // ★ 필기 모드: Listener로 터치 이벤트 처리
+                  // ★ 확대/축소 모드: InteractiveViewer로 이미지+필기 전체를 감싸서 함께 확대축소
+                  LayoutBuilder(builder: (lbCtx, lbConstraints) {
+                    final pageW = lbConstraints.maxWidth > 0
+                        ? lbConstraints.maxWidth
+                        : MediaQuery.of(lbCtx).size.width;
+
+                    Widget pageContent = Stack(children: [
+                      SizedBox(
+                        width: double.infinity,
+                        child: _buildHandoutImage(pageUrl, pageIdx, isAsset),
+                      ),
                       // 필기 레이어 (항상 표시)
                       Positioned.fill(
-                        child: IgnorePointer(
-                          ignoring: !_isDrawingMode,
-                          child: CustomPaint(
-                            painter: _DrawingPainter(
-                              strokes: _isDrawingMode && _currentNotePageIndex == pageIdx
-                                  ? [
-                                      ...pageStrokesForPage,
-                                      if (_currentStroke.isNotEmpty && !_isEraser)
-                                        _DrawingStroke(
-                                          points: List.from(_currentStroke),
-                                          color: _penColor, width: _strokeWidth),
-                                    ]
-                                  : pageStrokesForPage,
-                              currentStroke: [],
-                              currentColor: _penColor,
-                              currentWidth: _strokeWidth,
-                              isEraser: _isEraser,
-                            ),
+                        child: CustomPaint(
+                          painter: _DrawingPainter(
+                            strokes: _isDrawingMode && _currentNotePageIndex == pageIdx
+                                ? [
+                                    ...pageStrokesForPage,
+                                    if (_currentStroke.isNotEmpty && !_isEraser)
+                                      _DrawingStroke(
+                                        points: List.from(_currentStroke),
+                                        color: _penColor, width: _strokeWidth),
+                                  ]
+                                : pageStrokesForPage,
+                            currentStroke: [],
+                            currentColor: _penColor,
+                            currentWidth: _strokeWidth,
+                            isEraser: _isEraser,
                           ),
                         ),
                       ),
-                      // 지우개 커서: 각 페이지 Stack 내부에 배치 → 스크롤 좌표와 정확히 일치
+                      // 지우개 커서
                       if (_isEraser && _showEraserCursor &&
                           _eraserPosition != null &&
                           _currentNotePageIndex == pageIdx)
@@ -2487,8 +2418,66 @@ function pauseVid(){vid.pause();}
                             child: EraserCursor(position: _eraserPosition!),
                           ),
                         ),
-                    ]),
-                  ),
+                    ]);
+
+                    return _isDrawingMode
+                        ? Listener(
+                            behavior: HitTestBehavior.opaque,
+                            onPointerDown: (e) => setState(() {
+                              _currentNotePageIndex = pageIdx;
+                              _currentStroke = [e.localPosition];
+                            }),
+                            onPointerMove: (e) {
+                              setState(() {
+                                _currentStroke.add(e.localPosition);
+                                if (_isEraser) {
+                                  _eraserPosition = e.localPosition;
+                                  _showEraserCursor = true;
+                                  final strokes = List<_DrawingStroke>.from(
+                                      _pageStrokes[pageIdx] ?? []);
+                                  const eraseRadius = 20.0;
+                                  final idx = strokes.indexWhere((s) =>
+                                      s.points.whereType<Offset>().any(
+                                          (p) => (p - e.localPosition).distance < eraseRadius));
+                                  if (idx != -1) {
+                                    strokes.removeAt(idx);
+                                    _pageStrokes[pageIdx] = strokes;
+                                    _strokesSaved = false;
+                                  }
+                                }
+                              });
+                            },
+                            onPointerUp: (_) {
+                              if (!_isEraser && _currentStroke.isNotEmpty) {
+                                final strokes = List<_DrawingStroke>.from(
+                                    _pageStrokes[pageIdx] ?? []);
+                                strokes.add(_DrawingStroke(
+                                  points: List.from(_currentStroke),
+                                  color: _penColor, width: _strokeWidth));
+                                setState(() {
+                                  _pageStrokes[pageIdx] = strokes;
+                                  _strokesSaved = false;
+                                });
+                              }
+                              setState(() {
+                                _currentStroke = [];
+                                _showEraserCursor = false;
+                                _eraserPosition = null;
+                              });
+                            },
+                            onPointerCancel: (_) => setState(() {
+                              _currentStroke = [];
+                              _showEraserCursor = false;
+                              _eraserPosition = null;
+                            }),
+                            child: pageContent,
+                          )
+                        : InteractiveViewer(
+                            minScale: 0.5,
+                            maxScale: 5.0,
+                            child: pageContent,
+                          );
+                  }),
                 ]),
               );
             }),
