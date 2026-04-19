@@ -12,9 +12,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   // 기본 학년
-  String _defaultGrade = '중학교 2학년';
+  String _defaultGrade = '모든 학년';
   // 기본 과목
-  String _defaultSubject = '수학';
+  String _defaultSubject = '모든 과목';
   // 자막
   bool _subtitleOn = true;
   // 모바일 데이터
@@ -32,7 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     '고등학교 1학년', '고등학교 2학년', '고등학교 3학년',
   ];
 
-  final List<String> _subjects = ['수학', '과학'];
+  final List<String> _subjects = ['모든 과목', '수학', '과학'];
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +60,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 onTap: () => _showPicker('학년 선택', _grades, _defaultGrade,
                     (v) => setState(() => _defaultGrade = v)),
               ),
-              const Divider(height: 1, indent: 56),
+              Divider(height: 1, indent: 52, color: Colors.grey.shade200),
               _buildPickerTile(
                 icon: Icons.menu_book_outlined,
                 title: '기본 과목',
@@ -83,7 +83,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _subtitleOn,
                 onChanged: (v) => setState(() => _subtitleOn = v),
               ),
-              const Divider(height: 1, indent: 56),
+              Divider(height: 1, indent: 52, color: Colors.grey.shade200),
               _buildCompactSwitchTile(
                 icon: Icons.signal_cellular_alt,
                 title: '모바일 데이터 허용',
@@ -105,21 +105,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: _pushNewLecture,
                 onChanged: (v) => setState(() => _pushNewLecture = v),
               ),
-              const Divider(height: 1, indent: 56),
+              Divider(height: 1, indent: 52, color: Colors.grey.shade200),
               _buildCompactSwitchTile(
                 icon: Icons.question_answer_outlined,
                 title: 'Q&A 답변 알림',
                 value: _pushQAAnswer,
                 onChanged: (v) => setState(() => _pushQAAnswer = v),
               ),
-              const Divider(height: 1, indent: 56),
+              Divider(height: 1, indent: 52, color: Colors.grey.shade200),
               _buildCompactSwitchTile(
                 icon: Icons.campaign_outlined,
                 title: '이벤트/공지 알림',
                 value: _pushEvent,
                 onChanged: (v) => setState(() => _pushEvent = v),
               ),
-              const Divider(height: 1, indent: 56),
+              Divider(height: 1, indent: 52, color: Colors.grey.shade200),
               _buildCompactSwitchTile(
                 icon: Icons.calendar_today_outlined,
                 title: '일정 알림',
@@ -140,10 +140,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ─── 저장 버튼 ───
           Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
             child: SizedBox(
               width: double.infinity,
-              height: 50,
+              height: 46,
               child: ElevatedButton(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -154,11 +154,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('저장', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w800)),
+                child: const Text('저장', style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w800)),
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
         ]),
       ),
     );
@@ -166,12 +166,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildSectionHeader(String title) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 6),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(title,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-            color: AppColors.textHint, letterSpacing: 0.5)),
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+            color: AppColors.textHint, letterSpacing: 0.3)),
       ),
     );
   }
@@ -181,14 +181,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String value, required VoidCallback onTap,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.textSecondary, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      leading: Icon(icon, color: AppColors.textSecondary, size: 20),
+      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
       trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-        Text(value, style: const TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w600)),
-        const SizedBox(width: 4),
-        const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textHint),
+        Text(value, style: const TextStyle(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600)),
+        const SizedBox(width: 3),
+        const Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.textHint),
       ]),
       onTap: onTap,
+      dense: true,
+      visualDensity: const VisualDensity(vertical: -2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
   }
 
@@ -200,13 +203,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.textSecondary, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+      leading: Icon(icon, color: AppColors.textSecondary, size: 20),
+      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
       subtitle: subtitle != null
-          ? Text(subtitle, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary))
+          ? Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textSecondary, height: 1.2))
           : null,
       trailing: SizedBox(
-        width: 42, height: 24,
+        width: 40, height: 22,
         child: FittedBox(
           fit: BoxFit.contain,
           child: Switch(
@@ -218,40 +221,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       dense: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      visualDensity: const VisualDensity(vertical: -2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
   }
 
   Widget _buildInfoTile(IconData icon, String title, String value) {
     return ListTile(
-      leading: Icon(icon, color: AppColors.textSecondary, size: 22),
-      title: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-      trailing: Text(value, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+      leading: Icon(icon, color: AppColors.textSecondary, size: 20),
+      title: Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+      trailing: Text(value, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      dense: true,
+      visualDensity: const VisualDensity(vertical: -2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
     );
   }
 
   void _showPicker(String title, List<String> items, String current, Function(String) onSelect) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) => Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Container(width: 40, height: 4,
+          Container(width: 36, height: 3,
             decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(height: 16),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+          Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 8),
           SizedBox(
-            height: 280,
+            height: 260,
             child: ListView(children: items.map((item) => ListTile(
               title: Text(item, style: TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: current == item ? FontWeight.w700 : FontWeight.w400,
                 color: current == item ? AppColors.primary : AppColors.textPrimary,
               )),
               trailing: current == item
-                  ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+                  ? const Icon(Icons.check_rounded, color: AppColors.primary, size: 20) : null,
+              dense: true,
+              visualDensity: const VisualDensity(vertical: -1),
               onTap: () { onSelect(item); Navigator.pop(context); },
             )).toList()),
           ),
